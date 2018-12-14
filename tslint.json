@@ -1,0 +1,11 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+        "tslint:recommended"
+    ],
+    "jsRules": {},
+    "rules": {
+        "one-line" : [true, "check-catch", "check-finally", "check-else", "check-whitespace"]
+    },
+    "rulesDirectory": []
+}

@@ -1,0 +1,21 @@
+{
+  "name": "heroine",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "heroine": "Game.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/gl-matrix": "^2.4.4",
+    "gl-matrix": "^2.8.1",
+    "requirejs": "^2.3.6",
+    "tslint": "^5.11.0",
+    "typescript": "^3.2.2"
+  }
+}

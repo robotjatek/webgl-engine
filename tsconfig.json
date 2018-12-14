@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "module": "amd",
+        "target": "es6",
+        "outDir": "bin",
+        "rootDir": "src",
+        "baseUrl": ".",
+        "sourceMap": false,
+        "types": [
+            "gl-matrix"
+        ]
+    }
+}

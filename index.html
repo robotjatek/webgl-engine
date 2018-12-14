@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Cocaine</title>
+        <link rel="stylesheet" href="style.css">
+        <script data-main="bin/main" type="text/javascript" src="node_modules/requirejs/require.js"></script>
+        <script>
+           require.config({
+                paths: {
+                    'gl-matrix': '../node_modules/gl-matrix/dist/gl-matrix'
+                }
+            });
+        </script>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+    </body>
+</html>

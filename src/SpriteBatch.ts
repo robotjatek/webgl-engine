@@ -1,28 +1,42 @@
-import { mat4 } from "gl-matrix";
+import { mat4, vec3 } from "gl-matrix";
 import { Shader } from "./Shader";
 import { Sprite } from "./Sprite";
+import { Texture } from "./Texture";
 import { gl } from "./WebGLUtils";
 
 export class SpriteBatch
 {
     private BatchShader: Shader;
     private Vertices: number[];
-    private Buffer: WebGLBuffer;
+    private TextureCoordinates: number[];
+    private VertexBuffer: WebGLBuffer;
+    private TextureCoordinateBuffer: WebGLBuffer;
+    private Texture: Texture;
 
     private ModelMatrix = mat4.create();
 
-    public constructor(shader: Shader, sprites: Sprite[])
+    public constructor(shader: Shader, sprites: Sprite[], texture: Texture)
     {
         this.BatchShader = shader;
+        this.Texture = texture;
         this.Vertices = [];
+        this.TextureCoordinates = [];
         sprites.forEach((sprite) => {
             this.Vertices = this.Vertices.concat(sprite.Vertices);
+            this.TextureCoordinates = this.TextureCoordinates.concat(sprite.TextureCoordinates);
         });
         this.ModelMatrix = mat4.identity(this.ModelMatrix);
+        const scale = vec3.create();
+        vec3.set(scale, 10, 10, 0);
+        this.ModelMatrix = mat4.scale(this.ModelMatrix, this.ModelMatrix, scale);
 
-        this.Buffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.Buffer);
+        this.VertexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.VertexBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.Vertices), gl.STATIC_DRAW);
+
+        this.TextureCoordinateBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.TextureCoordinateBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.TextureCoordinates), gl.STATIC_DRAW);
     }
 
     public Draw(projectionMatrix: mat4, viewMatrix: mat4): void
@@ -31,10 +45,18 @@ export class SpriteBatch
 
         this.BatchShader.Use();
         const attribLocation = gl.getAttribLocation(this.BatchShader.GetProgram(), "a_pos");
+        const textureCoordinateAttribLocation = gl.getAttribLocation(this.BatchShader.GetProgram(), "a_texture_coordinate");
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.Buffer);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.Texture.GetTexture());
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.VertexBuffer);
         gl.enableVertexAttribArray(attribLocation);
         gl.vertexAttribPointer(attribLocation, 3, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.TextureCoordinateBuffer);
+        gl.enableVertexAttribArray(textureCoordinateAttribLocation);
+        gl.vertexAttribPointer(textureCoordinateAttribLocation, 2, gl.FLOAT, false, 0, 0);
 
         const projectionLocation = gl.getUniformLocation(shaderProgram, "projection");
         gl.uniformMatrix4fv(projectionLocation, false, projectionMatrix);
@@ -42,8 +64,16 @@ export class SpriteBatch
         gl.uniformMatrix4fv(viewLocation, false, viewMatrix);
         const modelLocation = gl.getUniformLocation(shaderProgram, "model");
         gl.uniformMatrix4fv(modelLocation, false, this.ModelMatrix);
+        const textureLocation = gl.getUniformLocation(shaderProgram, "u_sampler");
+        gl.uniform1i(textureLocation, 0);
+
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
         gl.drawArrays(gl.TRIANGLES, 0, this.Vertices.length / 3);
+
         gl.disableVertexAttribArray(attribLocation);
+        gl.disableVertexAttribArray(textureCoordinateAttribLocation);
+        gl.disable(gl.BLEND);
     }
 }

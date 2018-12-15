@@ -2,6 +2,7 @@ import { mat4 } from "gl-matrix";
 import { Shader } from "./Shader";
 import { Sprite } from "./Sprite";
 import { SpriteBatch } from "./SpriteBatch";
+import { Texture } from "./Texture";
 import { gl, WebGLUtils } from "./WebGLUtils";
 
 export class Game
@@ -14,6 +15,9 @@ export class Game
     private projectionMatrix = mat4.create();
     private viewMatrix = mat4.create();
 
+    private readonly verticalTiles: number = 32;
+    private readonly horizontalTiles: number = 18;
+
     public constructor()
     {
         this.Width = window.innerWidth;
@@ -21,25 +25,36 @@ export class Game
         this.Canvas = document.getElementById("canvas") as HTMLCanvasElement;
         this.Canvas.width = this.Width;
         this.Canvas.height = this.Height;
-        this.projectionMatrix = mat4.ortho(this.projectionMatrix, 0, 30, 30, 0, -1, 1);
-        this.viewMatrix = mat4.identity(this.viewMatrix);
 
+        this.projectionMatrix = mat4.ortho(
+            this.projectionMatrix, 0, this.verticalTiles, this.horizontalTiles, 0, -1, 1);
+        this.viewMatrix = mat4.identity(this.viewMatrix);
         WebGLUtils.CreateGLRenderingContext(this.Canvas);
         gl.disable(gl.DEPTH_TEST);
         gl.viewport(0, 0, this.Width, this.Height);
-        gl.clearColor(0, 0, 0, 1);
+        gl.clearColor(0, 1, 0, 1);
 
         const vertices = [
-            -1.0, -1.0, 0.0,
-            1.0, -1.0, 0.0,
-            -1.0,  1.0, 0.0,
-            -1.0,  1.0, 0.0,
-            1.0, -1.0, 0.0,
+            0.0, 0.0, 0.0,
+            1.0, 0.0, 0.0,
+            0,  1.0, 0.0,
+
+            0,  1.0, 0.0,
+            1.0, 0, 0.0,
             1.0, 1.0, 0.0,
         ];
 
+        const texCoords = [
+            0, 0,
+            1, 0,
+            0, 1,
+            0, 1,
+            1, 0,
+            1, 1,
+        ];
+
         const shader = new Shader("shaders/VertexShader.vert", "shaders/FragmentShader.frag");
-        this.spriteBatch = new SpriteBatch(shader, [new Sprite(vertices)]);
+        this.spriteBatch = new SpriteBatch(shader, [new Sprite(vertices, texCoords)], new Texture("ground0.png"));
     }
 
     public Run(): void
@@ -55,14 +70,6 @@ export class Game
         this.Canvas.width = this.Width;
         this.Canvas.height = this.Height;
         gl.viewport(0, 0, this.Width, this.Height);
-    }
-
-    public MouseScroll(event: MouseWheelEvent): void
-    {
-    }
-
-    public DragTo(x: number, y: number)
-    {
     }
 
     private Render(): void

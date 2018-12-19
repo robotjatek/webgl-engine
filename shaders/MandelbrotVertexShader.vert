@@ -1,3 +1,5 @@
+#version 300 es
+
 attribute vec3 a_pos;
 
 void main()

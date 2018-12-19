@@ -1,4 +1,6 @@
 import { mat4 } from "gl-matrix";
+import { Background } from "./Background";
+import { Environment } from "./Environment";
 import { Shader } from "./Shader";
 import { Sprite } from "./Sprite";
 import { SpriteBatch } from "./SpriteBatch";
@@ -12,11 +14,9 @@ export class Game
     private Canvas: HTMLCanvasElement;
 
     private spriteBatch: SpriteBatch;
+    private background: SpriteBatch;
     private projectionMatrix = mat4.create();
     private viewMatrix = mat4.create();
-
-    private readonly verticalTiles: number = 32;
-    private readonly horizontalTiles: number = 18;
 
     public constructor()
     {
@@ -27,7 +27,7 @@ export class Game
         this.Canvas.height = this.Height;
 
         this.projectionMatrix = mat4.ortho(
-            this.projectionMatrix, 0, this.verticalTiles, this.horizontalTiles, 0, -1, 1);
+            this.projectionMatrix, 0, Environment.HorizontalTiles, Environment.VerticalTiles, 0, -1, 1);
         this.viewMatrix = mat4.identity(this.viewMatrix);
         WebGLUtils.CreateGLRenderingContext(this.Canvas);
         gl.disable(gl.DEPTH_TEST);
@@ -55,6 +55,7 @@ export class Game
 
         const shader = new Shader("shaders/VertexShader.vert", "shaders/FragmentShader.frag");
         this.spriteBatch = new SpriteBatch(shader, [new Sprite(vertices, texCoords)], new Texture("ground0.png"));
+        this.background = new SpriteBatch(shader, [new Background()], new Texture("bg.jpg"));
     }
 
     public Run(): void
@@ -74,8 +75,8 @@ export class Game
 
     private Render(): void
     {
-        // tslint:disable-next-line:no-bitwise
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        this.background.Draw(this.projectionMatrix, this.viewMatrix);
         this.spriteBatch.Draw(this.projectionMatrix, this.viewMatrix);
         requestAnimationFrame(this.Run.bind(this));
     }

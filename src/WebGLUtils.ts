@@ -4,6 +4,6 @@ export class WebGLUtils
 {
     public static CreateGLRenderingContext(canvas: HTMLCanvasElement)
     {
-        gl = canvas.getContext("webgl");
+        gl = canvas.getContext("webgl2");
     }
 }

@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@types/gl-matrix": "^2.4.4",
+    "@types/webgl2": "0.0.4",
     "gl-matrix": "^2.8.1",
     "requirejs": "^2.3.6",
     "tslint": "^5.11.0",

@@ -26,9 +26,6 @@ export class SpriteBatch
             this.TextureCoordinates = this.TextureCoordinates.concat(sprite.TextureCoordinates);
         });
         this.ModelMatrix = mat4.identity(this.ModelMatrix);
-        const scale = vec3.create();
-        vec3.set(scale, 10, 10, 0);
-        this.ModelMatrix = mat4.scale(this.ModelMatrix, this.ModelMatrix, scale);
 
         this.VertexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.VertexBuffer);

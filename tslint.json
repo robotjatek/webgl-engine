@@ -6,7 +6,8 @@
     "jsRules": {},
     "rules": {
         "one-line" : [true, "check-catch", "check-finally", "check-else", "check-whitespace"],
-        "max-line-length": [true, 140]
+        "max-line-length": [true, 140],
+        "no-bitwise": [false]
     },
     "rulesDirectory": []
 }

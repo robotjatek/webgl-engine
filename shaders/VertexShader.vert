@@ -1,10 +1,12 @@
-attribute vec3 a_pos;
-attribute vec2 a_texture_coordinate;
+#version 300 es
+
+in vec3 a_pos;
+in vec2 a_texture_coordinate;
 uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
 
-varying highp vec2 v_texture_coordinate;
+out highp vec2 v_texture_coordinate;
 
 void main()
 {

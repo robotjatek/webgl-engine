@@ -1,4 +1,4 @@
-import { mat4, vec3 } from "gl-matrix";
+import { mat4 } from "gl-matrix";
 import { Shader } from "./Shader";
 import { Sprite } from "./Sprite";
 import { Texture } from "./Texture";

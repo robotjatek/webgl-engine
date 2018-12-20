@@ -1,8 +1,8 @@
 import { mat4 } from "gl-matrix";
 import { Background } from "./Background";
 import { Environment } from "./Environment";
+import { Level } from "./Level";
 import { Shader } from "./Shader";
-import { Sprite } from "./Sprite";
 import { SpriteBatch } from "./SpriteBatch";
 import { Texture } from "./Texture";
 import { gl, WebGLUtils } from "./WebGLUtils";
@@ -13,8 +13,9 @@ export class Game
     private Height: number;
     private Canvas: HTMLCanvasElement;
 
-    private spriteBatch: SpriteBatch;
+    private FrameCount: number = 0;
     private background: SpriteBatch;
+    private level: Level;
     private projectionMatrix = mat4.create();
     private viewMatrix = mat4.create();
 
@@ -34,28 +35,9 @@ export class Game
         gl.viewport(0, 0, this.Width, this.Height);
         gl.clearColor(0, 1, 0, 1);
 
-        const vertices = [
-            0.0, 0.0, 0.0,
-            1.0, 0.0, 0.0,
-            0,  1.0, 0.0,
-
-            0,  1.0, 0.0,
-            1.0, 0, 0.0,
-            1.0, 1.0, 0.0,
-        ];
-
-        const texCoords = [
-            0, 0,
-            1, 0,
-            0, 1,
-            0, 1,
-            1, 0,
-            1, 1,
-        ];
-
         const shader = new Shader("shaders/VertexShader.vert", "shaders/FragmentShader.frag");
-        this.spriteBatch = new SpriteBatch(shader, [new Sprite(vertices, texCoords)], new Texture("ground0.png"));
         this.background = new SpriteBatch(shader, [new Background()], new Texture("bg.jpg"));
+        this.level = new Level("");
     }
 
     public Run(): void
@@ -77,11 +59,12 @@ export class Game
     {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         this.background.Draw(this.projectionMatrix, this.viewMatrix);
-        this.spriteBatch.Draw(this.projectionMatrix, this.viewMatrix);
+        this.level.Draw(this.projectionMatrix, this.viewMatrix);
         requestAnimationFrame(this.Run.bind(this));
     }
 
     private Update(): void
     {
+        this.FrameCount++;
     }
 }

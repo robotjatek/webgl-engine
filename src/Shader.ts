@@ -9,8 +9,8 @@ export class Shader
         const vertexId = this.LoadShader(vertexPath, gl.VERTEX_SHADER);
         const fragment = this.LoadShader(fragmentPath, gl.FRAGMENT_SHADER);
         this.program = this.createProgram(vertexId, fragment);
-    //    gl.deleteShader(vertexId);
-    //    gl.deleteShader(fragment);
+        gl.deleteShader(vertexId);
+        gl.deleteShader(fragment);
     }
 
     public Use(): void

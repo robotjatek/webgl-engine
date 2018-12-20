@@ -4,6 +4,7 @@ export class Texture
 {
     private static readonly TexturesFolder = "textures/";
     private texture: WebGLTexture;
+    private valid: boolean;
 
     constructor(path: string)
     {
@@ -26,10 +27,20 @@ export class Texture
         };
 
         image.src = Texture.TexturesFolder + path;
+        this.valid = true;
     }
 
     public GetTexture(): WebGLTexture
     {
+        if (!this.valid)
+        {
+            throw new Error("Trying to get a deleted texture!");
+        }
         return this.texture;
+    }
+
+    public Delete(): void
+    {
+        gl.deleteTexture(this.texture);
     }
 }

@@ -3,6 +3,7 @@ import { gl } from "./WebGLUtils";
 export class Shader
 {
     private program: WebGLProgram;
+    private valid: boolean;
 
     constructor(vertexPath: string, fragmentPath: string)
     {
@@ -11,16 +12,32 @@ export class Shader
         this.program = this.createProgram(vertexId, fragment);
         gl.deleteShader(vertexId);
         gl.deleteShader(fragment);
+        this.valid = true;
     }
 
     public Use(): void
     {
+        if (!this.valid)
+        {
+            throw new Error("Trying to use a deleted shader program!");
+        }
+
         gl.useProgram(this.program);
     }
 
     public GetProgram(): WebGLProgram
     {
+        if (!this.valid)
+        {
+            throw new Error("Trying to get a deleted shader program!");
+        }
+
         return this.program;
+    }
+
+    public Delete(): void {
+        this.valid = false;
+        gl.deleteProgram(this.program);
     }
 
     private createProgram(vertexId: WebGLShader, fragment: WebGLShader): WebGLProgram {

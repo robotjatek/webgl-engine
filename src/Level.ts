@@ -1,6 +1,6 @@
 import { mat4 } from "gl-matrix";
 import { Layer } from "./Layer";
-import { Texture } from "./Texture";
+import { TexturePool } from "./TexturePool";
 import { Tile } from "./Tile";
 
 /*
@@ -27,8 +27,8 @@ export class Level
 
     public constructor(levelName: string)
     {
-        const tile = new Tile(10, 11, new Texture("ground0.png"));
-        const tile2 = new Tile(12, 11, new Texture("ground0.png"));
+        const tile = new Tile(10, 11, TexturePool.GetInstance().GetTexture("ground0.png"));
+        const tile2 = new Tile(12, 11, TexturePool.GetInstance().GetTexture("ground0.png"));
         this.Layers = [new Layer([tile, tile2])];
     }
 

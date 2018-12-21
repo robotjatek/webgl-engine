@@ -5,6 +5,8 @@ export class Texture
     private static readonly TexturesFolder = "textures/";
     private texture: WebGLTexture;
     private valid: boolean;
+    private height: number;
+    private width: number;
 
     constructor(path: string)
     {
@@ -24,6 +26,8 @@ export class Texture
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
             gl.generateMipmap(gl.TEXTURE_2D);
+            this.height = image.height;
+            this.width = image.width;
         };
 
         image.src = Texture.TexturesFolder + path;
@@ -42,5 +46,15 @@ export class Texture
     public Delete(): void
     {
         gl.deleteTexture(this.texture);
+    }
+
+    public get Width(): number
+    {
+        return this.width;
+    }
+
+    public get Height(): number
+    {
+        return this.height;
     }
 }

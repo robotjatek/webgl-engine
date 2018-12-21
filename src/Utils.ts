@@ -31,4 +31,16 @@ export class Utils
             positionX + 1.0, positionY + 1.0, 0.0,
         ];
     }
+
+    public static CreateTextureCoordinates(positionX: number, positionY: number, width: number, height: number): number[]
+    {
+        return [
+            positionX, positionY,
+            positionX + width, positionY,
+            positionX, positionY + height,
+            positionX, positionY + height,
+            positionX + width, positionY,
+            positionX + width, positionY + height,
+        ];
+    }
 }

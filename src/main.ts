@@ -1,7 +1,8 @@
+import domready = require("domready");
 import { Game } from "./Game";
 import { KeyHandler } from "./KeyHandler";
 
-window.addEventListener("load", () => {
+domready(() => {
     const keyHandler = new KeyHandler();
     const game = new Game(keyHandler);
 
@@ -16,4 +17,4 @@ window.addEventListener("load", () => {
     }, false);
 
     game.Run();
-}, false);
+});

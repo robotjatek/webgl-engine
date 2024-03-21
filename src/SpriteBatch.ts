@@ -12,6 +12,7 @@ export class SpriteBatch
     private VertexBuffer: WebGLBuffer;
     private TextureCoordinateBuffer: WebGLBuffer;
     private Texture: Texture;
+    private spr: Sprite;
 
     private ModelMatrix = mat4.create();
 
@@ -24,6 +25,7 @@ export class SpriteBatch
         sprites.forEach((sprite) => {
             this.Vertices = this.Vertices.concat(sprite.Vertices);
             this.TextureCoordinates = this.TextureCoordinates.concat(sprite.TextureCoordinates);
+            this.spr = sprite;
         });
         this.ModelMatrix = mat4.identity(this.ModelMatrix);
 
@@ -63,6 +65,8 @@ export class SpriteBatch
         gl.uniformMatrix4fv(modelLocation, false, this.ModelMatrix);
         const textureLocation = gl.getUniformLocation(shaderProgram, "u_sampler");
         gl.uniform1i(textureLocation, 0);
+        const textureOffsetLocation = gl.getUniformLocation(shaderProgram, "textureOffset");
+        gl.uniform2fv(textureOffsetLocation, this.spr.textureOffset);
 
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);

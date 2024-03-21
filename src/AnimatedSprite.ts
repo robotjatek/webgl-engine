@@ -18,7 +18,7 @@ export class AnimatedSprite extends Sprite
         {
             if (this.frameNumber === 9)
             {
-                super.textureOffset = vec2.fromValues(0, 0);
+                this.textureOffset = vec2.fromValues(0, 0);
                 this.frameNumber = 0;
             }
             this.frameNumber++;

@@ -45,14 +45,14 @@ export class Game
         this.level = new Level("");
         this.start = new Date();
 
-        const t = TexturePool.GetInstance().GetTexture("coin.png");
+        const texture = TexturePool.GetInstance().GetTexture("coin.png");
         this.animSprite =  new AnimatedSprite(
-            Utils.DefaultSpriteVertices,
+            Utils.CreateSpriteVertices(10, 10),
             Utils.CreateTextureCoordinates(0, 0, 1.0 / 10, 1.0));
         this.spb = new SpriteBatch(
             new Shader("shaders/VertexShader.vert", "shaders/FragmentShader.frag"),
             [this.animSprite],
-            t);
+            texture);
     }
 
     public Run(): void

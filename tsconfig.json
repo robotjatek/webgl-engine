@@ -9,6 +9,7 @@
         "types": [
             "gl-matrix",
             "webgl2"
-        ]
+        ],
+        "skipLibCheck": true
     }
 }

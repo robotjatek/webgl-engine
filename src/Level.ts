@@ -5,8 +5,10 @@ import { Shader } from "./Shader";
 import { SpriteBatch } from "./SpriteBatch";
 import { TexturePool } from "./TexturePool";
 import { Tile } from "./Tile";
+import { Environment } from './Environment';
 
 /*
+TODO:
 Level file format
 Binary
 ----------------------------
@@ -33,9 +35,19 @@ export class Level
     public constructor(levelName: string)
     {
         const texturePool = TexturePool.GetInstance();
+
         const tile = new Tile(10, 11, texturePool.GetTexture("ground0.png"));
         const tile2 = new Tile(12, 11, texturePool.GetTexture("ground0.png"));
-        this.Layers = [new Layer([tile, tile2])];
+        const tile3 = new Tile(13, 11, texturePool.GetTexture("ground0.png"));
+
+        const tiles = [tile, tile2, tile3];
+
+        for (let j = Environment.VerticalTiles - 2; j < Environment.VerticalTiles; j++) {
+            for (let i = 0; i < Environment.HorizontalTiles; i++) {
+                tiles.push(new Tile(i, j, texturePool.GetTexture("ground0.png")))
+            }
+        }
+        this.Layers = [new Layer(tiles)];
 
         const shader = new Shader("shaders/VertexShader.vert", "shaders/FragmentShader.frag");
         this.Background = new SpriteBatch(shader, [new Background()], texturePool.GetTexture("bg.jpg"));

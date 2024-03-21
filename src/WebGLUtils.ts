@@ -1,4 +1,5 @@
-export let gl: WebGLRenderingContext;
+
+export let gl: WebGL2RenderingContext;
 
 export class WebGLUtils
 {

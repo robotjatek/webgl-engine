@@ -17,8 +17,6 @@
     "@types/webgl2": "^0.0.4",
     "domready": "^1.0.8",
     "gl-matrix": "^2.8.1",
-    "requirejs": "^2.3.6",
-    "tslint": "^5.11.0",
-    "typescript": "^3.2.2"
+    "requirejs": "^2.3.6"
   }
 }

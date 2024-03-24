@@ -79,12 +79,12 @@ export class Hero {
 
   public MoveRight(delta: number): void {
     this.state = State.WALK;
-    vec3.add(this.position, this.position, vec3.fromValues(0.02 * delta, 0, 0));
+    vec3.add(this.position, this.position, vec3.fromValues(0.01 * delta, 0, 0));
   }
 
   public MoveLeft(delta: number): void {
     this.state = State.WALK;
-    vec3.add(this.position, this.position, vec3.fromValues(-0.02 * delta, 0, 0));
+    vec3.add(this.position, this.position, vec3.fromValues(-0.01 * delta, 0, 0));
   }
 
   private calculateTextureOffset(direction: vec2): vec2 {

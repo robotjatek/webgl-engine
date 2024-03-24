@@ -13,8 +13,7 @@ export class SpriteBatch
     private TextureCoordinateBuffer: WebGLBuffer;
     private Texture: Texture;
     private spr: Sprite;
-
-    private ModelMatrix = mat4.create();
+    public ModelMatrix = mat4.create();
 
     public constructor(shader: Shader, sprites: Sprite[], texture: Texture)
     {

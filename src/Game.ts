@@ -10,6 +10,7 @@ import { TexturePool } from './TexturePool';
 import { Utils } from './Utils';
 import { gl, WebGLUtils } from './WebGLUtils';
 import { Hero } from './Hero';
+import { Keys } from './Keys';
 
 export class Game {
   private Width: number;
@@ -24,7 +25,6 @@ export class Game {
   private animSprite: AnimatedSprite;
   private animatedCoinBatch: SpriteBatch;
   private hero: Hero;
-// TODO: CAPS LOCK MAKES KEYCOMMANDS TO FAIL!!!!!
   public constructor(keyhandler: KeyHandler) {
     this.Width = window.innerWidth;
     this.Height = window.innerHeight;
@@ -93,9 +93,9 @@ export class Game {
       console.log('Collision!');
     }
     
-    if (this.KeyHandler.IsPressed('a')) {
+    if (this.KeyHandler.IsPressed(Keys.A)) {
       this.hero.MoveLeft(elapsedTime);
-    } else if (this.KeyHandler.IsPressed('d')) {
+    } else if (this.KeyHandler.IsPressed(Keys.D)) {
       this.hero.MoveRight(elapsedTime);
     }
   }

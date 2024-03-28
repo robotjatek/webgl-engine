@@ -1,6 +1,7 @@
 import domready = require("domready");
 import { Game } from "./Game";
 import { KeyHandler } from "./KeyHandler";
+import { Keys } from './Keys';
 
 domready(() => {
     const keyHandler = new KeyHandler();
@@ -9,11 +10,15 @@ domready(() => {
     const canvas = document.getElementById("canvas");
 
     canvas.addEventListener("keydown", (event) => {
-        keyHandler.SetKey(event.key, true);
+        keyHandler.SetKey(event.code, true);
+        if (event.code == Keys.SPACE) {
+            event.preventDefault();
+        }
     }, false);
 
     canvas.addEventListener("keyup", (event) => {
-        keyHandler.SetKey(event.key, false);
+        console.log(event.code);
+        keyHandler.SetKey(event.code, false);
     }, false);
 
     game.Run();

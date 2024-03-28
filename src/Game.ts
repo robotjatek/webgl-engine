@@ -17,17 +17,14 @@ export class Game {
   private Canvas: HTMLCanvasElement;
   private KeyHandler: KeyHandler;
   private start: Date;
-
-  private FrameCount: number = 0;
   private level: Level;
   private projectionMatrix = mat4.create();
   private camera = new Camera();
 
   private animSprite: AnimatedSprite;
   private animatedCoinBatch: SpriteBatch;
-
   private hero: Hero;
-
+// TODO: CAPS LOCK MAKES KEYCOMMANDS TO FAIL!!!!!
   public constructor(keyhandler: KeyHandler) {
     this.Width = window.innerWidth;
     this.Height = window.innerHeight;
@@ -64,7 +61,10 @@ export class Game {
       texture
     );
 
-    this.hero = new Hero(vec3.fromValues(0, Environment.VerticalTiles - 5, 1), vec2.fromValues(3, 3));
+    // TODO: Hero should be ~1x2-1.5x2 in visual size
+    // TODO: texture map padding
+    // TODO: Separate bounding box from visual size
+    this.hero = new Hero(vec3.fromValues(0, 11, 1), vec2.fromValues(3, 3));
   }
 
   public Run(): void {
@@ -72,11 +72,11 @@ export class Game {
     const elapsed = end.getTime() - this.start.getTime();
     this.start = end;
 
-    this.Render();
+    this.Render(elapsed);
     this.Update(elapsed);
   }
 
-  private Render(): void {
+  private Render(elapsedTime: number): void {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     this.level.Draw(this.projectionMatrix, this.camera.GetViewMatrix());
     this.animatedCoinBatch.Draw(
@@ -84,18 +84,21 @@ export class Game {
       this.camera.GetViewMatrix()
     );
     this.hero.Draw(this.projectionMatrix, this.camera.GetViewMatrix());
+    this.animSprite.Animate(elapsedTime);
     requestAnimationFrame(this.Run.bind(this));
   }
 
   private Update(elapsedTime: number): void {
     this.hero.Update(elapsedTime);
     
+    if (this.level.CollideWidthLayer(this.hero.BoundingBox, 0)) {
+      console.log('Collision!');
+    }
+    
     if (this.KeyHandler.IsPressed('a')) {
       this.hero.MoveLeft(elapsedTime);
     } else if (this.KeyHandler.IsPressed('d')) {
       this.hero.MoveRight(elapsedTime);
     }
-    this.animSprite.Update(elapsedTime);
-    this.FrameCount++;
   }
 }

@@ -6,6 +6,7 @@ import { SpriteBatch } from "./SpriteBatch";
 import { TexturePool } from "./TexturePool";
 import { Tile } from "./Tile";
 import { Environment } from './Environment';
+import { BoundingBox } from './BoundingBox';
 
 /*
 TODO:
@@ -26,14 +27,12 @@ Tile materials:
 {'texture path', opacity}
 */
 
-export class Level
-{
+export class Level {
     private Layers: Layer[];
     private Background: SpriteBatch;
     private BackgroundViewMatrix = mat4.create();
 
-    public constructor(levelName: string)
-    {
+    public constructor(levelName: string) {
         const texturePool = TexturePool.GetInstance();
 
         const tile = new Tile(10, 11, texturePool.GetTexture("ground0.png"));
@@ -54,11 +53,16 @@ export class Level
         this.Background = new SpriteBatch(shader, [new Background()], texturePool.GetTexture("bg.jpg"));
     }
 
-    public Draw(projectionMatrix: mat4, viewMatrix: mat4): void
-    {
+    public Draw(projectionMatrix: mat4, viewMatrix: mat4): void {
         this.Background.Draw(projectionMatrix, this.BackgroundViewMatrix);
         this.Layers.forEach((layer) => {
             layer.Draw(projectionMatrix, viewMatrix);
         });
+    }
+
+    // TODO: primitive obsession?
+    // TODO: where to handle collision with a layer
+    public CollideWidthLayer(boundingBox: BoundingBox, layerId: number): boolean{
+        return this.Layers[layerId].isCollidingWith(boundingBox);
     }
 }

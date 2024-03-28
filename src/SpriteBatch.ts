@@ -42,8 +42,8 @@ export class SpriteBatch
         const shaderProgram = this.BatchShader.GetProgram();
 
         this.BatchShader.Use();
-        const attribLocation = gl.getAttribLocation(this.BatchShader.GetProgram(), "a_pos");
-        const textureCoordinateAttribLocation = gl.getAttribLocation(this.BatchShader.GetProgram(), "a_texture_coordinate");
+        const attribLocation = gl.getAttribLocation(shaderProgram, "a_pos");
+        const textureCoordinateAttribLocation = gl.getAttribLocation(shaderProgram, "a_texture_coordinate");
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.Texture.GetTexture());
@@ -64,7 +64,7 @@ export class SpriteBatch
         gl.uniformMatrix4fv(modelLocation, false, this.ModelMatrix);
         const textureLocation = gl.getUniformLocation(shaderProgram, "u_sampler");
         gl.uniform1i(textureLocation, 0);
-        const textureOffsetLocation = gl.getUniformLocation(shaderProgram, "textureOffset");
+        const textureOffsetLocation = gl.getUniformLocation(shaderProgram, "texOffset");
         gl.uniform2fv(textureOffsetLocation, this.spr.textureOffset);
 
         gl.enable(gl.BLEND);

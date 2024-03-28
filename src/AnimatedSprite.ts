@@ -11,7 +11,7 @@ export class AnimatedSprite extends Sprite
         super(vertices, initialTextureCoordinates);
     }
 
-    public Update(elapsedTime: number): void
+    public Animate(elapsedTime: number): void
     {
         this.currentFrameTime += elapsedTime;
         if (this.currentFrameTime > 66)

@@ -4,8 +4,8 @@ html, body {
 }
 
 canvas {
-    width: 90%;
     height: 90%;
     display: block;
     margin: auto;
+    width: 90vh * 16 / 9;
 }

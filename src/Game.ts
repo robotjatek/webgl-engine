@@ -61,10 +61,8 @@ export class Game {
       texture
     );
 
-    // TODO: Hero should be ~1x2-1.5x2 in visual size
     // TODO: texture map padding
-    // TODO: Separate bounding box from visual size
-    this.hero = new Hero(vec3.fromValues(0, 11, 1), vec2.fromValues(3, 3));
+    this.hero = new Hero(vec3.fromValues(0, 9, 1), vec2.fromValues(3, 3));
   }
 
   public Run(): void {

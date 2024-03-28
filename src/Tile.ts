@@ -43,12 +43,12 @@ export class Tile {
         const minY = this.positionY;
         const maxY = this.positionY + 1;
 
-        const bbMinX = boundingBox.BottomLeft[0];
-        const bbMaxX = boundingBox.BottomRight[0];
-        const bbMinY = boundingBox.TopLeft[1];
-        const bbMaxY = boundingBox.TopRight[1];
+        const bbMinX = boundingBox.position[0];
+        const bbMaxX = boundingBox.position[0] + boundingBox.size[0];
+        const bbMinY = boundingBox.position[1];
+        const bbMaxY = boundingBox.position[1] + boundingBox.size[1];
 
-        return bbMinX <= maxX && bbMaxX >= minX &&
-            bbMinY <= maxY && bbMaxY >= minY;
+        return bbMinX < maxX && bbMaxX > minX &&
+            bbMinY < maxY && bbMaxY > minY;
     }
 }

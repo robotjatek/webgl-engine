@@ -12,7 +12,7 @@ void main()
     
     if (texColor.a < 1.0) {
        texColor.g = 1.0;
-       texColor.a = 1.0;
+       texColor.a = 0.25;
     }
 
     color = texColor;

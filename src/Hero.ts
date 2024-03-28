@@ -23,9 +23,12 @@ export class Hero {
   private position: vec3 = vec3.fromValues(0, 0, 1);
   private visualScale: vec2 = vec2.fromValues(1, 1);
 
-  private bbOffset = vec3.fromValues(0, 0, 0);
-  private bbSize = vec2.fromValues(3, 3);
+  private bbOffset = vec3.fromValues(1, 1, 0);
+  private bbSize = vec2.fromValues(1, 2);
   private shader = new Shader('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
+  private bbShader = new Shader('shaders/VertexShader.vert', 'shaders/Colored.frag');
+  private bbBatch: SpriteBatch;
+  private bbSprite: Sprite;
 
   public get BoundingBox(): BoundingBox {
     const bbPosition = vec3.create();
@@ -54,6 +57,9 @@ export class Hero {
       [this.sprite],
       this.texture
     );
+
+    this.bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
+    this.bbBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
   }
 
   public Draw(proj: mat4, view: mat4): void {
@@ -64,6 +70,13 @@ export class Hero {
       this.batch.ModelMatrix,
       vec3.fromValues(this.visualScale[0], this.visualScale[1], 1)
     );
+
+    this.bbBatch.Draw(proj, view);
+    mat4.translate(this.bbBatch.ModelMatrix, mat4.create(), this.BoundingBox.position);
+    mat4.scale(
+      this.bbBatch.ModelMatrix,
+      this.bbBatch.ModelMatrix, 
+      vec3.fromValues(this.bbSize[0], this.bbSize[1], 1));
   }
 
   public Update(delta: number) {

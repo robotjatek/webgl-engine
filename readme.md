@@ -1,6 +1,6 @@
 # WebGL engine
 
-A little webgl experiment. Features batched sprite rendering and sprite animation.
+A little webgl experiment. Features batched sprite rendering sprite animation and collision detection.
 
 ## Build
 

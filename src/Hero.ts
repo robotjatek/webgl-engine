@@ -27,9 +27,6 @@ export class Hero {
   private bbOffset = vec3.fromValues(1.2, 1.2, 0);
   private bbSize = vec2.fromValues(0.8, 1.8);
   private shader = new Shader('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
-  private bbShader = new Shader('shaders/VertexShader.vert', 'shaders/Colored.frag');
-  private bbBatch: SpriteBatch;
-  private bbSprite: Sprite;
 
   private jumping: boolean = false;
   private onGround: boolean = true;
@@ -60,9 +57,6 @@ export class Hero {
       [this.sprite],
       this.texture
     );
-
-    this.bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
-    this.bbBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
   }
 
   public Draw(proj: mat4, view: mat4): void {
@@ -73,14 +67,6 @@ export class Hero {
       this.batch.ModelMatrix,
       vec3.fromValues(this.visualScale[0], this.visualScale[1], 1)
     );
-
-    // TODO: only render this in debug mode
-    this.bbBatch.Draw(proj, view);
-    mat4.translate(this.bbBatch.ModelMatrix, mat4.create(), this.BoundingBox.position);
-    mat4.scale(
-      this.bbBatch.ModelMatrix,
-      this.bbBatch.ModelMatrix,
-      vec3.fromValues(this.bbSize[0], this.bbSize[1], 1));
   }
 
   public Update(delta: number) {

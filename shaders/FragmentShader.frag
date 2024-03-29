@@ -9,11 +9,5 @@ uniform vec2 texOffset;
 void main()
 {
     vec4 texColor = texture(u_sampler, v_texture_coordinate + texOffset);
-    
-    if (texColor.a < 1.0) {
-       texColor.g = 1.0;
-       texColor.a = 0.25;
-    }
-
     color = texColor;
 }

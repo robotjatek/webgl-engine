@@ -13,6 +13,7 @@ import { Hero } from './Hero';
 import { Keys } from './Keys';
 
 // TODO: update ts version
+// TODO: render bounding boxes in debug mode
 export class Game {
   private Width: number;
   private Height: number;

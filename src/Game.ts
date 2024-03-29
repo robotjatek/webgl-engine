@@ -12,6 +12,7 @@ import { gl, WebGLUtils } from './WebGLUtils';
 import { Hero } from './Hero';
 import { Keys } from './Keys';
 
+// TODO: update ts version
 export class Game {
   private Width: number;
   private Height: number;
@@ -25,6 +26,8 @@ export class Game {
   private animSprite: AnimatedSprite;
   private animatedCoinBatch: SpriteBatch;
   private hero: Hero;
+  private paused: boolean = false;
+
   public constructor(keyhandler: KeyHandler) {
     this.Width = window.innerWidth;
     this.Height = window.innerHeight;
@@ -62,16 +65,25 @@ export class Game {
     );
 
     // TODO: texture map padding
-    this.hero = new Hero(vec3.fromValues(0, 9, 1), vec2.fromValues(3, 3));
+    this.hero = new Hero(vec3.fromValues(0, Environment.VerticalTiles - 6, 1), vec2.fromValues(3, 3), this.level.MainLayer);
   }
 
   public Run(): void {
     const end = new Date();
     const elapsed = end.getTime() - this.start.getTime();
     this.start = end;
-
     this.Render(elapsed);
-    this.Update(elapsed);
+    if (!this.paused) {
+      this.Update(elapsed);
+    }
+  }
+
+  public Pause(): void {
+    this.paused = true;
+  }
+
+  public Play(): void {
+    this.paused = false;
   }
 
   private Render(elapsedTime: number): void {
@@ -88,15 +100,16 @@ export class Game {
 
   private Update(elapsedTime: number): void {
     this.hero.Update(elapsedTime);
-    
-    if (this.level.CollideWidthLayer(this.hero.BoundingBox, 0)) {
-      console.log('Collision!');
-    }
-    
+    // TODO: collide with other objects
+
     if (this.KeyHandler.IsPressed(Keys.A)) {
       this.hero.MoveLeft(elapsedTime);
     } else if (this.KeyHandler.IsPressed(Keys.D)) {
       this.hero.MoveRight(elapsedTime);
+    }
+
+    if (this.KeyHandler.IsPressed(Keys.SPACE)) {
+      this.hero.Jump();
     }
   }
 }

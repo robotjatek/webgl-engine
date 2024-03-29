@@ -17,9 +17,19 @@ domready(() => {
     }, false);
 
     canvas.addEventListener("keyup", (event) => {
-        console.log(event.code);
         keyHandler.SetKey(event.code, false);
+        if (event.code == Keys.SPACE) {
+            event.preventDefault();
+        }
     }, false);
+
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          game.Pause();
+        } else {
+          game.Play();
+        }
+      });
 
     game.Run();
 });

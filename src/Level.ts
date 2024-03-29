@@ -38,8 +38,10 @@ export class Level {
         const tile = new Tile(10, 11, texturePool.GetTexture("ground0.png"));
         const tile2 = new Tile(12, 11, texturePool.GetTexture("ground0.png"));
         const tile3 = new Tile(13, 11, texturePool.GetTexture("ground0.png"));
+        const tile4 = new Tile(5, 14, texturePool.GetTexture("ground0.png"));
+        const tile5 = new Tile(6, 14, texturePool.GetTexture("ground0.png"));
 
-        const tiles = [tile, tile2, tile3];
+        const tiles = [tile, tile2, tile3, tile4, tile5];
 
         // Bottom tiles of the level
         for (let j = Environment.VerticalTiles - 2; j < Environment.VerticalTiles; j++) {
@@ -60,9 +62,11 @@ export class Level {
         });
     }
 
-    // TODO: primitive obsession?
-    // TODO: where to handle collision with a layer
-    public CollideWidthLayer(boundingBox: BoundingBox, layerId: number): boolean{
-        return this.Layers[layerId].isCollidingWith(boundingBox);
+    public CollideWidthLayer(boundingBox: BoundingBox, layerId: number): boolean {
+        return this.Layers[layerId].IsCollidingWidth(boundingBox);
+    }
+
+    public get MainLayer(): Layer {
+        return this.Layers[0];
     }
 }

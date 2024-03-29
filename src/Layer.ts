@@ -1,3 +1,4 @@
+import { ICollider } from './ICollider';
 import { mat4 } from "gl-matrix";
 import { Shader } from "./Shader";
 import { Sprite } from "./Sprite";
@@ -7,7 +8,7 @@ import { Tile } from "./Tile";
 import { Utils } from "./Utils";
 import { BoundingBox } from './BoundingBox';
 
-export class Layer {
+export class Layer implements ICollider {
     private SpriteBatches: SpriteBatch[] = [];
 
     public constructor(private Tiles: Tile[]) {
@@ -15,7 +16,7 @@ export class Layer {
         this.CreateSpriteBatches(tileMap);
     }
 
-    public isCollidingWith(boundingBox: BoundingBox): boolean {
+    IsCollidingWidth(boundingBox: BoundingBox): boolean {
         const collidingTiles = this.Tiles.filter((t) => {
             return t.isCollindingWith(boundingBox);
         });

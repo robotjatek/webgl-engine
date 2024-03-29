@@ -5,10 +5,12 @@ import { SpriteBatch } from './SpriteBatch';
 import { Texture } from './Texture';
 import { TexturePool } from './TexturePool';
 import { Utils } from './Utils';
+import { BoundingBox } from './BoundingBox';
+import { ICollider } from './ICollider';
 
 enum State {
-  IDLE,
-  WALK
+  IDLE = 'idle',
+  WALK = 'walk',
 }
 
 export class Hero {
@@ -19,28 +21,39 @@ export class Hero {
   private sprite: Sprite;
   private batch: SpriteBatch;
   private lastPosition: vec3 = vec3.fromValues(0, 0, 1);
-  private position: vec3 = vec3.fromValues(0, 0, 1);
-  private size: vec2 = vec2.fromValues(1, 1);
+  private velocity: vec3 = vec3.fromValues(0, 0, 0);
 
-  // TODO: bounding box
+  // TODO: make bb variables parametrizable
+  private bbOffset = vec3.fromValues(1.2, 1.1, 0);
+  private bbSize = vec2.fromValues(0.8, 1.8);
+  private shader = new Shader('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
 
-  constructor(initialPosition: vec3, size: vec2) {
+  private jumping: boolean = false;
+  private onGround: boolean = true;
+
+  public get BoundingBox(): BoundingBox {
+    return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize);
+  }
+
+  constructor(
+    private position: vec3,
+    private visualScale: vec2,
+    private collider: ICollider) {
     this.texture = TexturePool.GetInstance().GetTexture('hero1.png');
-    this.position = initialPosition;
-    this.size = size;
     this.sprite = new Sprite(
       Utils.DefaultSpriteVertices,
       // TODO: parametrize tex coords
       Utils.CreateTextureCoordinates( // texture-offset is added to these coordinates, so it must be (0,0)
-        0.0 / 12.0,
+        0.0 / 12.0, // These constants are hardcoded with "hero1.png" in mind
         0.0 / 8.0,
         1.0 / 12.0,
         1.0 / 8.0
       )
     );
     this.sprite.textureOffset = vec2.fromValues(1 / 12.0, 1 / 8.0);
+
     this.batch = new SpriteBatch(
-      new Shader('shaders/VertexShader.vert', 'shaders/FragmentShader.frag'),
+      this.shader,
       [this.sprite],
       this.texture
     );
@@ -52,7 +65,7 @@ export class Hero {
     mat4.scale(
       this.batch.ModelMatrix,
       this.batch.ModelMatrix,
-      vec3.fromValues(this.size[0], this.size[1], 1)
+      vec3.fromValues(this.visualScale[0], this.visualScale[1], 1)
     );
   }
 
@@ -60,31 +73,71 @@ export class Hero {
     this.currentFrameTime += delta;
     if (this.currentFrameTime > 132) {
       if (this.state == State.WALK) {
-        let dir = vec3.create();
+        const dir = vec3.create();
         vec3.subtract(dir, this.position, this.lastPosition);
-        if (vec3.length(dir) > 0) {
+        if (vec3.squaredLength(dir) > 0) {
           this.sprite.textureOffset = this.calculateTextureOffset(vec2.fromValues(dir[0], dir[1]));
         } else {
           // same position as last frame, so it is considered idle
           this.state = State.IDLE;
           // Reset back to the idle frame of the last movement direction
           // Now it is completly dependent on the currently used texture
+          // TODO: create a texture independent configuration for animation states
           this.sprite.textureOffset = vec2.fromValues(1 / 12.0, this.sprite.textureOffset[1]);
         }
       }
     }
 
     vec3.copy(this.lastPosition, this.position);
+
+    if (this.velocity[1] === 0) {
+      this.jumping = false;
+    }
+
+    const gravity = vec3.fromValues(0, 0.00004, 0);
+    vec3.add(this.velocity, this.velocity, vec3.scale(vec3.create(), gravity, delta));
+
+    const moveValue = vec3.create();
+    vec3.scale(moveValue, this.velocity, delta);
+    vec3.add(this.position, this.position, moveValue);
+
+    const colliding = this.collider.IsCollidingWidth(this.BoundingBox);
+    if (colliding) {
+      this.state = State.IDLE;
+      vec3.copy(this.position, this.lastPosition);
+      this.velocity = vec3.create();
+      this.onGround = true;
+    } else {
+      this.onGround = false;
+    }
   }
 
   public MoveRight(delta: number): void {
     this.state = State.WALK;
-    vec3.add(this.position, this.position, vec3.fromValues(0.01 * delta, 0, 0));
+    const nextPosition = vec3.fromValues(this.position[0] + 0.01 * delta, this.position[1], this.position[2]);
+    if (!this.checkCollision(nextPosition)) {
+      this.position = nextPosition;
+    }
   }
 
   public MoveLeft(delta: number): void {
     this.state = State.WALK;
-    vec3.add(this.position, this.position, vec3.fromValues(-0.01 * delta, 0, 0));
+    const nextPosition = vec3.fromValues(this.position[0] - 0.01 * delta, this.position[1], this.position[2]);
+    if (!this.checkCollision(nextPosition)) {
+      this.position = nextPosition;
+    }
+  }
+
+  public Jump() {
+    if (!this.jumping && this.onGround) {
+      this.velocity[1] = -0.02;
+      this.jumping = true;
+    }
+  }
+
+  private checkCollision(nextPosition: vec3): boolean {
+    const nextBoundingBox = new BoundingBox(vec3.add(vec3.create(), nextPosition, this.bbOffset), this.bbSize);
+    return this.collider.IsCollidingWidth(nextBoundingBox);
   }
 
   private calculateTextureOffset(direction: vec2): vec2 {
@@ -104,9 +157,7 @@ export class Hero {
       return offset;
     }
 
-    // Shouln't reach this point
-    console.error("Should have reached this point");
-    this.state = State.IDLE;
-    return vec2.create();
+    // Remain in the current animation frame if a correct frame could not be determined
+    return this.sprite.textureOffset;
   }
 }

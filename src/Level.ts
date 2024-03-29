@@ -6,6 +6,7 @@ import { SpriteBatch } from "./SpriteBatch";
 import { TexturePool } from "./TexturePool";
 import { Tile } from "./Tile";
 import { Environment } from './Environment';
+import { BoundingBox } from './BoundingBox';
 
 /*
 TODO:
@@ -26,21 +27,21 @@ Tile materials:
 {'texture path', opacity}
 */
 
-export class Level
-{
+export class Level {
     private Layers: Layer[];
     private Background: SpriteBatch;
     private BackgroundViewMatrix = mat4.create();
 
-    public constructor(levelName: string)
-    {
+    public constructor(levelName: string) {
         const texturePool = TexturePool.GetInstance();
 
         const tile = new Tile(10, 11, texturePool.GetTexture("ground0.png"));
         const tile2 = new Tile(12, 11, texturePool.GetTexture("ground0.png"));
         const tile3 = new Tile(13, 11, texturePool.GetTexture("ground0.png"));
+        const tile4 = new Tile(5, 14, texturePool.GetTexture("ground0.png"));
+        const tile5 = new Tile(6, 14, texturePool.GetTexture("ground0.png"));
 
-        const tiles = [tile, tile2, tile3];
+        const tiles = [tile, tile2, tile3, tile4, tile5];
 
         // Bottom tiles of the level
         for (let j = Environment.VerticalTiles - 2; j < Environment.VerticalTiles; j++) {
@@ -54,11 +55,18 @@ export class Level
         this.Background = new SpriteBatch(shader, [new Background()], texturePool.GetTexture("bg.jpg"));
     }
 
-    public Draw(projectionMatrix: mat4, viewMatrix: mat4): void
-    {
+    public Draw(projectionMatrix: mat4, viewMatrix: mat4): void {
         this.Background.Draw(projectionMatrix, this.BackgroundViewMatrix);
         this.Layers.forEach((layer) => {
             layer.Draw(projectionMatrix, viewMatrix);
         });
+    }
+
+    public CollideWidthLayer(boundingBox: BoundingBox, layerId: number): boolean {
+        return this.Layers[layerId].IsCollidingWidth(boundingBox);
+    }
+
+    public get MainLayer(): Layer {
+        return this.Layers[0];
     }
 }

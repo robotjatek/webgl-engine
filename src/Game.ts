@@ -1,16 +1,12 @@
 import { mat4, vec2, vec3 } from 'gl-matrix';
-import { AnimatedSprite } from './AnimatedSprite';
 import { Camera } from './Camera';
 import { Environment } from './Environment';
 import { KeyHandler } from './KeyHandler';
 import { Level } from './Level';
-import { Shader } from './Shader';
-import { SpriteBatch } from './SpriteBatch';
-import { TexturePool } from './TexturePool';
-import { Utils } from './Utils';
 import { gl, WebGLUtils } from './WebGLUtils';
 import { Hero } from './Hero';
 import { Keys } from './Keys';
+import { CoinObject } from './CoinObject';
 
 // TODO: update ts version
 // TODO: render bounding boxes in debug mode
@@ -24,9 +20,8 @@ export class Game {
   private projectionMatrix = mat4.create();
   private camera = new Camera();
 
-  private animSprite: AnimatedSprite;
-  private animatedCoinBatch: SpriteBatch;
   private hero: Hero;
+  private coins: CoinObject[] = [];
   private paused: boolean = false;
 
   public constructor(keyhandler: KeyHandler) {
@@ -54,16 +49,12 @@ export class Game {
     this.level = new Level('');
     this.start = new Date();
 
-    const texture = TexturePool.GetInstance().GetTexture('coin.png');
-    this.animSprite = new AnimatedSprite(
-      Utils.CreateSpriteVertices(10, 10),
-      Utils.CreateTextureCoordinates(0, 0, 1.0 / 10, 1.0)
-    );
-    this.animatedCoinBatch = new SpriteBatch(
-      new Shader('shaders/VertexShader.vert', 'shaders/FragmentShader.frag'),
-      [this.animSprite],
-      texture
-    );
+    this.coins.push(new CoinObject(vec3.fromValues(10, 10, 0)));
+    this.coins.push(new CoinObject(vec3.fromValues(12, 10, 0)));
+
+    this.coins.push(new CoinObject(vec3.fromValues(14, Environment.VerticalTiles - 3, 0)));
+    this.coins.push(new CoinObject(vec3.fromValues(15, Environment.VerticalTiles - 3, 0)));
+    this.coins.push(new CoinObject(vec3.fromValues(16, Environment.VerticalTiles - 3, 0)));
 
     // TODO: texture map padding
     this.hero = new Hero(vec3.fromValues(0, Environment.VerticalTiles - 6, 1), vec2.fromValues(3, 3), this.level.MainLayer);
@@ -90,18 +81,23 @@ export class Game {
   private Render(elapsedTime: number): void {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     this.level.Draw(this.projectionMatrix, this.camera.GetViewMatrix());
-    this.animatedCoinBatch.Draw(
-      this.projectionMatrix,
-      this.camera.GetViewMatrix()
-    );
+    this.coins.forEach(coin => {
+      coin.Draw(
+        this.projectionMatrix,
+        this.camera.GetViewMatrix()
+      );  
+      coin.Update(elapsedTime);
+    });
+    
     this.hero.Draw(this.projectionMatrix, this.camera.GetViewMatrix());
-    this.animSprite.Animate(elapsedTime);
     requestAnimationFrame(this.Run.bind(this));
   }
 
   private Update(elapsedTime: number): void {
     this.hero.Update(elapsedTime);
-    // TODO: collide with other objects
+
+    // Remove colliding coin from the list
+    this.coins = this.coins.filter((coin) => !coin.IsCollidingWidth(this.hero.BoundingBox))
 
     if (this.KeyHandler.IsPressed(Keys.A)) {
       this.hero.MoveLeft(elapsedTime);

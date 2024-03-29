@@ -12,4 +12,7 @@ export class Sprite
         this.TextureCoordinates = textureCoordinates;
         this.textureOffset = vec2.create();
     }
+
+    public Update(elapsedTime: number): void {
+    }
 }

@@ -24,7 +24,7 @@ export class Hero {
   private velocity: vec3 = vec3.fromValues(0, 0, 0);
 
   // TODO: make bb variables parametrizable
-  private bbOffset = vec3.fromValues(1.2, 1.2, 0);
+  private bbOffset = vec3.fromValues(1.2, 1.1, 0);
   private bbSize = vec2.fromValues(0.8, 1.8);
   private shader = new Shader('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
 

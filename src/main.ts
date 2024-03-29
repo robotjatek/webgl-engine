@@ -31,5 +31,6 @@ domready(() => {
     }
   });
 
+  canvas.focus();
   game.Run();
 });

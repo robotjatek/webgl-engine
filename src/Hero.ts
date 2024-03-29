@@ -11,10 +11,9 @@ import { ICollider } from './ICollider';
 enum State {
   IDLE = 'idle',
   WALK = 'walk',
-  JUMP = 'jump'
 }
 
-export class Hero{
+export class Hero {
   private state: State = State.IDLE;
   private currentFrameTime = 0;
   private currentAnimationFrame = 0;
@@ -22,8 +21,6 @@ export class Hero{
   private sprite: Sprite;
   private batch: SpriteBatch;
   private lastPosition: vec3 = vec3.fromValues(0, 0, 1);
-  private position: vec3 = vec3.fromValues(0, 0, 1);
-  private visualScale: vec2 = vec2.fromValues(1, 1);
   private velocity: vec3 = vec3.fromValues(0, 0, 0);
 
   // TODO: make bb variables parametrizable
@@ -34,18 +31,18 @@ export class Hero{
   private bbBatch: SpriteBatch;
   private bbSprite: Sprite;
 
+  private jumping: boolean = false;
+  private onGround: boolean = true;
+
   public get BoundingBox(): BoundingBox {
     return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize);
   }
 
   constructor(
-    initialPosition: vec3,
-    visualScale: vec2,
-    //TODO: do not pass the whole level only a collidable interface
+    private position: vec3,
+    private visualScale: vec2,
     private collider: ICollider) {
     this.texture = TexturePool.GetInstance().GetTexture('hero1.png');
-    this.position = initialPosition;
-    this.visualScale = visualScale;
     this.sprite = new Sprite(
       Utils.DefaultSpriteVertices,
       // TODO: parametrize tex coords
@@ -107,6 +104,10 @@ export class Hero{
 
     vec3.copy(this.lastPosition, this.position);
 
+    if (this.velocity[1] === 0) {
+      this.jumping = false;
+    }
+
     const gravity = vec3.fromValues(0, 0.00004, 0);
     vec3.add(this.velocity, this.velocity, vec3.scale(vec3.create(), gravity, delta));
 
@@ -119,14 +120,14 @@ export class Hero{
       this.state = State.IDLE;
       vec3.copy(this.position, this.lastPosition);
       this.velocity = vec3.create();
+      this.onGround = true;
+    } else {
+      this.onGround = false;
     }
   }
 
   public MoveRight(delta: number): void {
-    if (this.state != State.JUMP) {
-      this.state = State.WALK;
-    }
-
+    this.state = State.WALK;
     const nextPosition = vec3.fromValues(this.position[0] + 0.01 * delta, this.position[1], this.position[2]);
     if (!this.checkCollision(nextPosition)) {
       this.position = nextPosition;
@@ -134,9 +135,7 @@ export class Hero{
   }
 
   public MoveLeft(delta: number): void {
-    if (this.state != State.JUMP) {
-      this.state = State.WALK;
-    }
+    this.state = State.WALK;
     const nextPosition = vec3.fromValues(this.position[0] - 0.01 * delta, this.position[1], this.position[2]);
     if (!this.checkCollision(nextPosition)) {
       this.position = nextPosition;
@@ -144,9 +143,9 @@ export class Hero{
   }
 
   public Jump() {
-    if (this.state != State.JUMP) {
-      this.state = State.JUMP;
+    if (!this.jumping && this.onGround) {
       this.velocity[1] = -0.02;
+      this.jumping = true;
     }
   }
 
@@ -172,10 +171,7 @@ export class Hero{
       return offset;
     }
 
-    // TODO: lots of logs with this message
-    // Shouln't reach this point
-    console.error("Shouldn't have reached this point!");
-    this.state = State.IDLE;
-    return vec2.create();
+    // Remain in the current animation frame if a correct frame could not be determined
+    return this.sprite.textureOffset;
   }
 }

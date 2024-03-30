@@ -10,6 +10,7 @@ import { CoinObject } from './CoinObject';
 
 // TODO: update ts version
 // TODO: render bounding boxes in debug mode
+// TODO: text rendering
 export class Game {
   private Width: number;
   private Height: number;
@@ -96,6 +97,8 @@ export class Game {
   private Update(elapsedTime: number): void {
     this.hero.Update(elapsedTime);
 
+    const collidingCoins = this.coins.filter(c => c.IsCollidingWidth(this.hero.BoundingBox));
+    collidingCoins.forEach(c => c.Interact(this.hero));
     // Remove colliding coin from the list
     this.coins = this.coins.filter((coin) => !coin.IsCollidingWidth(this.hero.BoundingBox))
 

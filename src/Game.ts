@@ -16,7 +16,7 @@ export class Game {
   private Height: number;
   private Canvas: HTMLCanvasElement;
   private KeyHandler: KeyHandler;
-  private start: Date;
+  private start: number;
   private level: Level;
   private projectionMatrix = mat4.create();
   private camera = new Camera();
@@ -48,7 +48,7 @@ export class Game {
     gl.clearColor(0, 1, 0, 1);
 
     this.level = new Level('');
-    this.start = new Date();
+    this.start = performance.now();
 
     this.coins.push(new CoinObject(vec3.fromValues(10, 10, 0)));
     this.coins.push(new CoinObject(vec3.fromValues(12, 10, 0)));
@@ -62,8 +62,8 @@ export class Game {
   }
 
   public Run(): void {
-    const end = new Date();
-    const elapsed = end.getTime() - this.start.getTime();
+    const end = performance.now();
+    const elapsed = Math.min(end - this.start, 32);
     this.start = end;
     this.Render(elapsed);
     if (!this.paused) {
@@ -86,10 +86,10 @@ export class Game {
       coin.Draw(
         this.projectionMatrix,
         this.camera.GetViewMatrix()
-      );  
+      );
       coin.Update(elapsedTime);
     });
-    
+
     this.hero.Draw(this.projectionMatrix, this.camera.GetViewMatrix());
     requestAnimationFrame(this.Run.bind(this));
   }

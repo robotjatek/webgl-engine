@@ -7,6 +7,8 @@ import { TexturePool } from './TexturePool';
 import { Utils } from './Utils';
 import { BoundingBox } from './BoundingBox';
 import { ICollider } from './ICollider';
+import { SoundEffect } from './SoundEffect';
+import { SoundEffectPool } from './SoundEffectPool';
 
 enum State {
   IDLE = 'idle',
@@ -27,9 +29,12 @@ export class Hero {
   private bbOffset = vec3.fromValues(1.2, 1.1, 0);
   private bbSize = vec2.fromValues(0.8, 1.8);
   private shader = new Shader('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
-
+  private jumpSound = SoundEffectPool.GetInstance().GetAudio('audio/jump.wav');
+  private landSound =  new SoundEffect('audio/land.wav', false);
+  private walkSound = new SoundEffect('audio/walk1.wav', false); // Sound effect pool does not support singular soundeffects yet
   private jumping: boolean = false;
   private onGround: boolean = true;
+  private wasInAir: boolean = false;
 
   public get BoundingBox(): BoundingBox {
     return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize);
@@ -70,6 +75,40 @@ export class Hero {
   }
 
   public Update(delta: number) {
+    this.Animate(delta);
+    this.PlayWalkSounds();
+    this.HandleLanding();
+
+    vec3.copy(this.lastPosition, this.position);
+    this.ApplyGravityToVelocity(delta);
+    this.ApplyVelocityToPosition(delta);
+    this.HandleCollisionWithCollider();
+  }
+
+  private HandleCollisionWithCollider() {
+    const colliding = this.collider.IsCollidingWidth(this.BoundingBox);
+    if (colliding) {
+      this.state = State.IDLE;
+      vec3.copy(this.position, this.lastPosition);
+      this.velocity = vec3.create();
+      this.onGround = true;
+    } else {
+      this.onGround = false;
+    }
+  }
+
+  private ApplyVelocityToPosition(delta: number) {
+    const moveValue = vec3.create();
+    vec3.scale(moveValue, this.velocity, delta);
+    vec3.add(this.position, this.position, moveValue);
+  }
+
+  private ApplyGravityToVelocity(delta: number) {
+    const gravity = vec3.fromValues(0, 0.00004, 0);
+    vec3.add(this.velocity, this.velocity, vec3.scale(vec3.create(), gravity, delta));
+  }
+
+  private Animate(delta: number) {
     this.currentFrameTime += delta;
     if (this.currentFrameTime > 132) {
       if (this.state == State.WALK) {
@@ -87,28 +126,27 @@ export class Hero {
         }
       }
     }
+  }
 
-    vec3.copy(this.lastPosition, this.position);
+  private PlayWalkSounds() {
+    if (this.state == State.WALK && this.position != this.lastPosition && !this.jumping && this.onGround) {
+      this.walkSound.Play(1.8, 0.8);
+    }
+
+    if (this.state == State.IDLE) {
+      this.walkSound.Stop();
+    }
+  }
+
+  private HandleLanding() {
+    const isOnGround = this.velocity[1] === 0 && !this.jumping;
+    if (this.wasInAir && isOnGround) {
+      this.landSound.Play(1.8, 0.5);
+    }
+    this.wasInAir = !isOnGround;
 
     if (this.velocity[1] === 0) {
       this.jumping = false;
-    }
-
-    const gravity = vec3.fromValues(0, 0.00004, 0);
-    vec3.add(this.velocity, this.velocity, vec3.scale(vec3.create(), gravity, delta));
-
-    const moveValue = vec3.create();
-    vec3.scale(moveValue, this.velocity, delta);
-    vec3.add(this.position, this.position, moveValue);
-
-    const colliding = this.collider.IsCollidingWidth(this.BoundingBox);
-    if (colliding) {
-      this.state = State.IDLE;
-      vec3.copy(this.position, this.lastPosition);
-      this.velocity = vec3.create();
-      this.onGround = true;
-    } else {
-      this.onGround = false;
     }
   }
 
@@ -132,6 +170,7 @@ export class Hero {
     if (!this.jumping && this.onGround) {
       this.velocity[1] = -0.02;
       this.jumping = true;
+      this.jumpSound.Play();
     }
   }
 

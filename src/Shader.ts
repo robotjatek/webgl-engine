@@ -35,7 +35,13 @@ export class Shader {
         gl.deleteProgram(this.program);
     }
 
-    public SetUniform(name: string, value: vec2): void {
+    public SetFloatUniform(name: string, value: number): void {
+        this.Use();
+        const location = gl.getUniformLocation(this.program, name);
+        gl.uniform1f(location, value);
+    }
+
+    public SetVec2Uniform(name: string, value: vec2): void {
         this.Use();
         const location = gl.getUniformLocation(this.program, name);
         gl.uniform2fv(location, value);

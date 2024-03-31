@@ -16,7 +16,7 @@ export class SoundEffect {
         request.send();
     }
 
-    public Play(playbackRate: number = 1, volume: number = 1): void {
+    public Play(playbackRate: number = 1, volume: number = 1, onEndCallback: () => void = null): void {
         if (!this.playing || this.allowMultiple) {
             const gainNode = this.context.createGain();
             gainNode.gain.value = volume;
@@ -27,7 +27,12 @@ export class SoundEffect {
             this.source.connect(gainNode).connect(this.context.destination);
 
             this.playing = true;
-            this.source.onended = () => this.playing = false;
+            this.source.onended = () => {
+                this.playing = false;
+                if (onEndCallback) {
+                    onEndCallback();
+                }
+            }
             this.source.start();
         }
     }

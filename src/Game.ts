@@ -7,10 +7,12 @@ import { gl, WebGLUtils } from './WebGLUtils';
 import { Hero } from './Hero';
 import { Keys } from './Keys';
 import { CoinObject } from './CoinObject';
+import { LevelEnd } from './LevelEnd';
 
 // TODO: update ts version
 // TODO: render bounding boxes in debug mode
 // TODO: text rendering
+// TODO: texture map padding
 export class Game {
   private Width: number;
   private Height: number;
@@ -23,6 +25,7 @@ export class Game {
 
   private hero: Hero;
   private coins: CoinObject[] = [];
+  private levelEnd: LevelEnd;
   private paused: boolean = false;
 
   public constructor(keyhandler: KeyHandler) {
@@ -50,15 +53,22 @@ export class Game {
     this.level = new Level('');
     this.start = performance.now();
 
+    this.InitCoins();
+    this.InitHero();
+    this.levelEnd = new LevelEnd(vec3.fromValues(Environment.HorizontalTiles - 3, Environment.VerticalTiles - 4, 0));
+  }
+
+  private InitHero() {
+    this.hero = new Hero(vec3.fromValues(0, Environment.VerticalTiles - 6, 1), vec2.fromValues(3, 3), this.level.MainLayer);
+  }
+
+  private InitCoins() {
+    this.coins = [];
     this.coins.push(new CoinObject(vec3.fromValues(10, 10, 0)));
     this.coins.push(new CoinObject(vec3.fromValues(12, 10, 0)));
-
     this.coins.push(new CoinObject(vec3.fromValues(14, Environment.VerticalTiles - 3, 0)));
     this.coins.push(new CoinObject(vec3.fromValues(15, Environment.VerticalTiles - 3, 0)));
     this.coins.push(new CoinObject(vec3.fromValues(16, Environment.VerticalTiles - 3, 0)));
-
-    // TODO: texture map padding
-    this.hero = new Hero(vec3.fromValues(0, Environment.VerticalTiles - 6, 1), vec2.fromValues(3, 3), this.level.MainLayer);
   }
 
   public Run(): void {
@@ -91,16 +101,31 @@ export class Game {
     });
 
     this.hero.Draw(this.projectionMatrix, this.camera.GetViewMatrix());
+    this.levelEnd.Draw(this.projectionMatrix, this.camera.GetViewMatrix());
     requestAnimationFrame(this.Run.bind(this));
   }
 
   private Update(elapsedTime: number): void {
     this.hero.Update(elapsedTime);
 
+    // Remove colliding coin from the list
     const collidingCoins = this.coins.filter(c => c.IsCollidingWidth(this.hero.BoundingBox));
     collidingCoins.forEach(c => c.Interact(this.hero));
-    // Remove colliding coin from the list
     this.coins = this.coins.filter((coin) => !coin.IsCollidingWidth(this.hero.BoundingBox))
+
+    this.levelEnd.IsEnabled = this.coins.length === 0;
+    if (this.levelEnd.IsCollidingWidth(this.hero.BoundingBox)) {
+      if (this.levelEnd.IsEnabled) {
+        this.paused = true;
+      }
+
+      this.levelEnd.Interact(this.hero, () => {
+        // restart level
+        this.InitCoins();
+        this.InitHero();
+        this.paused = false;
+      });
+    }
 
     if (this.KeyHandler.IsPressed(Keys.A)) {
       this.hero.MoveLeft(elapsedTime);

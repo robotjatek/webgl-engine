@@ -17,11 +17,26 @@ export class Layer implements ICollider {
     }
 
     IsCollidingWidth(boundingBox: BoundingBox): boolean {
+        // Outside of the boundaries are considered as collisions. This way a hero cant fall of the edge of the world
+        if (this.IsOutsideBoundary(boundingBox)) {
+            return true;
+        }
+
         const collidingTiles = this.Tiles.filter((t) => {
             return t.isCollindingWith(boundingBox);
         });
 
         return collidingTiles.length > 0;
+    }
+
+    private IsOutsideBoundary(boundingBox: BoundingBox) {
+        const minX = Math.min(...this.Tiles.map(t => t.PositionX))  + 1;
+        const maxX = Math.max(...this.Tiles.map(t => t.PositionX));
+        const bbMinX = boundingBox.position[0];
+        const bbMaxX = boundingBox.position[0] + boundingBox.size[0];
+
+        const isInsideBoundary = bbMinX < maxX && bbMaxX > minX
+        return !isInsideBoundary;
     }
 
     public Draw(projectionMatrix: mat4, viewMatrix: mat4): void {

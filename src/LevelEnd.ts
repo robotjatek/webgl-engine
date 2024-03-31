@@ -45,9 +45,9 @@ export class LevelEnd implements ICollider {
     public IsCollidingWidth(boundingBox: BoundingBox): boolean {
         // TODO: make a collision helper class
         const minX = this.position[0];
-        const maxX = this.position[0] + 1;
+        const maxX = this.position[0] + this.size[0];
         const minY = this.position[1];
-        const maxY = this.position[1] + 1;
+        const maxY = this.position[1] + this.size[1];
 
         const bbMinX = boundingBox.position[0];
         const bbMaxX = boundingBox.position[0] + boundingBox.size[0];

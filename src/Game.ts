@@ -113,6 +113,20 @@ export class Game {
     collidingCoins.forEach(c => c.Interact(this.hero));
     this.coins = this.coins.filter((coin) => !coin.IsCollidingWidth(this.hero.BoundingBox))
 
+    this.CheckForEndCondition();
+
+    if (this.KeyHandler.IsPressed(Keys.A)) {
+      this.hero.MoveLeft(elapsedTime);
+    } else if (this.KeyHandler.IsPressed(Keys.D)) {
+      this.hero.MoveRight(elapsedTime);
+    }
+
+    if (this.KeyHandler.IsPressed(Keys.SPACE)) {
+      this.hero.Jump();
+    }
+  }
+
+  private CheckForEndCondition() {
     this.levelEnd.IsEnabled = this.coins.length === 0;
     if (this.levelEnd.IsCollidingWidth(this.hero.BoundingBox)) {
       if (this.levelEnd.IsEnabled) {
@@ -125,16 +139,6 @@ export class Game {
         this.InitHero();
         this.paused = false;
       });
-    }
-
-    if (this.KeyHandler.IsPressed(Keys.A)) {
-      this.hero.MoveLeft(elapsedTime);
-    } else if (this.KeyHandler.IsPressed(Keys.D)) {
-      this.hero.MoveRight(elapsedTime);
-    }
-
-    if (this.KeyHandler.IsPressed(Keys.SPACE)) {
-      this.hero.Jump();
     }
   }
 }

@@ -40,6 +40,10 @@ export class Hero {
     return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize);
   }
 
+  public get Position(): vec3 {
+    return this.position;
+  }
+
   constructor(
     private position: vec3,
     private visualScale: vec2,

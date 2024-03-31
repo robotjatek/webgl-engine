@@ -1,21 +1,33 @@
-import { mat4, vec3 } from "gl-matrix";
+import { BoundingBox } from './BoundingBox';
+import { mat4, vec2, vec3 } from "gl-matrix";
+import { Environment } from './Environment';
+import { Layer } from './Layer';
 
-export class Camera
-{
-    private ViewMatrix: mat4;
+export class Camera {
+    private viewMatrix: mat4;
 
-    public constructor()
-    {
-        this.ViewMatrix = mat4.create();
+    public constructor(private position: vec3) {
+        this.viewMatrix = mat4.create();
     }
 
-    public GetViewMatrix(): mat4
-    {
-        return this.ViewMatrix;
+    public get ViewMatrix(): mat4 {
+        return this.viewMatrix;
     }
 
-    public Move(direction: vec3): void
-    {
-        mat4.translate(this.ViewMatrix, this.ViewMatrix, direction);
+    public LookAtPosition(position: vec3, layer: Layer): void {
+        position[0] = this.Clamp(position[0], layer.MinX + Environment.HorizontalTiles / 2, layer.MaxX - Environment.HorizontalTiles / 2);
+        position[1] = Math.min(position[1], 0 + Environment.VerticalTiles / 2);
+        mat4.translate(
+            this.viewMatrix,
+             mat4.create(),
+             vec3.fromValues(
+                -position[0] + Environment.HorizontalTiles / 2,
+                -position[1] + Environment.VerticalTiles / 2,
+                0));
+        this.position = position;
+    }
+
+    private Clamp(val: number, min: number, max: number): number {
+        return Math.max(min, Math.min(max, val));
     }
 }

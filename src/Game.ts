@@ -21,7 +21,7 @@ export class Game {
   private start: number;
   private level: Level;
   private projectionMatrix = mat4.create();
-  private camera = new Camera();
+  private camera = new Camera(vec3.create());
 
   private hero: Hero;
   private coins: CoinObject[] = [];
@@ -55,7 +55,7 @@ export class Game {
 
     this.InitCoins();
     this.InitHero();
-    this.levelEnd = new LevelEnd(vec3.fromValues(Environment.HorizontalTiles - 3, Environment.VerticalTiles - 4, 0));
+    this.levelEnd = new LevelEnd(vec3.fromValues(58, Environment.VerticalTiles - 4, 0));
   }
 
   private InitHero() {
@@ -69,6 +69,14 @@ export class Game {
     this.coins.push(new CoinObject(vec3.fromValues(14, Environment.VerticalTiles - 3, 0)));
     this.coins.push(new CoinObject(vec3.fromValues(15, Environment.VerticalTiles - 3, 0)));
     this.coins.push(new CoinObject(vec3.fromValues(16, Environment.VerticalTiles - 3, 0)));
+
+    this.coins.push(new CoinObject(vec3.fromValues(30, Environment.VerticalTiles - 3, 0)));
+    this.coins.push(new CoinObject(vec3.fromValues(31, Environment.VerticalTiles - 3, 0)));
+    this.coins.push(new CoinObject(vec3.fromValues(32, Environment.VerticalTiles - 3, 0)));
+
+    this.coins.push(new CoinObject(vec3.fromValues(50, Environment.VerticalTiles - 3, 0)));
+    this.coins.push(new CoinObject(vec3.fromValues(51, Environment.VerticalTiles - 3, 0)));
+    this.coins.push(new CoinObject(vec3.fromValues(52, Environment.VerticalTiles - 3, 0)));
   }
 
   public Run(): void {
@@ -91,17 +99,17 @@ export class Game {
 
   private Render(elapsedTime: number): void {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    this.level.Draw(this.projectionMatrix, this.camera.GetViewMatrix());
+    this.level.Draw(this.projectionMatrix, this.camera.ViewMatrix);
     this.coins.forEach(coin => {
       coin.Draw(
         this.projectionMatrix,
-        this.camera.GetViewMatrix()
+        this.camera.ViewMatrix
       );
       coin.Update(elapsedTime);
     });
 
-    this.hero.Draw(this.projectionMatrix, this.camera.GetViewMatrix());
-    this.levelEnd.Draw(this.projectionMatrix, this.camera.GetViewMatrix());
+    this.hero.Draw(this.projectionMatrix, this.camera.ViewMatrix);
+    this.levelEnd.Draw(this.projectionMatrix, this.camera.ViewMatrix);
     requestAnimationFrame(this.Run.bind(this));
   }
 
@@ -124,6 +132,8 @@ export class Game {
     if (this.KeyHandler.IsPressed(Keys.SPACE)) {
       this.hero.Jump();
     }
+
+    this.camera.LookAtPosition(vec3.clone(this.hero.Position), this.level.MainLayer);
   }
 
   private CheckForEndCondition() {

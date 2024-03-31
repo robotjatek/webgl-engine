@@ -29,9 +29,17 @@ export class Layer implements ICollider {
         return collidingTiles.length > 0;
     }
 
-    private IsOutsideBoundary(boundingBox: BoundingBox) {
-        const minX = Math.min(...this.Tiles.map(t => t.PositionX))  + 1;
-        const maxX = Math.max(...this.Tiles.map(t => t.PositionX));
+    public get MaxX(): number {
+        return Math.max(...this.Tiles.map(t => t.PositionX));
+    }
+
+    public get MinX(): number {
+        return Math.min(...this.Tiles.map(t => t.PositionX));
+    }
+
+    public IsOutsideBoundary(boundingBox: BoundingBox) {
+        const minX = this.MinX + 1;
+        const maxX = this.MaxX - 1;
         const bbMinX = boundingBox.position[0];
         const bbMaxX = boundingBox.position[0] + boundingBox.size[0];
 

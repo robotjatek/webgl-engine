@@ -45,7 +45,7 @@ export class Level {
 
         // Bottom tiles of the level
         for (let j = Environment.VerticalTiles - 2; j < Environment.VerticalTiles; j++) {
-            for (let i = 0; i < Environment.HorizontalTiles; i++) {
+            for (let i = 0; i < 64; i++) {
                 tiles.push(new Tile(i, j, texturePool.GetTexture("ground0.png")))
             }
         }

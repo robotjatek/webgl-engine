@@ -8,6 +8,7 @@ import { Hero } from './Hero';
 import { Keys } from './Keys';
 import { CoinObject } from './CoinObject';
 import { LevelEnd } from './LevelEnd';
+import { SlimeEnemy } from './SlimeEnemy';
 
 // TODO: update ts version
 // TODO: render bounding boxes in debug mode
@@ -27,6 +28,7 @@ export class Game {
   private coins: CoinObject[] = [];
   private levelEnd: LevelEnd;
   private paused: boolean = false;
+  private enemy: SlimeEnemy;
 
   public constructor(keyhandler: KeyHandler) {
     this.Width = window.innerWidth;
@@ -56,10 +58,11 @@ export class Game {
     this.InitCoins();
     this.InitHero();
     this.levelEnd = new LevelEnd(vec3.fromValues(58, Environment.VerticalTiles - 4, 0));
+    this.enemy = new SlimeEnemy(vec3.fromValues(25, Environment.VerticalTiles - 5, 1), vec2.fromValues(3, 3), this.level.MainLayer);
   }
 
   private InitHero() {
-    this.hero = new Hero(vec3.fromValues(0, Environment.VerticalTiles - 6, 1), vec2.fromValues(3, 3), this.level.MainLayer);
+    this.hero = new Hero(vec3.fromValues(0, Environment.VerticalTiles - 5, 1), vec2.fromValues(3, 3), this.level.MainLayer);
   }
 
   private InitCoins() {
@@ -109,7 +112,9 @@ export class Game {
     });
 
     this.hero.Draw(this.projectionMatrix, this.camera.ViewMatrix);
+    this.enemy.Draw(this.projectionMatrix, this.camera.ViewMatrix);
     this.levelEnd.Draw(this.projectionMatrix, this.camera.ViewMatrix);
+
     requestAnimationFrame(this.Run.bind(this));
   }
 
@@ -124,15 +129,20 @@ export class Game {
     this.CheckForEndCondition();
 
     if (this.KeyHandler.IsPressed(Keys.A)) {
-      this.hero.MoveLeft(elapsedTime);
+      this.hero.MoveLeft(0.01, elapsedTime);
     } else if (this.KeyHandler.IsPressed(Keys.D)) {
-      this.hero.MoveRight(elapsedTime);
+      this.hero.MoveRight(0.01, elapsedTime);
     }
 
     if (this.KeyHandler.IsPressed(Keys.SPACE)) {
       this.hero.Jump();
     }
 
+    this.enemy.Update(elapsedTime);
+    if (this.enemy.IsCollidingWidth(this.hero.BoundingBox)) {
+      this.hero.Damage(this.enemy, elapsedTime);
+    }
+    
     this.camera.LookAtPosition(vec3.clone(this.hero.Position), this.level.MainLayer);
   }
 

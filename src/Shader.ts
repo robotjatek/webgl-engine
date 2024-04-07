@@ -1,4 +1,4 @@
-import { vec2, vec3 } from 'gl-matrix';
+import { vec2, vec3, vec4 } from 'gl-matrix';
 import { gl } from "./WebGLUtils";
 
 export class Shader {
@@ -45,6 +45,12 @@ export class Shader {
         this.Use();
         const location = gl.getUniformLocation(this.program, name);
         gl.uniform2fv(location, value);
+    }
+
+    public SetVec4Uniform(name: string, value: vec4): void {
+        this.Use();
+        const location = gl.getUniformLocation(this.program, name);
+        gl.uniform4fv(location, value);
     }
 
     private createProgram(vertexId: WebGLShader, fragment: WebGLShader): WebGLProgram {

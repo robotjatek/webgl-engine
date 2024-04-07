@@ -1,4 +1,4 @@
-import { mat4, vec2, vec3 } from 'gl-matrix';
+import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
 import { Shader } from './Shader';
 import { Sprite } from './Sprite';
 import { SpriteBatch } from './SpriteBatch';
@@ -9,6 +9,7 @@ import { BoundingBox } from './BoundingBox';
 import { ICollider } from './ICollider';
 import { SoundEffect } from './SoundEffect';
 import { SoundEffectPool } from './SoundEffectPool';
+import { SlimeEnemy } from './SlimeEnemy';
 
 enum State {
   IDLE = 'idle',
@@ -26,15 +27,21 @@ export class Hero {
   private velocity: vec3 = vec3.fromValues(0, 0, 0);
 
   // TODO: make bb variables parametrizable
+  // TODO: stomp attack
+  // TODO: sword attack
+  // TODO: collide with enemy => damage hero
   private bbOffset = vec3.fromValues(1.2, 1.1, 0);
   private bbSize = vec2.fromValues(0.8, 1.8);
-  private shader = new Shader('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
+  private shader = new Shader('shaders/VertexShader.vert', 'shaders/Hero.frag');
   private jumpSound = SoundEffectPool.GetInstance().GetAudio('audio/jump.wav');
-  private landSound =  new SoundEffect('audio/land.wav', false);
+  private landSound = new SoundEffect('audio/land.wav', false);
   private walkSound = new SoundEffect('audio/walk1.wav', false); // Sound effect pool does not support singular soundeffects yet
+  private damageSound = SoundEffectPool.GetInstance().GetAudio('audio/hero_damage.wav');
   private jumping: boolean = false;
   private onGround: boolean = true;
   private wasInAir: boolean = false;
+  private invincible: boolean = false;
+  private invincibleTime: number = 0;
 
   public get BoundingBox(): BoundingBox {
     return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize);
@@ -82,6 +89,14 @@ export class Hero {
     this.Animate(delta);
     this.PlayWalkSounds();
     this.HandleLanding();
+
+    // ~15 frame (1/60*1000*15)
+    if (this.invincibleTime > 240) {
+      this.invincible = false;
+      this.invincibleTime = 0;
+      this.shader.SetVec4Uniform('colorOverlay', vec4.create());
+    }
+    this.invincible ? this.invincibleTime += delta : this.invincibleTime = 0;
 
     vec3.copy(this.lastPosition, this.position);
     this.ApplyGravityToVelocity(delta);
@@ -154,19 +169,25 @@ export class Hero {
     }
   }
 
-  public MoveRight(delta: number): void {
+  public MoveRight(amount: number, delta: number): void {
     this.state = State.WALK;
-    const nextPosition = vec3.fromValues(this.position[0] + 0.01 * delta, this.position[1], this.position[2]);
-    if (!this.checkCollision(nextPosition)) {
-      this.position = nextPosition;
+
+    if (!this.invincible) {
+      const nextPosition = vec3.fromValues(this.position[0] + amount * delta, this.position[1], this.position[2]);
+      if (!this.checkCollision(nextPosition)) {
+        this.position = nextPosition;
+      }
     }
   }
 
-  public MoveLeft(delta: number): void {
+  public MoveLeft(amount: number, delta: number): void {
     this.state = State.WALK;
-    const nextPosition = vec3.fromValues(this.position[0] - 0.01 * delta, this.position[1], this.position[2]);
-    if (!this.checkCollision(nextPosition)) {
-      this.position = nextPosition;
+
+    if (!this.invincible) {
+      const nextPosition = vec3.fromValues(this.position[0] - amount * delta, this.position[1], this.position[2]);
+      if (!this.checkCollision(nextPosition)) {
+        this.position = nextPosition;
+      }
     }
   }
 
@@ -175,6 +196,24 @@ export class Hero {
       this.velocity[1] = -0.02;
       this.jumping = true;
       this.jumpSound.Play();
+    }
+  }
+
+  // TODO: make this generic
+  // TODO: maybe an interact method
+  public Damage(enemy: SlimeEnemy, delta: number) {
+    if (!this.invincible) {
+      this.invincible = true;
+      this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
+      this.damageSound.Play();
+
+      const dir = vec3.subtract(vec3.create(), this.position, enemy.Position);
+      vec3.normalize(dir, dir);
+      const damagePushback = vec3.scale(vec3.create(), dir, 0.01);
+      damagePushback[1] -= 0.01; // TODO: this is a hack to make sure that the hero is not detected as colliding with the ground, so a pushback can happen
+      vec3.set(this.velocity, damagePushback[0], damagePushback[1], damagePushback[2]);
+    } else {
+      this.invincibleTime += delta;
     }
   }
 

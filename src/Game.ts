@@ -142,7 +142,7 @@ export class Game {
     if (this.enemy.IsCollidingWidth(this.hero.BoundingBox)) {
       this.hero.Damage(this.enemy, elapsedTime);
     }
-    
+
     this.camera.LookAtPosition(vec3.clone(this.hero.Position), this.level.MainLayer);
   }
 

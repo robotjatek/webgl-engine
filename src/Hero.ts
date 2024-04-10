@@ -122,15 +122,15 @@ export class Hero {
     vec3.add(this.position, this.position, moveValue);
   }
 
-  private ApplyGravityToVelocity(delta: number) {
+  private ApplyGravityToVelocity(delta: number): void {
     const gravity = vec3.fromValues(0, 0.00004, 0);
     vec3.add(this.velocity, this.velocity, vec3.scale(vec3.create(), gravity, delta));
   }
 
-  private Animate(delta: number) {
+  private Animate(delta: number): void {
     this.currentFrameTime += delta;
     if (this.currentFrameTime > 132) {
-      if (this.state == State.WALK) {
+      if (this.state === State.WALK) {
         const dir = vec3.create();
         vec3.subtract(dir, this.position, this.lastPosition);
         if (vec3.squaredLength(dir) > 0) {
@@ -147,17 +147,17 @@ export class Hero {
     }
   }
 
-  private PlayWalkSounds() {
-    if (this.state == State.WALK && this.position != this.lastPosition && !this.jumping && this.onGround) {
+  private PlayWalkSounds(): void {
+    if (this.state === State.WALK && this.position !== this.lastPosition && !this.jumping && this.onGround) {
       this.walkSound.Play(1.8, 0.8);
     }
 
-    if (this.state == State.IDLE) {
+    if (this.state === State.IDLE) {
       this.walkSound.Stop();
     }
   }
 
-  private HandleLanding() {
+  private HandleLanding(): void {
     const isOnGround = this.velocity[1] === 0 && !this.jumping;
     if (this.wasInAir && isOnGround) {
       this.landSound.Play(1.8, 0.5);
@@ -191,7 +191,7 @@ export class Hero {
     }
   }
 
-  public Jump() {
+  public Jump(): void {
     if (!this.jumping && this.onGround) {
       this.velocity[1] = -0.02;
       this.jumping = true;
@@ -201,7 +201,7 @@ export class Hero {
 
   // TODO: make this generic
   // TODO: maybe an interact method
-  public Damage(enemy: SlimeEnemy, delta: number) {
+  public Damage(enemy: SlimeEnemy, delta: number): void {
     if (!this.invincible) {
       this.invincible = true;
       this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
@@ -210,7 +210,8 @@ export class Hero {
       const dir = vec3.subtract(vec3.create(), this.position, enemy.Position);
       vec3.normalize(dir, dir);
       const damagePushback = vec3.scale(vec3.create(), dir, 0.01);
-      damagePushback[1] -= 0.01; // TODO: this is a hack to make sure that the hero is not detected as colliding with the ground, so a pushback can happen
+      // TODO: this is a hack to make sure that the hero is not detected as colliding with the ground, so a pushback can happen
+      damagePushback[1] -= 0.01;
       vec3.set(this.velocity, damagePushback[0], damagePushback[1], damagePushback[2]);
     } else {
       this.invincibleTime += delta;
@@ -225,14 +226,14 @@ export class Hero {
   private calculateTextureOffset(direction: vec2): vec2 {
     if (direction[0] > 0) {
       const offset = vec2.fromValues(this.currentAnimationFrame++ / 12.0, 1.0 / 8.0);
-      if (this.currentAnimationFrame == 3) {
+      if (this.currentAnimationFrame === 3) {
         this.currentAnimationFrame = 0;
       }
       this.currentFrameTime = 0;
       return offset;
     } else if (direction[0] < 0) {
       const offset = vec2.fromValues(this.currentAnimationFrame++ / 12.0, 3.0 / 8.0);
-      if (this.currentAnimationFrame == 3) {
+      if (this.currentAnimationFrame === 3) {
         this.currentAnimationFrame = 0;
       }
       this.currentFrameTime = 0;

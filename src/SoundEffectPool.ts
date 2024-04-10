@@ -19,7 +19,7 @@ export class SoundEffectPool {
             this.effects.set(path, created);
             return created;
         }
-        
+
         return effect;
     }
 }

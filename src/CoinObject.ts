@@ -1,4 +1,4 @@
-import { mat4, vec3 } from 'gl-matrix';
+import { mat4, vec2, vec3 } from 'gl-matrix';
 import { BoundingBox } from './BoundingBox';
 import { ICollider } from './ICollider';
 import { Shader } from './Shader';
@@ -36,19 +36,8 @@ export class CoinObject implements ICollider {
     }
 
     IsCollidingWidth(boundingBox: BoundingBox): boolean {
-        // TODO: make a collision helper class
-        const minX = this.position[0];
-        const maxX = this.position[0] + 1;
-        const minY = this.position[1];
-        const maxY = this.position[1] + 1;
-
-        const bbMinX = boundingBox.position[0];
-        const bbMaxX = boundingBox.position[0] + boundingBox.size[0];
-        const bbMinY = boundingBox.position[1];
-        const bbMaxY = boundingBox.position[1] + boundingBox.size[1];
-
-        return bbMinX < maxX && bbMaxX > minX &&
-            bbMinY < maxY && bbMaxY > minY;
+        const bb = new BoundingBox(this.position, vec2.fromValues(1, 1));
+        return boundingBox.IsCollidingWith(bb);
     }
 
     public Update(elapsedTime: number): void {

@@ -1,4 +1,5 @@
 import { SoundEffect } from './SoundEffect';
+
 export class SoundEffectPool {
     private constructor() { }
 
@@ -12,10 +13,10 @@ export class SoundEffectPool {
         return this.instance;
     }
 
-    public GetAudio(path: string) {
+    public GetAudio(path: string, allowParallel: boolean = true) {
         const effect = this.effects.get(path);
         if (!effect) {
-            const created = new SoundEffect(path);
+            const created = new SoundEffect(path, allowParallel);
             this.effects.set(path, created);
             return created;
         }

@@ -34,8 +34,8 @@ export class Hero {
   private bbSize = vec2.fromValues(0.8, 1.8);
   private shader = new Shader('shaders/VertexShader.vert', 'shaders/Hero.frag');
   private jumpSound = SoundEffectPool.GetInstance().GetAudio('audio/jump.wav');
-  private landSound = new SoundEffect('audio/land.wav', false);
-  private walkSound = new SoundEffect('audio/walk1.wav', false); // Sound effect pool does not support singular soundeffects yet
+  private landSound = SoundEffectPool.GetInstance().GetAudio('audio/land.wav', false);
+  private walkSound = SoundEffectPool.GetInstance().GetAudio('audio/walk1.wav', false);
   private damageSound = SoundEffectPool.GetInstance().GetAudio('audio/hero_damage.wav');
   private jumping: boolean = false;
   private onGround: boolean = true;

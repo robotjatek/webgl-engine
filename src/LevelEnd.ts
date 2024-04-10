@@ -8,13 +8,14 @@ import { Shader } from './Shader';
 import { Utils } from './Utils';
 import { Hero } from './Hero';
 import { SoundEffect } from './SoundEffect';
+import { SoundEffectPool } from './SoundEffectPool';
 
 export class LevelEnd implements ICollider {
 
     private sprite: Sprite;
     private batch: SpriteBatch;
     private enabled: boolean = false;
-    private endReachedEffect: SoundEffect = new SoundEffect('audio/win.mp3', false, );
+    private endReachedEffect: SoundEffect = SoundEffectPool.GetInstance().GetAudio('audio/win.mp3', false);
     private shader = new Shader('shaders/VertexShader.vert', 'shaders/Transparent.frag');
     private static readonly transparentValue: number = 0.5;
     private size: vec3 = vec3.fromValues(2, 1, 0)

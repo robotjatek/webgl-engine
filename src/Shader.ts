@@ -63,6 +63,7 @@ export class Shader {
         return program;
     }
 
+    // TODO: cache shader source files
     private LoadShader(elementPath: string, type: number): WebGLShader {
         const id = gl.createShader(type);
         const src = this.GetSourceFromUrl(elementPath);

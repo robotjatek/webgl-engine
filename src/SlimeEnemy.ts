@@ -34,7 +34,7 @@ export class SlimeEnemy implements ICollider {
     public constructor(
         private position: vec3,
         private visualScale: vec2,
-        private collider: ICollider // TODO: ez nem biztos hogy kell még - level collision data
+        private collider: ICollider
     ) {
         this.lastPosition = vec3.create();
     }

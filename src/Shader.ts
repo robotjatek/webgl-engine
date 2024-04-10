@@ -1,4 +1,5 @@
 import { vec2, vec3, vec4 } from 'gl-matrix';
+import { ShaderPool } from './ShaderPool';
 import { gl } from "./WebGLUtils";
 
 export class Shader {
@@ -63,10 +64,9 @@ export class Shader {
         return program;
     }
 
-    // TODO: cache shader source files
     private LoadShader(elementPath: string, type: number): WebGLShader {
         const id = gl.createShader(type);
-        const src = this.GetSourceFromUrl(elementPath);
+        const src = ShaderPool.GetInstance().LoadShaderSource(elementPath);
         gl.shaderSource(id, src);
         gl.compileShader(id);
         const error = gl.getShaderInfoLog(id);
@@ -75,13 +75,5 @@ export class Shader {
         }
 
         return id;
-    }
-
-    private GetSourceFromUrl(url: string): string {
-        const req = new XMLHttpRequest();
-        req.open("GET", url, false);
-        req.overrideMimeType("text/plain");
-        req.send(null);
-        return req.responseText;
     }
 }

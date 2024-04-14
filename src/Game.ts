@@ -8,6 +8,8 @@ import { Hero } from './Hero';
 import { Keys } from './Keys';
 import { CoinObject } from './CoinObject';
 import { LevelEnd } from './LevelEnd';
+import { SlimeEnemy } from './SlimeEnemy';
+import { SoundEffectPool } from './SoundEffectPool';
 
 // TODO: update ts version
 // TODO: render bounding boxes in debug mode
@@ -27,6 +29,9 @@ export class Game {
   private coins: CoinObject[] = [];
   private levelEnd: LevelEnd;
   private paused: boolean = false;
+  private enemy: SlimeEnemy;
+  private levelEndOpenSoundEffect = SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);
+  private levelEndSoundPlayed = false;
 
   public constructor(keyhandler: KeyHandler) {
     this.Width = window.innerWidth;
@@ -53,13 +58,21 @@ export class Game {
     this.level = new Level('');
     this.start = performance.now();
 
-    this.InitCoins();
-    this.InitHero();
     this.levelEnd = new LevelEnd(vec3.fromValues(58, Environment.VerticalTiles - 4, 0));
+    this.RestartLevel();
+  }
+
+  private InitEnemy() {
+    this.enemy = new SlimeEnemy(
+      vec3.fromValues(25, Environment.VerticalTiles - 5, 1),
+      vec2.fromValues(3, 3),
+      this.level.MainLayer,
+      () => this.enemy = null);
   }
 
   private InitHero() {
-    this.hero = new Hero(vec3.fromValues(0, Environment.VerticalTiles - 6, 1), vec2.fromValues(3, 3), this.level.MainLayer);
+    this.hero = new Hero(vec3.fromValues(0, Environment.VerticalTiles - 5, 1), vec2.fromValues(3, 3), this.level.MainLayer,
+      () => this.RestartLevel());
   }
 
   private InitCoins() {
@@ -109,11 +122,16 @@ export class Game {
     });
 
     this.hero.Draw(this.projectionMatrix, this.camera.ViewMatrix);
+    if (this.enemy) {
+      this.enemy.Draw(this.projectionMatrix, this.camera.ViewMatrix);
+    }
     this.levelEnd.Draw(this.projectionMatrix, this.camera.ViewMatrix);
+
     requestAnimationFrame(this.Run.bind(this));
   }
 
   private Update(elapsedTime: number): void {
+    this.level.PlayMusic(0.5); // TODO: hack because file loading is async...
     this.hero.Update(elapsedTime);
 
     // Remove colliding coin from the list
@@ -124,31 +142,53 @@ export class Game {
     this.CheckForEndCondition();
 
     if (this.KeyHandler.IsPressed(Keys.A)) {
-      this.hero.MoveLeft(elapsedTime);
+      this.hero.MoveLeft(0.01, elapsedTime);
     } else if (this.KeyHandler.IsPressed(Keys.D)) {
-      this.hero.MoveRight(elapsedTime);
+      this.hero.MoveRight(0.01, elapsedTime);
     }
 
     if (this.KeyHandler.IsPressed(Keys.SPACE)) {
       this.hero.Jump();
     }
 
+    if (this.KeyHandler.IsPressed(Keys.S)) {
+      this.hero.Stomp();
+    }
+
+    if (this.enemy) {
+      this.enemy.Update(elapsedTime);
+      if (this.enemy.IsCollidingWidth(this.hero.BoundingBox)) {
+        this.hero.Collide(this.enemy, elapsedTime);
+      }
+    }
+
     this.camera.LookAtPosition(vec3.clone(this.hero.Position), this.level.MainLayer);
   }
 
   private CheckForEndCondition() {
-    this.levelEnd.IsEnabled = this.coins.length === 0;
+    this.levelEnd.IsEnabled = this.coins.length === 0 && this.enemy === null;
+    if (this.levelEnd.IsEnabled && !this.levelEndSoundPlayed) {
+      this.levelEndOpenSoundEffect.Play();
+      this.levelEndSoundPlayed = true;
+    }
+
     if (this.levelEnd.IsCollidingWidth(this.hero.BoundingBox)) {
       if (this.levelEnd.IsEnabled) {
         this.paused = true;
+        this.level.SetMusicVolume(0.25);
       }
 
       this.levelEnd.Interact(this.hero, () => {
-        // restart level
-        this.InitCoins();
-        this.InitHero();
-        this.paused = false;
+        this.RestartLevel();
       });
     }
+  }
+
+  private RestartLevel() {
+    this.InitCoins();
+    this.InitHero();
+    this.InitEnemy();
+    this.paused = false;
+    this.levelEndSoundPlayed = false;
   }
 }

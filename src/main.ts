@@ -7,19 +7,26 @@ domready(() => {
   const keyHandler = new KeyHandler();
   const game = new Game(keyHandler);
 
+  const isSpecialKey = (code: string) => {
+    const specialKeys = [Keys.LEFT_CONTROL, Keys.RIGHT_CONTROL, Keys.SPACE];
+    return specialKeys.indexOf(code) > -1;
+  }
+
   const canvas = document.getElementById("canvas");
 
   canvas.addEventListener("keydown", (event) => {
     keyHandler.SetKey(event.code, true);
-    if (event.code == Keys.SPACE) {
+    if (isSpecialKey(event.code)) {
       event.preventDefault();
+      event.stopPropagation();
     }
   }, false);
 
   canvas.addEventListener("keyup", (event) => {
     keyHandler.SetKey(event.code, false);
-    if (event.code == Keys.SPACE) {
+    if (isSpecialKey(event.code)) {
       event.preventDefault();
+      event.stopPropagation();
     }
   }, false);
 

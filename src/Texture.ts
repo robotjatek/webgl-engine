@@ -1,15 +1,13 @@
 import { gl } from "./WebGLUtils";
 
-export class Texture
-{
+export class Texture {
     private static readonly TexturesFolder = "textures/";
     private texture: WebGLTexture;
     private valid: boolean;
     private height: number;
     private width: number;
 
-    constructor(path: string)
-    {
+    constructor(path: string) {
         this.texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
@@ -34,27 +32,22 @@ export class Texture
         this.valid = true;
     }
 
-    public GetTexture(): WebGLTexture
-    {
-        if (!this.valid)
-        {
+    public GetTexture(): WebGLTexture {
+        if (!this.valid) {
             throw new Error("Trying to get a deleted texture!");
         }
         return this.texture;
     }
 
-    public Delete(): void
-    {
+    public Delete(): void {
         gl.deleteTexture(this.texture);
     }
 
-    public get Width(): number
-    {
+    public get Width(): number {
         return this.width;
     }
 
-    public get Height(): number
-    {
+    public get Height(): number {
         return this.height;
     }
 }

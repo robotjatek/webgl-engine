@@ -1,16 +1,15 @@
-export class Utils
-{
+export class Utils {
     public static readonly DefaultSpriteVertices: number[] = [
         0.0, 0.0, 0.0,
         1.0, 0.0, 0.0,
-        0,  1.0, 0.0,
+        0, 1.0, 0.0,
 
-        0,  1.0, 0.0,
+        0, 1.0, 0.0,
         1.0, 0.0, 0.0,
         1.0, 1.0, 0.0,
     ];
 
-    public static readonly DefaultSpriteTextureCoordinates: number[] =  [
+    public static readonly DefaultSpriteTextureCoordinates: number[] = [
         0, 0,
         1, 0,
         0, 1,
@@ -19,8 +18,7 @@ export class Utils
         1, 1,
     ];
 
-    public static CreateSpriteVertices(positionX: number, positionY: number): number[]
-    {
+    public static CreateSpriteVertices(positionX: number, positionY: number): number[] {
         return [
             positionX, positionY, 0.0,
             positionX + 1.0, positionY, 0.0,
@@ -32,8 +30,7 @@ export class Utils
         ];
     }
 
-    public static CreateTextureCoordinates(positionX: number, positionY: number, width: number, height: number): number[]
-    {
+    public static CreateTextureCoordinates(positionX: number, positionY: number, width: number, height: number): number[] {
         return [
             positionX, positionY,
             positionX + width, positionY,

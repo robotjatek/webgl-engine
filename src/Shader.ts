@@ -1,4 +1,5 @@
-import { vec2, vec3 } from 'gl-matrix';
+import { vec2, vec3, vec4 } from 'gl-matrix';
+import { ShaderPool } from './ShaderPool';
 import { gl } from "./WebGLUtils";
 
 export class Shader {
@@ -47,6 +48,12 @@ export class Shader {
         gl.uniform2fv(location, value);
     }
 
+    public SetVec4Uniform(name: string, value: vec4): void {
+        this.Use();
+        const location = gl.getUniformLocation(this.program, name);
+        gl.uniform4fv(location, value);
+    }
+
     private createProgram(vertexId: WebGLShader, fragment: WebGLShader): WebGLProgram {
         const program = gl.createProgram();
         gl.attachShader(program, vertexId);
@@ -59,7 +66,7 @@ export class Shader {
 
     private LoadShader(elementPath: string, type: number): WebGLShader {
         const id = gl.createShader(type);
-        const src = this.GetSourceFromUrl(elementPath);
+        const src = ShaderPool.GetInstance().LoadShaderSource(elementPath);
         gl.shaderSource(id, src);
         gl.compileShader(id);
         const error = gl.getShaderInfoLog(id);
@@ -68,13 +75,5 @@ export class Shader {
         }
 
         return id;
-    }
-
-    private GetSourceFromUrl(url: string): string {
-        const req = new XMLHttpRequest();
-        req.open("GET", url, false);
-        req.overrideMimeType("text/plain");
-        req.send(null);
-        return req.responseText;
     }
 }

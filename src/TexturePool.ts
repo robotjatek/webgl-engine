@@ -1,12 +1,9 @@
 import { Texture } from "./Texture";
 
-export class TexturePool
-{
+export class TexturePool {
 
-    public static GetInstance(): TexturePool
-    {
-        if (!this.Instance)
-        {
+    public static GetInstance(): TexturePool {
+        if (!this.Instance) {
             this.Instance = new TexturePool();
         }
 
@@ -16,11 +13,9 @@ export class TexturePool
     private static Instance: TexturePool;
     private Textures = new Map<string, Texture>();
 
-    public GetTexture(path: string): Texture
-    {
+    public GetTexture(path: string): Texture {
         const texture = this.Textures.get(path);
-        if (!texture)
-        {
+        if (!texture) {
             const created = new Texture(path);
             this.Textures.set(path, created);
             return created;
@@ -28,8 +23,7 @@ export class TexturePool
         return texture;
     }
 
-    public ClearPool(): void
-    {
+    public ClearPool(): void {
         this.Textures.forEach((value) => {
             value.Delete();
         });

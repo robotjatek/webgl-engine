@@ -7,6 +7,7 @@ import { TexturePool } from "./TexturePool";
 import { Tile } from "./Tile";
 import { Environment } from './Environment';
 import { BoundingBox } from './BoundingBox';
+import { SoundEffectPool } from './SoundEffectPool';
 
 /*
 TODO:
@@ -31,6 +32,7 @@ export class Level {
     private Layers: Layer[];
     private Background: SpriteBatch;
     private BackgroundViewMatrix = mat4.create();
+    private music = SoundEffectPool.GetInstance().GetAudio('audio/level.mp3', false);
 
     public constructor(levelName: string) {
         const texturePool = TexturePool.GetInstance();
@@ -68,5 +70,13 @@ export class Level {
 
     public get MainLayer(): Layer {
         return this.Layers[0];
+    }
+
+    public PlayMusic(volume: number): void {
+        this.music.Play(1, volume, null, true);
+    }
+
+    public SetMusicVolume(volume: number): void {
+        this.music.SetVolume(volume);
     }
 }

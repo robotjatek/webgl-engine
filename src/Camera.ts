@@ -1,5 +1,4 @@
-import { BoundingBox } from './BoundingBox';
-import { mat4, vec2, vec3 } from "gl-matrix";
+import { mat4, vec3 } from "gl-matrix";
 import { Environment } from './Environment';
 import { Layer } from './Layer';
 
@@ -14,6 +13,11 @@ export class Camera {
         return this.viewMatrix;
     }
 
+    /**
+     * The camera centers its view on the given position with its viewport confined in the boundaries of the given layer
+     * @param position The position to look at
+     * @param layer The layer where the camera's viewport is confined in
+     */
     public LookAtPosition(position: vec3, layer: Layer): void {
         position[0] = this.Clamp(position[0], layer.MinX + Environment.HorizontalTiles / 2, layer.MaxX - Environment.HorizontalTiles / 2);
         position[1] = Math.min(position[1], 0 + Environment.VerticalTiles / 2);

@@ -62,7 +62,8 @@ export class Game {
   }
 
   private InitHero() {
-    this.hero = new Hero(vec3.fromValues(0, Environment.VerticalTiles - 5, 1), vec2.fromValues(3, 3), this.level.MainLayer);
+    // TODO: handle onDeath
+    this.hero = new Hero(vec3.fromValues(0, Environment.VerticalTiles - 5, 1), vec2.fromValues(3, 3), this.level.MainLayer, null);
   }
 
   private InitCoins() {

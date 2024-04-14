@@ -7,20 +7,21 @@ import { TexturePool } from './TexturePool';
 import { Utils } from './Utils';
 import { BoundingBox } from './BoundingBox';
 import { ICollider } from './ICollider';
-import { SoundEffect } from './SoundEffect';
 import { SoundEffectPool } from './SoundEffectPool';
 import { SlimeEnemy } from './SlimeEnemy';
 
 enum State {
   IDLE = 'idle',
   WALK = 'walk',
+  DEAD = 'dead'
 }
 
 export class Hero {
+  private health: number = 100;
   private state: State = State.IDLE;
   private currentFrameTime = 0;
   private currentAnimationFrame = 0;
-  private texture: Texture;
+  private texture: Texture = TexturePool.GetInstance().GetTexture('hero1.png');;
   private sprite: Sprite;
   private batch: SpriteBatch;
   private lastPosition: vec3 = vec3.fromValues(0, 0, 1);
@@ -29,7 +30,6 @@ export class Hero {
   // TODO: make bb variables parametrizable
   // TODO: stomp attack
   // TODO: sword attack
-  // TODO: collide with enemy => damage hero
   private bbOffset = vec3.fromValues(1.2, 1.1, 0);
   private bbSize = vec2.fromValues(0.8, 1.8);
   private shader = new Shader('shaders/VertexShader.vert', 'shaders/Hero.frag');
@@ -37,11 +37,17 @@ export class Hero {
   private landSound = SoundEffectPool.GetInstance().GetAudio('audio/land.wav', false);
   private walkSound = SoundEffectPool.GetInstance().GetAudio('audio/walk1.wav', false);
   private damageSound = SoundEffectPool.GetInstance().GetAudio('audio/hero_damage.wav');
+  private dieSound = SoundEffectPool.GetInstance().GetAudio('audio/hero_die.wav', false);
   private jumping: boolean = false;
   private onGround: boolean = true;
   private wasInAir: boolean = false;
   private invincible: boolean = false;
   private invincibleTime: number = 0;
+  private dirOnDeath: vec3;
+
+  private bbShader = new Shader('shaders/VertexShader.vert', 'shaders/Colored.frag');
+  private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
+  private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
 
   public get BoundingBox(): BoundingBox {
     return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize);
@@ -54,8 +60,8 @@ export class Hero {
   constructor(
     private position: vec3,
     private visualScale: vec2,
-    private collider: ICollider) {
-    this.texture = TexturePool.GetInstance().GetTexture('hero1.png');
+    private collider: ICollider,
+    private onDeath: () => void) {
     this.sprite = new Sprite(
       Utils.DefaultSpriteVertices,
       // TODO: parametrize tex coords
@@ -73,30 +79,51 @@ export class Hero {
       [this.sprite],
       this.texture
     );
+   // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 1));
   }
 
   public Draw(proj: mat4, view: mat4): void {
-    this.batch.Draw(proj, view); // TODO: model matrix here?
-    mat4.translate(this.batch.ModelMatrix, mat4.create(), this.position);
+    this.batch.Draw(proj, view);
+    const modelMat = mat4.create();
+
+    if (this.state === State.DEAD) {
+      this.RotateSprite(modelMat, this.dirOnDeath);
+    }
+
+    mat4.translate(modelMat, modelMat, this.position);
     mat4.scale(
-      this.batch.ModelMatrix,
-      this.batch.ModelMatrix,
+      modelMat,
+      modelMat,
       vec3.fromValues(this.visualScale[0], this.visualScale[1], 1)
     );
+
+    this.batch.ModelMatrix = modelMat;
+
+    // Draw bounding box
+    this.bbBatch.Draw(proj, view);
+    mat4.translate(this.bbBatch.ModelMatrix, mat4.create(), this.BoundingBox.position);
+    mat4.scale(this.bbBatch.ModelMatrix,
+      this.bbBatch.ModelMatrix,
+      vec3.fromValues(this.bbSize[0], this.bbSize[1], 1));
+  }
+
+  private RotateSprite(modelMat: mat4, directionOnDeath: vec3) {
+    const centerX = this.position[0] + this.visualScale[0] * 0.5;
+    const centerY = this.position[1] + this.visualScale[1] * 0.5;
+
+    mat4.translate(modelMat, modelMat, vec3.fromValues(centerX, centerY, 0));
+    mat4.rotateZ(modelMat, modelMat, directionOnDeath[0] > 0 ? -Math.PI / 2 : Math.PI / 2);
+    mat4.translate(modelMat, modelMat, vec3.fromValues(-centerX, -centerY, 0));
   }
 
   public Update(delta: number) {
-    this.Animate(delta);
-    this.PlayWalkSounds();
-    this.HandleLanding();
-
-    // ~15 frame (1/60*1000*15)
-    if (this.invincibleTime > 240) {
-      this.invincible = false;
-      this.invincibleTime = 0;
-      this.shader.SetVec4Uniform('colorOverlay', vec4.create());
+    if (this.state !== State.DEAD) {
+      this.Animate(delta);
+      this.PlayWalkSounds();
+      this.HandleLanding();
+      this.DisableInvincibleStateAfter(delta, 15); // ~15 frame (1/60*1000*15)
+      this.HandleDeath();
     }
-    this.invincible ? this.invincibleTime += delta : this.invincibleTime = 0;
 
     vec3.copy(this.lastPosition, this.position);
     this.ApplyGravityToVelocity(delta);
@@ -104,10 +131,33 @@ export class Hero {
     this.HandleCollisionWithCollider();
   }
 
+  private HandleDeath() {
+    if (this.health <= 0) {
+      this.state = State.DEAD;
+      this.dieSound.Play();
+      const dir = vec3.create();
+      vec3.subtract(dir, this.position, this.lastPosition);
+      this.dirOnDeath = dir;
+
+      this.bbSize = vec2.fromValues(this.bbSize[1], this.bbSize[0]);
+      // This is only kind-of correct, but im already in dead state so who cares
+      // The only important thing is not to fall through the geometry...
+      this.bbOffset[0] = dir[0] > 0 ? this.bbOffset[0] : 1.5 - this.bbOffset[0];
+    }
+  }
+
+  private DisableInvincibleStateAfter(delta: number, numberOfFrames: number) {
+    if (this.invincibleTime > 1.0/60 * 1000 * numberOfFrames) {
+      this.invincible = false;
+      this.invincibleTime = 0;
+      this.shader.SetVec4Uniform('colorOverlay', vec4.create());
+    }
+    this.invincible ? this.invincibleTime += delta : this.invincibleTime = 0;
+  }
+
   private HandleCollisionWithCollider() {
     const colliding = this.collider.IsCollidingWidth(this.BoundingBox);
     if (colliding) {
-      this.state = State.IDLE;
       vec3.copy(this.position, this.lastPosition);
       this.velocity = vec3.create();
       this.onGround = true;
@@ -169,30 +219,35 @@ export class Hero {
     }
   }
 
+  // TODO: move left, and moveright should a change the velocity not the position itself
   public MoveRight(amount: number, delta: number): void {
-    this.state = State.WALK;
-
-    if (!this.invincible) {
-      const nextPosition = vec3.fromValues(this.position[0] + amount * delta, this.position[1], this.position[2]);
-      if (!this.checkCollision(nextPosition)) {
-        this.position = nextPosition;
+    if (this.state !== State.DEAD) {
+      this.state = State.WALK;
+      if (!this.invincible) {
+        const nextPosition = vec3.fromValues(this.position[0] + amount * delta, this.position[1], this.position[2]);
+        if (!this.checkCollision(nextPosition)) {
+          this.position = nextPosition;
+        }
       }
     }
   }
 
   public MoveLeft(amount: number, delta: number): void {
-    this.state = State.WALK;
+    if (this.state !== State.DEAD) {
+      this.state = State.WALK;
 
-    if (!this.invincible) {
-      const nextPosition = vec3.fromValues(this.position[0] - amount * delta, this.position[1], this.position[2]);
-      if (!this.checkCollision(nextPosition)) {
-        this.position = nextPosition;
+      if (!this.invincible) {
+        const nextPosition = vec3.fromValues(this.position[0] - amount * delta, this.position[1], this.position[2]);
+        if (!this.checkCollision(nextPosition)) {
+          this.position = nextPosition;
+        }
       }
     }
   }
 
   public Jump(): void {
-    if (!this.jumping && this.onGround) {
+    // TODO: all these dead checks are getting ridiculous. Something really needs to be done...
+    if (!this.jumping && this.onGround && this.state !== State.DEAD) {
       this.velocity[1] = -0.02;
       this.jumping = true;
       this.jumpSound.Play();
@@ -206,6 +261,7 @@ export class Hero {
       this.invincible = true;
       this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
       this.damageSound.Play();
+      this.health -= 34;
 
       const dir = vec3.subtract(vec3.create(), this.position, enemy.Position);
       vec3.normalize(dir, dir);

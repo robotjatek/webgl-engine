@@ -29,7 +29,7 @@ export class SlimeEnemy implements ICollider {
     private bbSize = vec2.fromValues(0.8, 1.0);
     private bbShader = new Shader('shaders/VertexShader.vert', 'shaders/Colored.frag');
     private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
-    private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture); // adding texture is a hack
+    private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
 
     public constructor(
         private position: vec3,

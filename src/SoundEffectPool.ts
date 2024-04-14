@@ -13,6 +13,7 @@ export class SoundEffectPool {
         return this.instance;
     }
 
+    // TODO:key should be path + allowparallel pair
     public GetAudio(path: string, allowParallel: boolean = true) {
         const effect = this.effects.get(path);
         if (!effect) {

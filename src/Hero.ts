@@ -32,6 +32,7 @@ export class Hero {
   // TODO: make bb variables parametrizable
   // TODO: sword attack
   // TODO: dash
+  // TODO: double jump
   private bbOffset = vec3.fromValues(1.2, 1.1, 0);
   private bbSize = vec2.fromValues(0.8, 1.8);
   private shader = new Shader('shaders/VertexShader.vert', 'shaders/Hero.frag');
@@ -47,7 +48,6 @@ export class Hero {
   private invincible: boolean = false;
   private invincibleTime: number = 0;
   private dirOnDeath: vec3;
-
   private timeSinceLastStomp: number = 0;
 
   private bbShader = new Shader('shaders/VertexShader.vert', 'shaders/Colored.frag');
@@ -55,7 +55,13 @@ export class Hero {
   private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
 
   public get BoundingBox(): BoundingBox {
-    return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize);
+    if (this.state !== State.STOMP) {
+      const bbPosition = vec3.add(vec3.create(), this.position, this.bbOffset);
+      return new BoundingBox(bbPosition, this.bbSize);
+    } else {
+      const bbPosition = vec3.add(vec3.create(), this.position, vec3.fromValues(1.0, 1.0, 0));
+      return new BoundingBox(bbPosition, vec2.fromValues(1, 2));
+    }
   }
 
   public get Position(): vec3 {
@@ -109,7 +115,7 @@ export class Hero {
     mat4.translate(this.bbBatch.ModelMatrix, mat4.create(), this.BoundingBox.position);
     mat4.scale(this.bbBatch.ModelMatrix,
       this.bbBatch.ModelMatrix,
-      vec3.fromValues(this.bbSize[0], this.bbSize[1], 1));
+      vec3.fromValues(this.BoundingBox.size[0], this.BoundingBox.size[1], 1));
   }
 
   private RotateSprite(modelMat: mat4, directionOnDeath: vec3) {

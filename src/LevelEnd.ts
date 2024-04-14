@@ -15,7 +15,7 @@ export class LevelEnd implements ICollider {
     private sprite: Sprite;
     private batch: SpriteBatch;
     private enabled: boolean = false;
-    private endReachedEffect: SoundEffect = SoundEffectPool.GetInstance().GetAudio('audio/win.mp3', false);
+    private endReachedEffect: SoundEffect = SoundEffectPool.GetInstance().GetAudio('audio/ding.wav', false);
     private shader = new Shader('shaders/VertexShader.vert', 'shaders/Transparent.frag');
     private static readonly transparentValue: number = 0.5;
     private size: vec3 = vec3.fromValues(2, 1, 0)

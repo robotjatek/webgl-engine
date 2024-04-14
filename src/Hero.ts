@@ -13,7 +13,9 @@ import { SlimeEnemy } from './SlimeEnemy';
 enum State {
   IDLE = 'idle',
   WALK = 'walk',
-  DEAD = 'dead'
+  DEAD = 'dead',
+  STOMP = 'stomp',
+  JUMP = 'jump',
 }
 
 export class Hero {
@@ -28,14 +30,15 @@ export class Hero {
   private velocity: vec3 = vec3.fromValues(0, 0, 0);
 
   // TODO: make bb variables parametrizable
-  // TODO: stomp attack
   // TODO: sword attack
+  // TODO: dash
   private bbOffset = vec3.fromValues(1.2, 1.1, 0);
   private bbSize = vec2.fromValues(0.8, 1.8);
   private shader = new Shader('shaders/VertexShader.vert', 'shaders/Hero.frag');
   private jumpSound = SoundEffectPool.GetInstance().GetAudio('audio/jump.wav');
   private landSound = SoundEffectPool.GetInstance().GetAudio('audio/land.wav', false);
   private walkSound = SoundEffectPool.GetInstance().GetAudio('audio/walk1.wav', false);
+  private stompSound = SoundEffectPool.GetInstance().GetAudio('audio/hero_stomp.wav', true);
   private damageSound = SoundEffectPool.GetInstance().GetAudio('audio/hero_damage.wav');
   private dieSound = SoundEffectPool.GetInstance().GetAudio('audio/hero_die.wav', false);
   private jumping: boolean = false;
@@ -44,6 +47,8 @@ export class Hero {
   private invincible: boolean = false;
   private invincibleTime: number = 0;
   private dirOnDeath: vec3;
+
+  private timeSinceLastStomp: number = 0;
 
   private bbShader = new Shader('shaders/VertexShader.vert', 'shaders/Colored.frag');
   private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
@@ -123,6 +128,10 @@ export class Hero {
       this.HandleLanding();
       this.DisableInvincibleStateAfter(delta, 15); // ~15 frame (1/60*1000*15)
       this.HandleDeath();
+
+      if (this.state !== State.STOMP) {
+        this.timeSinceLastStomp += delta;
+      }
     }
 
     vec3.copy(this.lastPosition, this.position);
@@ -218,6 +227,7 @@ export class Hero {
 
     if (this.velocity[1] === 0) {
       this.jumping = false;
+      this.state = State.IDLE;
     }
   }
 
@@ -253,26 +263,46 @@ export class Hero {
       this.velocity[1] = -0.02;
       this.jumping = true;
       this.jumpSound.Play();
+      this.state = State.JUMP
+    }
+  }
+
+  public Stomp(): void {
+    if (this.jumping && !this.onGround && this.state !== State.DEAD && this.state !== State.STOMP && this.timeSinceLastStomp > 350) {
+      this.state = State.STOMP;
+      this.velocity[1] = 0.04;
+      this.invincible = true;
+      this.timeSinceLastStomp = 0;
+      this.stompSound.Play();
     }
   }
 
   // TODO: make this generic
   // TODO: maybe an interact method
-  public Damage(enemy: SlimeEnemy, delta: number): void {
-    if (!this.invincible) {
-      this.invincible = true;
-      this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
-      this.damageSound.Play();
-      this.health -= 34;
+  // TODO: a little bigger bounding box while stomping
+  public Collide(enemy: SlimeEnemy, delta: number): void {
+    if (this.state !== State.STOMP) {
+      if (!this.invincible) {
+        // Damage and pushback hero on collision.
+        this.invincible = true;
+        this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
+        this.damageSound.Play();
+        this.health -= 34;
 
-      const dir = vec3.subtract(vec3.create(), this.position, enemy.Position);
-      vec3.normalize(dir, dir);
-      const damagePushback = vec3.scale(vec3.create(), dir, 0.01);
-      // TODO: this is a hack to make sure that the hero is not detected as colliding with the ground, so a pushback can happen
-      damagePushback[1] -= 0.01;
-      vec3.set(this.velocity, damagePushback[0], damagePushback[1], damagePushback[2]);
-    } else {
-      this.invincibleTime += delta;
+        const dir = vec3.subtract(vec3.create(), this.position, enemy.Position);
+        vec3.normalize(dir, dir);
+        const damagePushback = vec3.scale(vec3.create(), dir, 0.01);
+        // TODO: this is a hack to make sure that the hero is not detected as colliding with the ground, so a pushback can happen
+        damagePushback[1] -= 0.01;
+        vec3.set(this.velocity, damagePushback[0], damagePushback[1], damagePushback[2]);
+      } else if (this.invincible) {
+        this.invincibleTime += delta;
+      }
+    } else if (this.state === State.STOMP) {
+      vec3.set(this.velocity, 0, -0.025, 0);
+      this.state = State.JUMP;
+      this.jumping = true;
+      enemy.Damage();
     }
   }
 

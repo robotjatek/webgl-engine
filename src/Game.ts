@@ -62,8 +62,8 @@ export class Game {
   }
 
   private InitHero() {
-    // TODO: handle onDeath
-    this.hero = new Hero(vec3.fromValues(0, Environment.VerticalTiles - 5, 1), vec2.fromValues(3, 3), this.level.MainLayer, null);
+    this.hero = new Hero(vec3.fromValues(0, Environment.VerticalTiles - 5, 1), vec2.fromValues(3, 3), this.level.MainLayer,
+      () => this.RestartLevel());
   }
 
   private InitCoins() {
@@ -155,11 +155,14 @@ export class Game {
       }
 
       this.levelEnd.Interact(this.hero, () => {
-        // restart level
-        this.InitCoins();
-        this.InitHero();
-        this.paused = false;
+        this.RestartLevel();
       });
     }
+  }
+
+  private RestartLevel() {
+    this.InitCoins();
+    this.InitHero();
+    this.paused = false;
   }
 }

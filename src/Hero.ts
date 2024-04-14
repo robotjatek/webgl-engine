@@ -79,7 +79,7 @@ export class Hero {
       [this.sprite],
       this.texture
     );
-   // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 1));
+    // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 1));
   }
 
   public Draw(proj: mat4, view: mat4): void {
@@ -143,11 +143,13 @@ export class Hero {
       // This is only kind-of correct, but im already in dead state so who cares
       // The only important thing is not to fall through the geometry...
       this.bbOffset[0] = dir[0] > 0 ? this.bbOffset[0] : 1.5 - this.bbOffset[0];
+
+      setTimeout(this.onDeath, 3000);
     }
   }
 
   private DisableInvincibleStateAfter(delta: number, numberOfFrames: number) {
-    if (this.invincibleTime > 1.0/60 * 1000 * numberOfFrames) {
+    if (this.invincibleTime > 1.0 / 60 * 1000 * numberOfFrames) {
       this.invincible = false;
       this.invincibleTime = 0;
       this.shader.SetVec4Uniform('colorOverlay', vec4.create());

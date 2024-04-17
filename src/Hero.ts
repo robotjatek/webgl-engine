@@ -52,6 +52,7 @@ export class Hero {
   private dirOnDeath: vec3;
   private timeSinceLastStomp: number = 0;
   private timeSinceLastDash: number = 0;
+  private dashAvailable = true;
 
   private bbShader = new Shader('shaders/VertexShader.vert', 'shaders/Colored.frag');
   private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
@@ -207,7 +208,7 @@ export class Hero {
   }
 
   private ReduceHorizontalVelocityWhenDashing(delta: number) {
-      this.velocity[0] *= 0.75;
+    this.velocity[0] *= 0.75;
   }
 
   private Animate(delta: number): void {
@@ -244,6 +245,7 @@ export class Hero {
     const isOnGround = this.velocity[1] === 0 && !this.jumping;
     if (this.wasInAir && isOnGround) {
       this.landSound.Play(1.8, 0.5);
+      this.dashAvailable = true;
     }
     this.wasInAir = !isOnGround;
 
@@ -298,9 +300,13 @@ export class Hero {
       this.stompSound.Play();
     }
   }
-
+  
   public Dash(): void {
-    if (this.state !== State.DEAD && this.state !== State.IDLE && this.timeSinceLastDash > 500) {
+    if (this.state !== State.DEAD
+      && this.state !== State.IDLE
+      && this.timeSinceLastDash > 500
+      && this.state !== State.STOMP
+      && this.dashAvailable) {
       this.state = State.DASH;
       const dir = vec3.create();
       vec3.subtract(dir, this.position, this.lastPosition);
@@ -308,6 +314,7 @@ export class Hero {
       this.velocity[1] = -0.0001; // TODO: yet another little hack to make dash play nicely with collision detection
       this.stompSound.Play();
       this.timeSinceLastDash = 0;
+      this.dashAvailable = false;
     }
   }
 

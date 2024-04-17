@@ -41,7 +41,7 @@ export class SlimeEnemy implements ICollider {
         private position: vec3,
         private visualScale: vec2,
         private collider: ICollider,
-        private onDeath: () => void
+        private onDeath: (sender: SlimeEnemy) => void
     ) {
         this.lastPosition = vec3.create();
     }
@@ -66,7 +66,7 @@ export class SlimeEnemy implements ICollider {
         if (this.health <= 0) {
             if (this.onDeath) {
                 this.enemyDeathSound.Play();
-                this.onDeath();
+                this.onDeath(this);
             }
         }
     }
@@ -118,13 +118,13 @@ export class SlimeEnemy implements ICollider {
         }
     }
 
-    // TODO: should make this a component
+    // TODO: should make this a component system
     private ApplyGravityToVelocity(delta: number): void {
         const gravity = vec3.fromValues(0, 0.00004, 0);
         vec3.add(this.velocity, this.velocity, vec3.scale(vec3.create(), gravity, delta));
     }
 
-    // TODO: make this a component
+    // TODO: make this a component system
     private ApplyVelocityToPosition(delta: number) {
         const moveValue = vec3.create();
         vec3.scale(moveValue, this.velocity, delta);

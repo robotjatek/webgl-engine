@@ -29,7 +29,7 @@ export class Game {
   private coins: CoinObject[] = [];
   private levelEnd: LevelEnd;
   private paused: boolean = false;
-  private enemy: SlimeEnemy;
+  private enemies: SlimeEnemy[] = [];
   private levelEndOpenSoundEffect = SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);
   private levelEndSoundPlayed = false;
 
@@ -62,12 +62,23 @@ export class Game {
     this.RestartLevel();
   }
 
-  private InitEnemy() {
-    this.enemy = new SlimeEnemy(
+  private InitEnemies() {
+    this.enemies = [new SlimeEnemy(
       vec3.fromValues(25, Environment.VerticalTiles - 5, 1),
       vec2.fromValues(3, 3),
       this.level.MainLayer,
-      () => this.enemy = null);
+      (e) => this.RemoveEnemy(e)),
+
+    new SlimeEnemy(
+      vec3.fromValues(34, Environment.VerticalTiles - 5, 1),
+      vec2.fromValues(3, 3),
+      this.level.MainLayer,
+      (e) => this.RemoveEnemy(e)),
+    ];
+  }
+
+  private RemoveEnemy(toRemove: SlimeEnemy): void {
+    this.enemies = this.enemies.filter(e => e !== toRemove);
   }
 
   private InitHero() {
@@ -122,9 +133,7 @@ export class Game {
     });
 
     this.hero.Draw(this.projectionMatrix, this.camera.ViewMatrix);
-    if (this.enemy) {
-      this.enemy.Draw(this.projectionMatrix, this.camera.ViewMatrix);
-    }
+    this.enemies.forEach(e => e.Draw(this.projectionMatrix, this.camera.ViewMatrix));
     this.levelEnd.Draw(this.projectionMatrix, this.camera.ViewMatrix);
 
     requestAnimationFrame(this.Run.bind(this));
@@ -155,18 +164,22 @@ export class Game {
       this.hero.Stomp();
     }
 
-    if (this.enemy) {
-      this.enemy.Update(elapsedTime);
-      if (this.enemy.IsCollidingWidth(this.hero.BoundingBox)) {
-        this.hero.Collide(this.enemy, elapsedTime);
-      }
+    if (this.KeyHandler.IsPressed(Keys.LEFT_SHIFT)) {
+      this.hero.Dash();
     }
+
+    this.enemies.forEach(e => {
+      e.Update(elapsedTime);
+      if (e.IsCollidingWidth(this.hero.BoundingBox)) {
+        this.hero.Collide(e, elapsedTime);
+      }
+    });
 
     this.camera.LookAtPosition(vec3.clone(this.hero.Position), this.level.MainLayer);
   }
 
   private CheckForEndCondition() {
-    this.levelEnd.IsEnabled = this.coins.length === 0 && this.enemy === null;
+    this.levelEnd.IsEnabled = this.coins.length === 0 && this.enemies.length === 0;
     if (this.levelEnd.IsEnabled && !this.levelEndSoundPlayed) {
       this.levelEndOpenSoundEffect.Play();
       this.levelEndSoundPlayed = true;
@@ -187,7 +200,7 @@ export class Game {
   private RestartLevel() {
     this.InitCoins();
     this.InitHero();
-    this.InitEnemy();
+    this.InitEnemies();
     this.paused = false;
     this.levelEndSoundPlayed = false;
   }

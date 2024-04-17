@@ -5,4 +5,5 @@ export class Keys {
   public static readonly SPACE = 'Space';
   public static readonly RIGHT_CONTROL = 'ControlRight';
   public static readonly LEFT_CONTROL = 'ControlLeft';
+  public static readonly LEFT_SHIFT = 'ShiftLeft';
 }

@@ -16,6 +16,7 @@ enum State {
   DEAD = 'dead',
   STOMP = 'stomp',
   JUMP = 'jump',
+  DASH = 'dash'
 }
 
 export class Hero {
@@ -31,8 +32,9 @@ export class Hero {
 
   // TODO: make bb variables parametrizable
   // TODO: sword attack
-  // TODO: dash
   // TODO: double jump
+  // TODO: ECS system
+  // TODO: state machines
   private bbOffset = vec3.fromValues(1.2, 1.1, 0);
   private bbSize = vec2.fromValues(0.8, 1.8);
   private shader = new Shader('shaders/VertexShader.vert', 'shaders/Hero.frag');
@@ -49,6 +51,7 @@ export class Hero {
   private invincibleTime: number = 0;
   private dirOnDeath: vec3;
   private timeSinceLastStomp: number = 0;
+  private timeSinceLastDash: number = 0;
 
   private bbShader = new Shader('shaders/VertexShader.vert', 'shaders/Colored.frag');
   private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
@@ -59,8 +62,8 @@ export class Hero {
       const bbPosition = vec3.add(vec3.create(), this.position, this.bbOffset);
       return new BoundingBox(bbPosition, this.bbSize);
     } else {
-      const bbPosition = vec3.add(vec3.create(), this.position, vec3.fromValues(1.0, 1.0, 0));
-      return new BoundingBox(bbPosition, vec2.fromValues(1, 2));
+      const bbPosition = vec3.add(vec3.create(), this.position, vec3.fromValues(0.75, 1.0, 0));
+      return new BoundingBox(bbPosition, vec2.fromValues(1.5, 2));
     }
   }
 
@@ -138,10 +141,17 @@ export class Hero {
       if (this.state !== State.STOMP) {
         this.timeSinceLastStomp += delta;
       }
+
+      this.timeSinceLastDash += delta;
+
+      if (this.state === State.DASH && this.timeSinceLastDash > 300) {
+        this.state = State.WALK;
+      }
     }
 
     vec3.copy(this.lastPosition, this.position);
     this.ApplyGravityToVelocity(delta);
+    this.ReduceHorizontalVelocityWhenDashing(delta);
     this.ApplyVelocityToPosition(delta);
     this.HandleCollisionWithCollider();
   }
@@ -190,8 +200,14 @@ export class Hero {
   }
 
   private ApplyGravityToVelocity(delta: number): void {
-    const gravity = vec3.fromValues(0, 0.00004, 0);
-    vec3.add(this.velocity, this.velocity, vec3.scale(vec3.create(), gravity, delta));
+    if (this.state !== State.DASH) {
+      const gravity = vec3.fromValues(0, 0.00004, 0);
+      vec3.add(this.velocity, this.velocity, vec3.scale(vec3.create(), gravity, delta));
+    }
+  }
+
+  private ReduceHorizontalVelocityWhenDashing(delta: number) {
+      this.velocity[0] *= 0.75;
   }
 
   private Animate(delta: number): void {
@@ -239,7 +255,7 @@ export class Hero {
 
   // TODO: move left, and moveright should a change the velocity not the position itself
   public MoveRight(amount: number, delta: number): void {
-    if (this.state !== State.DEAD) {
+    if (this.state !== State.DEAD && this.state !== State.STOMP && this.state !== State.DASH) {
       this.state = State.WALK;
       if (!this.invincible) {
         const nextPosition = vec3.fromValues(this.position[0] + amount * delta, this.position[1], this.position[2]);
@@ -251,7 +267,7 @@ export class Hero {
   }
 
   public MoveLeft(amount: number, delta: number): void {
-    if (this.state !== State.DEAD) {
+    if (this.state !== State.DEAD && this.state !== State.STOMP && this.state !== State.DASH) {
       this.state = State.WALK;
 
       if (!this.invincible) {
@@ -280,6 +296,18 @@ export class Hero {
       this.invincible = true;
       this.timeSinceLastStomp = 0;
       this.stompSound.Play();
+    }
+  }
+
+  public Dash(): void {
+    if (this.state !== State.DEAD && this.state !== State.IDLE && this.timeSinceLastDash > 500) {
+      this.state = State.DASH;
+      const dir = vec3.create();
+      vec3.subtract(dir, this.position, this.lastPosition);
+      this.velocity[0] = 0.7 * dir[0];
+      this.velocity[1] = -0.0001; // TODO: yet another little hack to make dash play nicely with collision detection
+      this.stompSound.Play();
+      this.timeSinceLastDash = 0;
     }
   }
 

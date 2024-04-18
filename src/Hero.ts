@@ -31,7 +31,6 @@ export class Hero {
   private velocity: vec3 = vec3.fromValues(0, 0, 0);
 
   // TODO: make bb variables parametrizable
-  // TODO: sword attack
   // TODO: double jump
   // TODO: ECS system
   // TODO: state machines
@@ -44,6 +43,7 @@ export class Hero {
   private stompSound = SoundEffectPool.GetInstance().GetAudio('audio/hero_stomp.wav', true);
   private damageSound = SoundEffectPool.GetInstance().GetAudio('audio/hero_damage.wav');
   private dieSound = SoundEffectPool.GetInstance().GetAudio('audio/hero_die.wav', false);
+  private attackSound = SoundEffectPool.GetInstance().GetAudio('audio/sword.mp3');
   private jumping: boolean = false;
   private onGround: boolean = true;
   private wasInAir: boolean = false;
@@ -53,6 +53,7 @@ export class Hero {
   private timeSinceLastStomp: number = 0;
   private timeSinceLastDash: number = 0;
   private dashAvailable = true;
+  private timeSinceLastMeleeAttack = 0;
 
   private bbShader = new Shader('shaders/VertexShader.vert', 'shaders/Colored.frag');
   private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
@@ -66,6 +67,12 @@ export class Hero {
       const bbPosition = vec3.add(vec3.create(), this.position, vec3.fromValues(0.75, 1.0, 0));
       return new BoundingBox(bbPosition, vec2.fromValues(1.5, 2));
     }
+  }
+
+  private lastFacingDirection: vec3 = vec3.fromValues(1, 0, 0);
+
+  public get FacingDirection(): vec3 {
+    return this.lastFacingDirection;
   }
 
   public get Position(): vec3 {
@@ -144,15 +151,20 @@ export class Hero {
       }
 
       this.timeSinceLastDash += delta;
+      this.timeSinceLastMeleeAttack += delta;
 
       if (this.state === State.DASH && this.timeSinceLastDash > 300) {
         this.state = State.WALK;
       }
     }
 
+    const dir = vec3.subtract(vec3.create(), this.position, this.lastPosition);
+    if (dir[0]) {
+      this.lastFacingDirection = dir;
+    }
     vec3.copy(this.lastPosition, this.position);
     this.ApplyGravityToVelocity(delta);
-    this.ReduceHorizontalVelocityWhenDashing(delta);
+    this.ReduceHorizontalVelocityWhenDashing();
     this.ApplyVelocityToPosition(delta);
     this.HandleCollisionWithCollider();
   }
@@ -207,8 +219,9 @@ export class Hero {
     }
   }
 
-  private ReduceHorizontalVelocityWhenDashing(delta: number) {
-    this.velocity[0] *= 0.75;
+  private ReduceHorizontalVelocityWhenDashing() {
+    if (!this.dashAvailable)
+      this.velocity[0] *= 0.75;
   }
 
   private Animate(delta: number): void {
@@ -255,7 +268,7 @@ export class Hero {
     }
   }
 
-  // TODO: move left, and moveright should a change the velocity not the position itself
+  // TODO: move left, and move right should a change the velocity not the position itself
   public MoveRight(amount: number, delta: number): void {
     if (this.state !== State.DEAD && this.state !== State.STOMP && this.state !== State.DASH) {
       this.state = State.WALK;
@@ -300,11 +313,11 @@ export class Hero {
       this.stompSound.Play();
     }
   }
-  
+
   public Dash(): void {
     if (this.state !== State.DEAD
       && this.state !== State.IDLE
-      && this.timeSinceLastDash > 500
+      && this.timeSinceLastDash > 300
       && this.state !== State.STOMP
       && this.dashAvailable) {
       this.state = State.DASH;
@@ -315,6 +328,17 @@ export class Hero {
       this.stompSound.Play();
       this.timeSinceLastDash = 0;
       this.dashAvailable = false;
+    }
+  }
+
+  public Attack(afterAttack: () => void): void {
+    // TODO: yet another magic number
+    if (this.state !== State.DEAD && this.timeSinceLastMeleeAttack > 250) {
+      this.attackSound.Play();
+      this.timeSinceLastMeleeAttack = 0;
+      if (afterAttack) {
+        afterAttack();
+      }
     }
   }
 

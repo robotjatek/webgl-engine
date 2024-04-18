@@ -10,6 +10,7 @@ import { CoinObject } from './CoinObject';
 import { LevelEnd } from './LevelEnd';
 import { SlimeEnemy } from './SlimeEnemy';
 import { SoundEffectPool } from './SoundEffectPool';
+import { MeleeAttack } from './MeleeAttack';
 
 // TODO: update ts version
 // TODO: render bounding boxes in debug mode
@@ -32,6 +33,8 @@ export class Game {
   private enemies: SlimeEnemy[] = [];
   private levelEndOpenSoundEffect = SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);
   private levelEndSoundPlayed = false;
+
+  private attack: MeleeAttack;
 
   public constructor(keyhandler: KeyHandler) {
     this.Width = window.innerWidth;
@@ -136,6 +139,9 @@ export class Game {
     this.enemies.forEach(e => e.Draw(this.projectionMatrix, this.camera.ViewMatrix));
     this.levelEnd.Draw(this.projectionMatrix, this.camera.ViewMatrix);
 
+    this.attack?.Draw(this.projectionMatrix, this.camera.ViewMatrix);
+    this.attack?.Update(elapsedTime);
+
     requestAnimationFrame(this.Run.bind(this));
   }
 
@@ -143,10 +149,16 @@ export class Game {
     this.level.PlayMusic(0.5); // TODO: hack because file loading is async...
     this.hero.Update(elapsedTime);
 
-    // Remove colliding coin from the list
+    // Remove the colliding coin from the list
     const collidingCoins = this.coins.filter(c => c.IsCollidingWidth(this.hero.BoundingBox));
     collidingCoins.forEach(c => c.Interact(this.hero));
     this.coins = this.coins.filter((coin) => !coin.IsCollidingWidth(this.hero.BoundingBox))
+
+    if (this.attack && !this.attack.AlreadyHit) {
+      const collidingWithProjectile = this.enemies.filter(e => e.IsCollidingWidth(this.attack.BoundingBox));
+      collidingWithProjectile.forEach(e => e.Damage());
+      this.attack.AlreadyHit = true;
+    }
 
     this.CheckForEndCondition();
 
@@ -166,6 +178,15 @@ export class Game {
 
     if (this.KeyHandler.IsPressed(Keys.LEFT_SHIFT)) {
       this.hero.Dash();
+    }
+
+    if (this.KeyHandler.IsPressed(Keys.E)) {
+      const attackPosition = this.hero.FacingDirection[0] > 0 ?
+        vec3.add(vec3.create(), this.hero.Position, vec3.fromValues(1.5, 0, 0)) :
+        vec3.add(vec3.create(), this.hero.Position, vec3.fromValues(-3, 0, 0));
+      this.hero.Attack(() => {
+        this.attack = new MeleeAttack(attackPosition);
+      });
     }
 
     this.enemies.forEach(e => {

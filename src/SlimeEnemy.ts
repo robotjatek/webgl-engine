@@ -9,6 +9,9 @@ import { TexturePool } from './TexturePool';
 import { BoundingBox } from './BoundingBox';
 import { SoundEffectPool } from './SoundEffectPool';
 
+// TODO: enemy has a movement path
+// TODO: enemy follows the player
+// TODO: enemy attacks the player
 export class SlimeEnemy implements ICollider {
     private currentFrameTime: number = 0;
     private currentAnimationFrame: number = 0;

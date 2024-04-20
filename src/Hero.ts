@@ -333,7 +333,7 @@ export class Hero {
 
   public Attack(afterAttack: () => void): void {
     // TODO: yet another magic number
-    if (this.state !== State.DEAD && this.timeSinceLastMeleeAttack > 250) {
+    if (this.state !== State.DEAD && this.timeSinceLastMeleeAttack > 350) {
       this.attackSound.Play();
       this.timeSinceLastMeleeAttack = 0;
       if (afterAttack) {

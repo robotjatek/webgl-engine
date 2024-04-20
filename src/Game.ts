@@ -10,7 +10,9 @@ import { CoinObject } from './CoinObject';
 import { LevelEnd } from './LevelEnd';
 import { SlimeEnemy } from './SlimeEnemy';
 import { SoundEffectPool } from './SoundEffectPool';
-import { MeleeAttack } from './MeleeAttack';
+import { IProjectile, MeleeAttack } from './MeleeAttack';
+import { ControllerHandler } from './ControllerHandler';
+import { XBoxControllerKeys } from './XBoxControllerKeys';
 
 // TODO: update ts version
 // TODO: render bounding boxes in debug mode
@@ -20,7 +22,6 @@ export class Game {
   private Width: number;
   private Height: number;
   private Canvas: HTMLCanvasElement;
-  private KeyHandler: KeyHandler;
   private start: number;
   private level: Level;
   private projectionMatrix = mat4.create();
@@ -34,15 +35,14 @@ export class Game {
   private levelEndOpenSoundEffect = SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);
   private levelEndSoundPlayed = false;
 
-  private attack: MeleeAttack;
+  private attack: IProjectile;
 
-  public constructor(keyhandler: KeyHandler) {
+  public constructor(private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler) {
     this.Width = window.innerWidth;
     this.Height = window.innerHeight;
     this.Canvas = document.getElementById('canvas') as HTMLCanvasElement;
     this.Canvas.width = this.Width;
     this.Canvas.height = this.Height;
-    this.KeyHandler = keyhandler;
 
     this.projectionMatrix = mat4.ortho(
       this.projectionMatrix,
@@ -162,25 +162,32 @@ export class Game {
 
     this.CheckForEndCondition();
 
-    if (this.KeyHandler.IsPressed(Keys.A)) {
+    if (this.keyHandler.IsPressed(Keys.A) ||
+      this.gamepadHandler.LeftStick[0] < -0.5 ||
+      this.gamepadHandler.IsPressed(XBoxControllerKeys.LEFT)) {
       this.hero.MoveLeft(0.01, elapsedTime);
-    } else if (this.KeyHandler.IsPressed(Keys.D)) {
+    } else if (this.keyHandler.IsPressed(Keys.D) ||
+      this.gamepadHandler.LeftStick[0] > 0.5 ||
+      this.gamepadHandler.IsPressed(XBoxControllerKeys.RIGHT)) {
       this.hero.MoveRight(0.01, elapsedTime);
     }
 
-    if (this.KeyHandler.IsPressed(Keys.SPACE)) {
+    if (this.keyHandler.IsPressed(Keys.SPACE) ||
+      this.gamepadHandler.IsPressed(XBoxControllerKeys.A)) {
       this.hero.Jump();
     }
 
-    if (this.KeyHandler.IsPressed(Keys.S)) {
+    if (this.keyHandler.IsPressed(Keys.S) ||
+      this.gamepadHandler.LeftStick[1] > 0.8 ||
+      this.gamepadHandler.IsPressed(XBoxControllerKeys.DOWN)) {
       this.hero.Stomp();
     }
 
-    if (this.KeyHandler.IsPressed(Keys.LEFT_SHIFT)) {
+    if (this.keyHandler.IsPressed(Keys.LEFT_SHIFT) || this.gamepadHandler.IsPressed(XBoxControllerKeys.RB)) {
       this.hero.Dash();
     }
 
-    if (this.KeyHandler.IsPressed(Keys.E)) {
+    if (this.keyHandler.IsPressed(Keys.E) || this.gamepadHandler.IsPressed(XBoxControllerKeys.X)) {
       const attackPosition = this.hero.FacingDirection[0] > 0 ?
         vec3.add(vec3.create(), this.hero.Position, vec3.fromValues(1.5, 0, 0)) :
         vec3.add(vec3.create(), this.hero.Position, vec3.fromValues(-3, 0, 0));

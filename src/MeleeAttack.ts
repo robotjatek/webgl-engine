@@ -7,7 +7,16 @@ import { Texture } from './Texture';
 import { TexturePool } from './TexturePool';
 import { Utils } from './Utils';
 
-export class MeleeAttack {
+export interface IProjectile {
+    get AlreadyHit(): boolean;
+    set AlreadyHit(value: boolean);
+    get BoundingBox(): BoundingBox;
+    Draw(proj: mat4, view: mat4): void;
+    Update(delta: number): void;
+}
+
+// MeleeAttack is considered as a stationary projectile
+export class MeleeAttack implements IProjectile {
     // TODO: animation also could be a component
     private currentFrameTime: number = 0;
     private currentAnimationFrame: number = 0;
@@ -23,7 +32,7 @@ export class MeleeAttack {
     private batch: SpriteBatch = new SpriteBatch(this.shader, [this.sprite], this.texture);
 
     private bbOffset = vec3.fromValues(1, 0.75, 0);
-    private bbSize = vec2.fromValues(2.3, 1.6);
+    private bbSize = vec2.fromValues(1.5, 1.5);
     private bbShader = new Shader('shaders/VertexShader.vert', 'shaders/Colored.frag');
     private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
     private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
@@ -31,8 +40,8 @@ export class MeleeAttack {
     private animationFinished = false;
 
     constructor(private position: vec3) {
-        // this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0, 0, 1, 0.5));
-        // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.5));
+        //   this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0, 0, 1, 0.5));
+        //   this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.5));
     }
 
     // TODO: sphere instead of a box?

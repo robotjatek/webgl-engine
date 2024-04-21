@@ -8,14 +8,20 @@ import { Texture } from './Texture';
 import { TexturePool } from './TexturePool';
 import { BoundingBox } from './BoundingBox';
 import { SoundEffectPool } from './SoundEffectPool';
-
-// TODO: enemy has a movement path
+import { Waypoint } from './Waypoint';
 
 // TODO: spike enemy: stationary enemy, cannot be damaged
 // TODO: dragon enemy: can shoot projectiles
 // TODO: enemy follows the player
 // TODO: enemy attacks the player
 export class SlimeEnemy implements ICollider {
+
+    private targetWaypoint: Waypoint;
+    // A little variation in movement speed;
+    readonly min = 0.002;
+    readonly max = 0.004;
+    private movementSpeed: number = Math.random() * (this.max - this.min) + this.min;
+
     private currentFrameTime: number = 0;
     private currentAnimationFrame: number = 0;
     private velocity: vec3 = vec3.fromValues(0, 0, 0);
@@ -49,7 +55,14 @@ export class SlimeEnemy implements ICollider {
         private collider: ICollider,
         private onDeath: (sender: SlimeEnemy) => void
     ) {
-        this.lastPosition = vec3.create();
+        this.lastPosition = vec3.create(); // If lastPosition is the same as position at initialization, the entity slowly falls through the floor
+
+        // For now slimes walk between their start position and an other position with some constant offset
+        const originalWaypoint = new Waypoint(this.position);
+        const targetPosition = vec3.add(vec3.create(), this.position, vec3.fromValues(-6, 0, 0));
+        this.targetWaypoint = new Waypoint(targetPosition);
+        this.targetWaypoint.next = originalWaypoint;
+        originalWaypoint.next = this.targetWaypoint;
     }
 
     public get Position(): vec3 {
@@ -96,6 +109,9 @@ export class SlimeEnemy implements ICollider {
         this.Animate(delta);
         this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
 
+        // TODO: correct animation based on the moving direction
+        this.MoveTowardsNextWaypoint(delta);
+
         vec3.copy(this.lastPosition, this.position);
         this.ApplyGravityToVelocity(delta);
         this.ApplyVelocityToPosition(delta);
@@ -112,6 +128,31 @@ export class SlimeEnemy implements ICollider {
             this.damaged = false;
             this.shader.SetVec4Uniform('colorOverlay', vec4.create());
         }
+    }
+
+    private MoveTowardsNextWaypoint(delta: number): void {
+        const dir = vec3.sub(vec3.create(), this.position, this.targetWaypoint.position);
+        if (dir[0] < 0) {
+            this.MoveOnX(this.movementSpeed, delta);
+        } else if (dir[0] > 0) {
+            this.MoveOnX(-this.movementSpeed, delta);
+        }
+
+        if (vec3.distance(this.position, this.targetWaypoint.position) < 0.25) {
+            this.targetWaypoint = this.targetWaypoint.next;
+        }
+    }
+
+    private MoveOnX(amount: number, delta: number): void {
+        const nextPosition = vec3.fromValues(this.position[0] + amount * delta, this.position[1], this.position[2]);
+        if (!this.checkCollision(nextPosition)) {
+            this.position = nextPosition;
+        }
+    }
+
+    private checkCollision(nextPosition: vec3): boolean {
+        const nextBoundingBox = new BoundingBox(vec3.add(vec3.create(), nextPosition, this.bbOffset), this.bbSize);
+        return this.collider.IsCollidingWidth(nextBoundingBox);
     }
 
     private Animate(delta: number): void {

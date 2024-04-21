@@ -344,7 +344,6 @@ export class Hero {
 
   // TODO: make this generic
   // TODO: maybe an interact method
-  // TODO: a little bigger bounding box while stomping
   public Collide(enemy: SlimeEnemy, delta: number): void {
     if (this.state !== State.STOMP) {
       if (!this.invincible) {

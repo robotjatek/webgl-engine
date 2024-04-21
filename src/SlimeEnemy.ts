@@ -10,6 +10,9 @@ import { BoundingBox } from './BoundingBox';
 import { SoundEffectPool } from './SoundEffectPool';
 
 // TODO: enemy has a movement path
+
+// TODO: spike enemy: stationary enemy, cannot be damaged
+// TODO: dragon enemy: can shoot projectiles
 // TODO: enemy follows the player
 // TODO: enemy attacks the player
 export class SlimeEnemy implements ICollider {
@@ -91,21 +94,24 @@ export class SlimeEnemy implements ICollider {
 
     public Update(delta: number): void {
         this.Animate(delta);
-
-        if (this.damaged) {
-            this.damagedTime += delta;
-        }
-
-        if (this.damagedTime > 1. / 60 * 1000 * 30) {
-            this.damagedTime = 0;
-            this.damaged = false;
-            this.shader.SetVec4Uniform('colorOverlay', vec4.create());
-        }
+        this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
 
         vec3.copy(this.lastPosition, this.position);
         this.ApplyGravityToVelocity(delta);
         this.ApplyVelocityToPosition(delta);
         this.HandleCollisionWithCollider();
+    }
+
+    private RemoveDamageOverlayAfter(delta: number, showOverlayTime: number) {
+        if (this.damaged) {
+            this.damagedTime += delta;
+        }
+
+        if (this.damagedTime > showOverlayTime) {
+            this.damagedTime = 0;
+            this.damaged = false;
+            this.shader.SetVec4Uniform('colorOverlay', vec4.create());
+        }
     }
 
     private Animate(delta: number): void {

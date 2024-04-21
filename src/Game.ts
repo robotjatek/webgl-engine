@@ -14,6 +14,7 @@ import { IProjectile, MeleeAttack } from './MeleeAttack';
 import { ControllerHandler } from './ControllerHandler';
 import { XBoxControllerKeys } from './XBoxControllerKeys';
 
+// TODO: audio does not start in Chrome
 // TODO: update ts version
 // TODO: render bounding boxes in debug mode
 // TODO: text rendering

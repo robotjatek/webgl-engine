@@ -42,8 +42,7 @@ domready(() => {
   });
 
   window.addEventListener('gamepadconnected', (e: GamepadEvent) => {
-    const gamepad = navigator.getGamepads()[e.gamepad.index];
-    controllerHandler.ActivateGamepad(gamepad.index);
+    controllerHandler.ActivateGamepad(e.gamepad.index);
   });
 
   canvas.focus();

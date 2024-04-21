@@ -190,7 +190,7 @@ export class Game {
     if (this.keyHandler.IsPressed(Keys.E) || this.gamepadHandler.IsPressed(XBoxControllerKeys.X)) {
       const attackPosition = this.hero.FacingDirection[0] > 0 ?
         vec3.add(vec3.create(), this.hero.Position, vec3.fromValues(1.5, 0, 0)) :
-        vec3.add(vec3.create(), this.hero.Position, vec3.fromValues(-3, 0, 0));
+        vec3.add(vec3.create(), this.hero.Position, vec3.fromValues(-2.5, 0, 0));
       this.hero.Attack(() => {
         this.attack = new MeleeAttack(attackPosition);
       });

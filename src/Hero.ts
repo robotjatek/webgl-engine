@@ -101,7 +101,7 @@ export class Hero {
       [this.sprite],
       this.texture
     );
-    // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 1));
+   // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 1));
   }
 
   public Draw(proj: mat4, view: mat4): void {

@@ -11,6 +11,7 @@ import { SoundEffectPool } from './SoundEffectPool';
 import { Waypoint } from './Waypoint';
 
 // TODO: spike enemy: stationary enemy, cannot be damaged
+// TODO: enemy that cannot be stomped (spiky enemy?)
 // TODO: dragon enemy: can shoot projectiles
 // TODO: enemy follows the player
 // TODO: enemy attacks the player
@@ -18,8 +19,8 @@ export class SlimeEnemy implements ICollider {
 
     private targetWaypoint: Waypoint;
     // A little variation in movement speed;
-    readonly min = 0.002;
-    readonly max = 0.004;
+    readonly min: number = 0.002;
+    readonly max: number = 0.004;
     private movementSpeed: number = Math.random() * (this.max - this.min) + this.min;
 
     private currentFrameTime: number = 0;
@@ -77,10 +78,13 @@ export class SlimeEnemy implements ICollider {
         return this.BoundingBox.IsCollidingWith(boundingBox);
     }
 
-    public Damage() {
+    // TODO: damage amount
+    public Damage(pushbackForce: vec3) {
         this.enemyDamageSound.Play();
         this.health--;
         this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
+        vec3.set(this.velocity, pushbackForce[0], pushbackForce[1], 0);
+
         this.damaged = true;
         if (this.health <= 0) {
             if (this.onDeath) {

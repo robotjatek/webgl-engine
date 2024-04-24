@@ -13,7 +13,9 @@ import { SoundEffectPool } from './SoundEffectPool';
 import { IProjectile, MeleeAttack } from './MeleeAttack';
 import { ControllerHandler } from './ControllerHandler';
 import { XBoxControllerKeys } from './XBoxControllerKeys';
+import { TexturePool } from './TexturePool';
 
+// TODO: FF8 Starting Up/FF9 Hunter's Chance - for the final BOSS music?
 // TODO: audio does not start in Chrome
 // TODO: update ts version
 // TODO: render bounding boxes in debug mode
@@ -55,6 +57,8 @@ export class Game {
       1
     );
     WebGLUtils.CreateGLRenderingContext(this.Canvas);
+    TexturePool.GetInstance().Preload();
+
     gl.disable(gl.DEPTH_TEST);
     gl.viewport(0, 0, this.Width, this.Height);
     gl.clearColor(0, 1, 0, 1);
@@ -157,7 +161,8 @@ export class Game {
 
     if (this.attack && !this.attack.AlreadyHit) {
       const collidingWithProjectile = this.enemies.filter(e => e.IsCollidingWidth(this.attack.BoundingBox));
-      collidingWithProjectile.forEach(e => e.Damage());
+      const pushbackForce = vec3.fromValues(this.hero.FacingDirection[0] / 10, -0.005 ,0);
+      collidingWithProjectile.forEach(e => e.Damage(pushbackForce));
       this.attack.AlreadyHit = true;
     }
 
@@ -193,6 +198,7 @@ export class Game {
         vec3.add(vec3.create(), this.hero.Position, vec3.fromValues(1.5, 0, 0)) :
         vec3.add(vec3.create(), this.hero.Position, vec3.fromValues(-2.5, 0, 0));
       this.hero.Attack(() => {
+        // TODO: creating an attack instance on every attack is wasteful.
         this.attack = new MeleeAttack(attackPosition);
       });
     }

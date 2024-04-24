@@ -366,7 +366,7 @@ export class Hero {
       vec3.set(this.velocity, 0, -0.025, 0);
       this.state = State.JUMP;
       this.jumping = true;
-      enemy.Damage();
+      enemy.Damage(vec3.create()); // Damage the enemy without pushing it to any direction
     }
   }
 

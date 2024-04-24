@@ -11,22 +11,43 @@ export class TexturePool {
     }
 
     private static Instance: TexturePool;
-    private Textures = new Map<string, Texture>();
+    private textures = new Map<string, Texture>();
 
     public GetTexture(path: string): Texture {
-        const texture = this.Textures.get(path);
+        const texture = this.textures.get(path);
         if (!texture) {
             const created = new Texture(path);
-            this.Textures.set(path, created);
+            this.textures.set(path, created);
             return created;
         }
         return texture;
     }
 
     public ClearPool(): void {
-        this.Textures.forEach((value) => {
+        this.textures.forEach((value) => {
             value.Delete();
         });
-        this.Textures.clear();
+        this.textures.clear();
+    }
+
+    // TODO: preload parameter
+    public Preload(): void {
+        this.GetTexture('Sword1.png');
+        this.GetTexture('coin.png');
+        this.GetTexture('monster1.png');
+        this.GetTexture('hero1.png');
+        this.GetTexture('ground0.png');
+        this.GetTexture('exit.png');
+    }
+
+    /**
+     * Empties the texture cache AND frees any OpenGL resources
+     */
+    public UnloadAll(): void {
+        for (const [_, texture] of this.textures) {
+            texture.Delete();
+        }
+
+        this.textures.clear();
     }
 }

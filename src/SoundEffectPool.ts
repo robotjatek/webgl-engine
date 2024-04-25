@@ -28,5 +28,7 @@ export class SoundEffectPool {
     // TODO: need a synchronous way to wait for loading to complete
     public Preload(): void {
         this.GetAudio('audio/level.mp3', false);
+        this.GetAudio('audio/fireball_spawn.mp3');
+        this.GetAudio('audio/sword.mp3');
     }
 }

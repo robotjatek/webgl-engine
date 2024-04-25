@@ -10,12 +10,16 @@ import { CoinObject } from './CoinObject';
 import { LevelEnd } from './LevelEnd';
 import { SlimeEnemy } from './SlimeEnemy';
 import { SoundEffectPool } from './SoundEffectPool';
-import { IProjectile, MeleeAttack } from './MeleeAttack';
+import { MeleeAttack } from './Projectiles/MeleeAttack';
+import { Fireball } from './Projectiles/Fireball';
+import { IProjectile } from './Projectiles/IProjectile';
 import { ControllerHandler } from './ControllerHandler';
 import { XBoxControllerKeys } from './XBoxControllerKeys';
 import { TexturePool } from './TexturePool';
 import { DragonEnemy } from './DragonEnemy';
+import * as _ from 'lodash';
 
+// TODO: correctly dispose objects that no longer exist => delete opengl resources, when an object is destroyed
 // TODO: "press start" screen
 // TODO: multiple level support
 // TODO: FF8 Starting Up/FF9 Hunter's Chance - for the final BOSS music?
@@ -41,7 +45,8 @@ export class Game {
   private levelEndOpenSoundEffect = SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);
   private levelEndSoundPlayed = false;
 
-  private attack: IProjectile;
+  private attack: IProjectile; // This is related to the hero
+  private enemyProjectiles: IProjectile[] = [];
 
   public constructor(private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler) {
     this.Width = window.innerWidth;
@@ -82,9 +87,21 @@ export class Game {
       this.level.MainLayer,
       this.hero, // To track where the hero is, i want to move as much of the game logic from the update loop as possible
       (sender: DragonEnemy) => { }, // onDeath
-      (sender: DragonEnemy) => { 
-        console.log('Dragon spitting projectile'); // TODO: spawn projectile
-      } 
+
+      (sender: DragonEnemy) => {
+        const projectileCenter = sender.FacingDirection[0] > 0 ?
+          vec3.add(vec3.create(), sender.CenterPosition, vec3.fromValues(-3, 1, 0)) :
+          vec3.add(vec3.create(), sender.CenterPosition, vec3.fromValues(3, 1, 0));
+        this.enemyProjectiles.push(new Fireball(
+          projectileCenter,
+          sender.FacingDirection,
+          (sender: Fireball) => {
+            const p = _.partition(this.enemyProjectiles, p => p != sender);
+            p[1].forEach(toDispose => toDispose.Dispose());
+            this.enemyProjectiles = p[0];
+           },
+          this.level.MainLayer));
+      }
     )
 
     // this.enemies = [new SlimeEnemy(
@@ -158,11 +175,13 @@ export class Game {
 
     this.hero.Draw(this.projectionMatrix, this.camera.ViewMatrix);
     this.enemies.forEach(e => e.Draw(this.projectionMatrix, this.camera.ViewMatrix));
-    this.dragon.Draw(this.projectionMatrix, this.camera.ViewMatrix);
+    this.dragon?.Draw(this.projectionMatrix, this.camera.ViewMatrix);
     this.levelEnd.Draw(this.projectionMatrix, this.camera.ViewMatrix);
 
     this.attack?.Draw(this.projectionMatrix, this.camera.ViewMatrix);
     this.attack?.Update(elapsedTime);
+
+    this.enemyProjectiles.forEach(p => p.Draw(this.projectionMatrix, this.camera.ViewMatrix));
 
     requestAnimationFrame(this.Run.bind(this));
   }
@@ -180,14 +199,15 @@ export class Game {
     this.coins = this.coins.filter((coin) => !coin.IsCollidingWidth(this.hero.BoundingBox))
 
     if (this.attack && !this.attack.AlreadyHit) {
-      const collidingWithProjectile = this.enemies.filter(e => e.IsCollidingWidth(this.attack.BoundingBox));
+      const enemiesCollidingWithProjectile = this.enemies.filter(e => e.IsCollidingWidth(this.attack.BoundingBox));
       const pushbackForce = vec3.fromValues(this.hero.FacingDirection[0] / 10, -0.005, 0);
-      collidingWithProjectile.forEach(e => e.Damage(pushbackForce));
+      enemiesCollidingWithProjectile.forEach(e => e.Damage(pushbackForce));
       this.attack.AlreadyHit = true;
     }
 
     this.CheckForEndCondition();
 
+    // TODO: most keypresses only affect the hero. Maybe these should be moved to there in a component
     if (this.keyHandler.IsPressed(Keys.A) ||
       this.gamepadHandler.LeftStick[0] < -0.5 ||
       this.gamepadHandler.IsPressed(XBoxControllerKeys.LEFT)) {
@@ -230,7 +250,15 @@ export class Game {
       }
     });
 
-    this.dragon.Update(elapsedTime);
+    // TODO: should merge these together into handling "game objects" that can collide/interact with the hero
+    this.enemyProjectiles.forEach((p: IProjectile) => {
+      p.Update(elapsedTime);
+      if (p.IsCollidingWith(this.hero.BoundingBox)) {
+        this.hero.InteractWithProjectile(p);
+      }
+    })
+
+    this.dragon?.Update(elapsedTime);
 
     this.camera.LookAtPosition(vec3.clone(this.hero.Position), this.level.MainLayer);
   }
@@ -255,10 +283,12 @@ export class Game {
   }
 
   private RestartLevel() {
+    // TODO: dispose all disposables
     this.InitCoins();
     this.InitHero();
     this.InitEnemies();
     this.paused = false;
     this.levelEndSoundPlayed = false;
+    this.enemyProjectiles = [];
   }
 }

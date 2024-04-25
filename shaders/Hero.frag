@@ -9,5 +9,10 @@ uniform vec4 colorOverlay;
 
 void main() {
     vec4 texColor = texture(u_sampler, v_texture_coordinate + texOffset);
+    if (texColor.a < 1.) {
+       // texColor.a = 1.;
+       // texColor.b = 1.;
+    }
+
     color = texColor + colorOverlay;
 }

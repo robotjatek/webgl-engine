@@ -74,6 +74,7 @@ export class SlimeEnemy implements ICollider {
         return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize);
     }
 
+    // TODO: this is also duplicated in the code
     public IsCollidingWidth(boundingBox: BoundingBox): boolean {
         return this.BoundingBox.IsCollidingWith(boundingBox);
     }
@@ -159,6 +160,7 @@ export class SlimeEnemy implements ICollider {
         return this.collider.IsCollidingWidth(nextBoundingBox);
     }
 
+    // TODO: make animation here similar to the one in the DragonEnemy
     private Animate(delta: number): void {
         this.currentFrameTime += delta;
         if (this.currentFrameTime > 264) {

@@ -9,7 +9,6 @@ import { TexturePool } from './TexturePool';
 import { Utils } from './Utils';
 import { Hero } from './Hero';
 
-// TODO: spit projectiles as attack
 export class DragonEnemy implements ICollider {
     // Animation related
     private currentFrameTime: number = 0;
@@ -38,6 +37,7 @@ export class DragonEnemy implements ICollider {
 
     // Behaviour related
     private timeSinceLastAttack = 0;
+    private lastFacingDirection = vec3.fromValues(-1, 0, 0); // Facing right by default
 
     constructor(
         private position: vec3,
@@ -61,6 +61,10 @@ export class DragonEnemy implements ICollider {
             0);
     }
 
+    public get FacingDirection(): vec3 {
+        return this.lastFacingDirection;
+    }
+
     public IsCollidingWidth(boundingBox: BoundingBox): boolean {
         throw new Error('Method not implemented.');
     }
@@ -81,8 +85,10 @@ export class DragonEnemy implements ICollider {
         const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);
         if (dir[0] < 0) {
             this.currentFrameSet = this.rightFacingAnimationFrames;
+            vec3.set(this.lastFacingDirection, -1, 0, 0);
         } else if (dir[0] > 0) {
             this.currentFrameSet = this.leftFacingAnimationFrames;
+            vec3.set(this.lastFacingDirection, 1, 0, 0);
         }
         this.Animate(delta, this.currentFrameSet);
 

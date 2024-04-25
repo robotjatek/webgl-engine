@@ -9,6 +9,7 @@ import { BoundingBox } from './BoundingBox';
 import { ICollider } from './ICollider';
 import { SoundEffectPool } from './SoundEffectPool';
 import { SlimeEnemy } from './SlimeEnemy';
+import { IProjectile } from './Projectiles/IProjectile';
 
 enum State {
   IDLE = 'idle',
@@ -43,7 +44,6 @@ export class Hero {
   private stompSound = SoundEffectPool.GetInstance().GetAudio('audio/hero_stomp.wav', true);
   private damageSound = SoundEffectPool.GetInstance().GetAudio('audio/hero_damage.wav');
   private dieSound = SoundEffectPool.GetInstance().GetAudio('audio/hero_die.wav', false);
-  private attackSound = SoundEffectPool.GetInstance().GetAudio('audio/sword.mp3');
   private jumping: boolean = false;
   private onGround: boolean = true;
   private wasInAir: boolean = false;
@@ -80,10 +80,10 @@ export class Hero {
   }
 
   public get CenterPosition(): vec3 {
-      return vec3.fromValues(
-        this.position[0] + this.visualScale[0] / 2,
-        this.position[1] + this.visualScale[1] / 2,
-        0);
+    return vec3.fromValues(
+      this.position[0] + this.visualScale[0] / 2,
+      this.position[1] + this.visualScale[1] / 2,
+      0);
   }
 
   constructor(
@@ -108,7 +108,7 @@ export class Hero {
       [this.sprite],
       this.texture
     );
-   // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 1));
+    // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 1));
   }
 
   public Draw(proj: mat4, view: mat4): void {
@@ -162,6 +162,10 @@ export class Hero {
 
       if (this.state === State.DASH && this.timeSinceLastDash > 300) {
         this.state = State.WALK;
+      }
+
+      if (this.invincible) {
+        this.invincibleTime += delta;
       }
     }
 
@@ -341,7 +345,6 @@ export class Hero {
   public Attack(afterAttack: () => void): void {
     // TODO: yet another magic number
     if (this.state !== State.DEAD && this.timeSinceLastMeleeAttack > 350) {
-      this.attackSound.Play();
       this.timeSinceLastMeleeAttack = 0;
       if (afterAttack) {
         afterAttack();
@@ -349,8 +352,9 @@ export class Hero {
     }
   }
 
-  // TODO: make this generic
+  // TODO: make this generic tho be able to collide with other enemies
   // TODO: maybe an interact method
+  // TODO: handle collision with other object types?
   public Collide(enemy: SlimeEnemy, delta: number): void {
     if (this.state !== State.STOMP) {
       if (!this.invincible) {
@@ -366,14 +370,33 @@ export class Hero {
         // TODO: this is a hack to make sure that the hero is not detected as colliding with the ground, so a pushback can happen
         damagePushback[1] -= 0.01;
         vec3.set(this.velocity, damagePushback[0], damagePushback[1], damagePushback[2]);
-      } else if (this.invincible) {
-        this.invincibleTime += delta;
       }
     } else if (this.state === State.STOMP) {
       vec3.set(this.velocity, 0, -0.025, 0);
       this.state = State.JUMP;
       this.jumping = true;
       enemy.Damage(vec3.create()); // Damage the enemy without pushing it to any direction
+    }
+  }
+
+  public Damage(pushbackForce: vec3): void {
+    // TODO: This is almost a 1:1 copy from the Collide method
+
+    // Damage method should not consider the invincible flag because stomp also sets it
+    this.invincible = true;
+    this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
+    this.damageSound.Play();
+    this.health -= 34;
+
+    vec3.set(this.velocity, pushbackForce[0], pushbackForce[1], 0);
+  }
+
+  public InteractWithProjectile(projectile: IProjectile): void {
+    if (!projectile.AlreadyHit) {
+      const pushbackForce = vec3.create(); // TODO: calculate pushback (is it needed here?)
+      this.Damage(pushbackForce);
+      projectile.AlreadyHit = true;
+      projectile.CallHitEventHandlers();
     }
   }
 

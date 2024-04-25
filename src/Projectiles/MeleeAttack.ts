@@ -1,22 +1,19 @@
-import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
-import { BoundingBox } from './BoundingBox';
-import { Shader } from './Shader';
-import { Sprite } from './Sprite';
-import { SpriteBatch } from './SpriteBatch';
-import { Texture } from './Texture';
-import { TexturePool } from './TexturePool';
-import { Utils } from './Utils';
-
-export interface IProjectile {
-    get AlreadyHit(): boolean;
-    set AlreadyHit(value: boolean);
-    get BoundingBox(): BoundingBox;
-    Draw(proj: mat4, view: mat4): void;
-    Update(delta: number): void;
-}
+import { mat4, vec2, vec3 } from 'gl-matrix';
+import { BoundingBox } from '../BoundingBox';
+import { Shader } from '../Shader';
+import { Sprite } from '../Sprite';
+import { SpriteBatch } from '../SpriteBatch';
+import { Texture } from '../Texture';
+import { TexturePool } from '../TexturePool';
+import { Utils } from '../Utils';
+import { SoundEffectPool } from '../SoundEffectPool';
+import { IProjectile } from './IProjectile';
 
 // MeleeAttack is considered as a stationary projectile
 export class MeleeAttack implements IProjectile {
+    private attackSound = SoundEffectPool.GetInstance().GetAudio('audio/sword.mp3');
+    private attackSoundPlayed: boolean = false;
+
     // TODO: animation also could be a component
     private currentFrameTime: number = 0;
     private currentAnimationFrame: number = 0;
@@ -45,8 +42,19 @@ export class MeleeAttack implements IProjectile {
     private animationFinished = false;
 
     constructor(private position: vec3) {
-      //  this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0, 0, 1, 0.5));
-      //  this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.5));
+        //  this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0, 0, 1, 0.5));
+        //  this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.5));
+    }
+    CallHitEventHandlers(): void {
+        throw new Error('Method not implemented.');
+    }
+
+    public Dispose(): void {
+        throw new Error('Method not implemented.');
+    }
+
+    public IsCollidingWith(boundingBox: BoundingBox): boolean {
+        return boundingBox.IsCollidingWith(this.BoundingBox)
     }
 
     // TODO: sphere instead of a box?
@@ -64,7 +72,6 @@ export class MeleeAttack implements IProjectile {
 
     // TODO: drawing logic for entities should be an ECS
     public Draw(proj: mat4, view: mat4): void {
-        // TODO: draw an animation resembling a sword cut
         if (!this.animationFinished) {
             mat4.translate(this.batch.ModelMatrix, mat4.create(), this.position);
             mat4.scale(this.batch.ModelMatrix,
@@ -82,10 +89,15 @@ export class MeleeAttack implements IProjectile {
     }
 
     public Update(delta: number): void {
+        if (!this.attackSoundPlayed){
+            this.attackSound.Play();
+            this.attackSoundPlayed = true;
+        }
         this.Animate(delta);
     }
 
     // TODO: animation feels like an ECS too
+    // TODO: animation like in DragonEnemy
     private Animate(delta: number): void {
         this.currentFrameTime += delta;
         if (this.currentFrameTime > 30) {

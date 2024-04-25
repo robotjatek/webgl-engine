@@ -1,0 +1,131 @@
+import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
+import { BoundingBox } from '../BoundingBox';
+import { Shader } from '../Shader';
+import { Sprite } from '../Sprite';
+import { SpriteBatch } from '../SpriteBatch';
+import { Texture } from '../Texture';
+import { TexturePool } from '../TexturePool';
+import { Utils } from '../Utils';
+import { ICollider } from '../ICollider';
+import { SoundEffectPool } from '../SoundEffectPool';
+import { IProjectile } from './IProjectile';
+
+
+export class Fireball implements IProjectile {
+    private hitSound = SoundEffectPool.GetInstance().GetAudio('audio/hero_stomp.wav');
+    private spawnSound = SoundEffectPool.GetInstance().GetAudio('audio/fireball_spawn.mp3');
+    private spawnSoundPlayed = false;
+    private alreadyHit = false;
+    private visualScale = vec2.fromValues(3, 3);
+
+
+    // TODO: somehow I need to detect when an object is destroyed, and call a clean up for WebGL resources
+    private shader: Shader = new Shader('shaders/VertexShader.vert', 'shaders/Hero.frag');
+    private texture: Texture = TexturePool.GetInstance().GetTexture('fireball.png');
+    private sprite = new Sprite(
+        Utils.DefaultSpriteVertices,
+        Utils.CreateTextureCoordinates(0, 0, 1 / 8, 1 / 8));
+
+    private batch: SpriteBatch = new SpriteBatch(this.shader, [this.sprite], this.texture);
+
+    // TODO: altough i dont use bbOffset here I kept all duplicated code nearly the same, to make refactors easier
+    private bbOffset = vec3.fromValues(0, 0, 0);
+    private bbSize = vec2.fromValues(2.0, 1.0);
+    private bbShader = new Shader('shaders/VertexShader.vert', 'shaders/Colored.frag');
+    private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
+    private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
+
+    public constructor(
+        private centerPosition: vec3,
+        private moveDirection: vec3,
+        private onHit: (sender: Fireball) => void,
+        private collider: ICollider) {
+        this.shader.SetVec4Uniform('clr', vec4.fromValues(0, 1, 0, 0.4));
+        this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
+    }
+
+    public get AlreadyHit(): boolean {
+        return this.alreadyHit;
+    }
+
+    public set AlreadyHit(value: boolean) {
+        this.alreadyHit = value;
+    }
+
+    // TODO: Adjust the bbSize + bb offset
+    public get BoundingBox(): BoundingBox {
+        const topLeftCorner = vec3.sub(vec3.create(), this.centerPosition, vec3.fromValues(this.bbSize[0] / 2, this.bbSize[1] / 2, 0));
+        // TODO: adjust later
+        const bbPos = vec3.add(vec3.create(), topLeftCorner, this.bbOffset); // Adjust bb position with the offset
+        return new BoundingBox(bbPos, this.bbSize);
+    }
+
+    public Dispose(): void {
+        // TODO: Dispose all disposables
+    }
+
+    public Draw(proj: mat4, view: mat4): void {
+        const topleft = vec3.sub(vec3.create(), this.centerPosition, vec3.fromValues(this.visualScale[0] / 2, this.visualScale[1] / 2, 0));
+        mat4.translate(this.batch.ModelMatrix, mat4.create(), topleft);
+        mat4.scale(this.batch.ModelMatrix,
+            this.batch.ModelMatrix,
+            vec3.fromValues(this.visualScale[0], this.visualScale[1], 1));
+        this.batch.Draw(proj, view);
+
+        // Draw bb
+        mat4.translate(this.bbBatch.ModelMatrix, mat4.create(), this.BoundingBox.position);
+        mat4.scale(
+            this.bbBatch.ModelMatrix,
+            this.bbBatch.ModelMatrix,
+            vec3.fromValues(this.BoundingBox.size[0], this.BoundingBox.size[1], 1));
+        this.bbBatch.Draw(proj, view);
+    }
+
+    public Update(delta: number): void {
+        // TODO: animate
+        if (!this.spawnSoundPlayed) {
+            this.spawnSound.Play(1, 0.5);
+            this.spawnSoundPlayed = true;
+        }
+        this.MoveInDirection(delta);
+    }
+
+    public IsCollidingWith(boundingBox: BoundingBox): boolean {
+        return this.BoundingBox.IsCollidingWith(boundingBox);
+    }
+
+    public CallHitEventHandlers(): void {
+        this.hitSound.Play();
+        if (this.onHit) {
+            this.onHit(this);
+        }
+    }
+
+    private MoveInDirection(delta: number): void {
+        if (this.moveDirection[0] < 0) {
+            this.MoveOnX(0.01, delta);
+        } else if (this.moveDirection[0] > 0) {
+            this.MoveOnX(-0.01, delta);
+        }
+    }
+
+    private MoveOnX(amount: number, delta: number): void {        
+        const nextCenterPosition = vec3.fromValues(this.centerPosition[0] + amount * delta, this.centerPosition[1], 0);
+        if (!this.CheckCollisionWithCollider(nextCenterPosition)) {
+            this.centerPosition = nextCenterPosition;
+        } else {
+            this.hitSound.Play();
+            this.alreadyHit = true;
+            this.onHit(this);
+        }
+    }
+
+    // TODO: yet another duplication
+    private CheckCollisionWithCollider(nextPosition: vec3): boolean {
+        const topleft = vec3.sub(vec3.create(), nextPosition, vec3.fromValues(this.bbSize[0] / 2, this.bbSize[1] / 2, 0));               
+        const bbPos = vec3.add(vec3.create(), topleft, this.bbOffset);
+        const nextBoundingBox = new BoundingBox(bbPos, this.bbSize);
+        return this.collider.IsCollidingWidth(nextBoundingBox);
+    }
+
+}

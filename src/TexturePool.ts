@@ -40,6 +40,7 @@ export class TexturePool {
         this.GetTexture('hero1.png');
         this.GetTexture('ground0.png');
         this.GetTexture('exit.png');
+        this.GetTexture('fireball.png');
     }
 
     /**

@@ -14,7 +14,7 @@ export class SoundEffectPool {
     }
 
     // TODO:key should be path + allowparallel pair
-    public GetAudio(path: string, allowParallel: boolean = true) {
+    public GetAudio(path: string, allowParallel: boolean = true): SoundEffect {
         const effect = this.effects.get(path);
         if (!effect) {
             const created = new SoundEffect(path, allowParallel);
@@ -23,5 +23,10 @@ export class SoundEffectPool {
         }
 
         return effect;
+    }
+
+    // TODO: need a synchronous way to wait for loading to complete
+    public Preload(): void {
+        this.GetAudio('audio/level.mp3', false);
     }
 }

@@ -79,6 +79,13 @@ export class Hero {
     return this.position;
   }
 
+  public get CenterPosition(): vec3 {
+      return vec3.fromValues(
+        this.position[0] + this.visualScale[0] / 2,
+        this.position[1] + this.visualScale[1] / 2,
+        0);
+  }
+
   constructor(
     private position: vec3,
     private visualScale: vec2,

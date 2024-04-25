@@ -11,7 +11,7 @@ import { SoundEffectPool } from './SoundEffectPool';
 import { Waypoint } from './Waypoint';
 
 // TODO: spike enemy: stationary enemy, cannot be damaged
-// TODO: enemy that cannot be stomped (spiky enemy?)
+// TODO: enemy that cannot be stomped only attacked (spiky enemy?)
 // TODO: dragon enemy: can shoot projectiles
 // TODO: enemy follows the player
 // TODO: enemy attacks the player

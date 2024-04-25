@@ -14,9 +14,11 @@ import { IProjectile, MeleeAttack } from './MeleeAttack';
 import { ControllerHandler } from './ControllerHandler';
 import { XBoxControllerKeys } from './XBoxControllerKeys';
 import { TexturePool } from './TexturePool';
+import { DragonEnemy } from './DragonEnemy';
 
+// TODO: "press start" screen
+// TODO: multiple level support
 // TODO: FF8 Starting Up/FF9 Hunter's Chance - for the final BOSS music?
-// TODO: audio does not start in Chrome
 // TODO: update ts version
 // TODO: render bounding boxes in debug mode
 // TODO: text rendering
@@ -35,6 +37,7 @@ export class Game {
   private levelEnd: LevelEnd;
   private paused: boolean = false;
   private enemies: SlimeEnemy[] = [];
+  private dragon: DragonEnemy;
   private levelEndOpenSoundEffect = SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);
   private levelEndSoundPlayed = false;
 
@@ -57,7 +60,9 @@ export class Game {
       1
     );
     WebGLUtils.CreateGLRenderingContext(this.Canvas);
+
     TexturePool.GetInstance().Preload();
+    SoundEffectPool.GetInstance().Preload();
 
     gl.disable(gl.DEPTH_TEST);
     gl.viewport(0, 0, this.Width, this.Height);
@@ -71,18 +76,29 @@ export class Game {
   }
 
   private InitEnemies() {
-    this.enemies = [new SlimeEnemy(
-      vec3.fromValues(25, Environment.VerticalTiles - 5, 1),
-      vec2.fromValues(3, 3),
+    this.dragon = new DragonEnemy(
+      vec3.fromValues(20, Environment.VerticalTiles - 7, 1),
+      vec2.fromValues(5, 5),
       this.level.MainLayer,
-      (e) => this.RemoveEnemy(e)),
+      this.hero, // To track where the hero is, i want to move as much of the game logic from the update loop as possible
+      (sender: DragonEnemy) => { }, // onDeath
+      (sender: DragonEnemy) => { 
+        console.log('Dragon spitting projectile'); // TODO: spawn projectile
+      } 
+    )
 
-    new SlimeEnemy(
-      vec3.fromValues(34, Environment.VerticalTiles - 5, 1),
-      vec2.fromValues(3, 3),
-      this.level.MainLayer,
-      (e) => this.RemoveEnemy(e)),
-    ];
+    // this.enemies = [new SlimeEnemy(
+    //   vec3.fromValues(25, Environment.VerticalTiles - 5, 1),
+    //   vec2.fromValues(3, 3),
+    //   this.level.MainLayer,
+    //   (e) => this.RemoveEnemy(e)),
+
+    // new SlimeEnemy(
+    //   vec3.fromValues(34, Environment.VerticalTiles - 5, 1),
+    //   vec2.fromValues(3, 3),
+    //   this.level.MainLayer,
+    //   (e) => this.RemoveEnemy(e)),
+    // ];
   }
 
   private RemoveEnemy(toRemove: SlimeEnemy): void {
@@ -142,6 +158,7 @@ export class Game {
 
     this.hero.Draw(this.projectionMatrix, this.camera.ViewMatrix);
     this.enemies.forEach(e => e.Draw(this.projectionMatrix, this.camera.ViewMatrix));
+    this.dragon.Draw(this.projectionMatrix, this.camera.ViewMatrix);
     this.levelEnd.Draw(this.projectionMatrix, this.camera.ViewMatrix);
 
     this.attack?.Draw(this.projectionMatrix, this.camera.ViewMatrix);
@@ -151,7 +168,10 @@ export class Game {
   }
 
   private Update(elapsedTime: number): void {
-    this.level.PlayMusic(0.5); // TODO: hack because file loading is async...
+    // TODO: this is a hack because audio playback needs one user interaction before it can start. Also loading is async so I can start an audio file before its loaded
+    // The later can be avoided by a press start screen, before starting the game
+    this.level.PlayMusic(0.5);
+
     this.hero.Update(elapsedTime);
 
     // Remove the colliding coin from the list
@@ -161,7 +181,7 @@ export class Game {
 
     if (this.attack && !this.attack.AlreadyHit) {
       const collidingWithProjectile = this.enemies.filter(e => e.IsCollidingWidth(this.attack.BoundingBox));
-      const pushbackForce = vec3.fromValues(this.hero.FacingDirection[0] / 10, -0.005 ,0);
+      const pushbackForce = vec3.fromValues(this.hero.FacingDirection[0] / 10, -0.005, 0);
       collidingWithProjectile.forEach(e => e.Damage(pushbackForce));
       this.attack.AlreadyHit = true;
     }
@@ -209,6 +229,8 @@ export class Game {
         this.hero.Collide(e, elapsedTime);
       }
     });
+
+    this.dragon.Update(elapsedTime);
 
     this.camera.LookAtPosition(vec3.clone(this.hero.Position), this.level.MainLayer);
   }

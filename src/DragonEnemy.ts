@@ -90,7 +90,7 @@ export class DragonEnemy implements ICollider {
             this.currentFrameSet = this.leftFacingAnimationFrames;
             vec3.set(this.lastFacingDirection, 1, 0, 0);
         }
-        this.Animate(delta, this.currentFrameSet);
+        this.Animate(delta);
 
         // TODO: remove damage overlay
 
@@ -105,7 +105,7 @@ export class DragonEnemy implements ICollider {
         // TODO: Handle collision with collider
     }
 
-    private Animate(delta: number, frameset: vec2[]): void {
+    private Animate(delta: number): void {
         this.currentFrameTime += delta;
         if (this.currentFrameTime > 264) {
             this.currentAnimationFrame++;
@@ -113,8 +113,7 @@ export class DragonEnemy implements ICollider {
                 this.currentAnimationFrame = 0;
             }
 
-            const currentFrame = frameset[this.currentAnimationFrame];
-
+            const currentFrame = this.currentFrameSet[this.currentAnimationFrame];
             this.sprite.textureOffset = currentFrame;
             this.currentFrameTime = 0;
         }

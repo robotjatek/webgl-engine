@@ -19,6 +19,7 @@ import { TexturePool } from './TexturePool';
 import { DragonEnemy } from './DragonEnemy';
 import * as _ from 'lodash';
 
+// TODO: recheck every vector passing. Sometimes vectors need to be cloned
 // TODO: correctly dispose objects that no longer exist => delete opengl resources, when an object is destroyed
 // TODO: "press start" screen
 // TODO: multiple level support
@@ -94,7 +95,7 @@ export class Game {
           vec3.add(vec3.create(), sender.CenterPosition, vec3.fromValues(3, 1, 0));
         this.enemyProjectiles.push(new Fireball(
           projectileCenter,
-          sender.FacingDirection,
+          vec3.clone(sender.FacingDirection),
           (sender: Fireball) => {
             const p = _.partition(this.enemyProjectiles, p => p != sender);
             p[1].forEach(toDispose => toDispose.Dispose());

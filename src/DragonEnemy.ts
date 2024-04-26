@@ -39,9 +39,12 @@ export class DragonEnemy implements ICollider {
     private timeSinceLastAttack = 0;
     private lastFacingDirection = vec3.fromValues(-1, 0, 0); // Facing right by default
 
+    private bbSize = vec2.fromValues(5, 5);
+    private bbOffset = vec3.fromValues(0, 0, 0);
+
     constructor(
         private position: vec3,
-        private visualScale: vec2,
+        private visualScale: vec2, // TODO: this should not be a parameter but hardcoded
         private collider: ICollider,
         private hero: Hero,
         private onDeath: (sender: DragonEnemy) => void,
@@ -65,8 +68,12 @@ export class DragonEnemy implements ICollider {
         return this.lastFacingDirection;
     }
 
+    public get BoundingBox(): BoundingBox {
+        return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize);
+    }
+
     public IsCollidingWidth(boundingBox: BoundingBox): boolean {
-        throw new Error('Method not implemented.');
+        return boundingBox.IsCollidingWith(this.BoundingBox);
     }
 
     public Draw(proj: mat4, view: mat4): void {
@@ -82,6 +89,7 @@ export class DragonEnemy implements ICollider {
     public Update(delta: number): void {
         this.timeSinceLastAttack += delta;
 
+        // Face in the direction of the hero
         const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);
         if (dir[0] < 0) {
             this.currentFrameSet = this.rightFacingAnimationFrames;
@@ -94,15 +102,44 @@ export class DragonEnemy implements ICollider {
 
         // TODO: remove damage overlay
 
+        // Attack when hero is near
         if (vec3.distance(this.CenterPosition, this.hero.CenterPosition) < 30
             && this.timeSinceLastAttack > 3000) {
-                this.timeSinceLastAttack = 0;
+            this.timeSinceLastAttack = 0;
             this.spawnProjectiles(this);
         }
 
+        // Follow hero on the Y axis with a little delay.
+        // "Delay" is achieved by moving the dragon slower than the hero movement speed.
+        this.MatchHeroHeight(delta);
+
         // TODO: gravity to velocity -- flying enemy maybe does not need gravity?
         // TODO: velocity to position
-        // TODO: Handle collision with collider
+    }
+
+    private MatchHeroHeight(delta: number): void {
+        // Reduce shaking by only moving when the distance is larger than a limit
+        const distance = Math.abs(this.hero.CenterPosition[1] - this.CenterPosition[1]);
+        if (distance > 0.2) {
+            const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);
+            if (dir[1] > 0) {
+                this.MoveOnY(-0.0025, delta);
+            } else if (dir[1] < 0) {
+                this.MoveOnY(0.0025, delta);
+            }
+        }
+    }
+
+    private MoveOnY(amount: number, delta: number): void {
+        const nextPosition = vec3.fromValues(this.position[0], this.position[1] + amount * delta, 0);
+        if (!this.CheckCollisionWithCollider(nextPosition)) {
+            this.position = nextPosition;
+        }
+    }
+
+    private CheckCollisionWithCollider(nextPosition: vec3): boolean {
+        const nextBoundingBox = new BoundingBox(vec3.add(vec3.create(), nextPosition, this.bbOffset), this.bbSize);
+        return this.collider.IsCollidingWidth(nextBoundingBox);
     }
 
     private Animate(delta: number): void {

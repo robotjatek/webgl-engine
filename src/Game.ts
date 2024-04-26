@@ -190,7 +190,7 @@ export class Game {
   private Update(elapsedTime: number): void {
     // TODO: this is a hack because audio playback needs one user interaction before it can start. Also loading is async so I can start an audio file before its loaded
     // The later can be avoided by a press start screen, before starting the game
-    this.level.PlayMusic(0.5);
+    // this.level.PlayMusic(0.5);
 
     this.hero.Update(elapsedTime);
 

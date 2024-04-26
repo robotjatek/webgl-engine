@@ -31,6 +31,7 @@ export class Hero {
   private lastPosition: vec3 = vec3.fromValues(0, 0, 1);
   private velocity: vec3 = vec3.fromValues(0, 0, 0);
 
+  // TODO: longer range but much slower attack
   // TODO: make bb variables parametrizable
   // TODO: double jump
   // TODO: ECS system
@@ -383,12 +384,14 @@ export class Hero {
     // TODO: This is almost a 1:1 copy from the Collide method
 
     // Damage method should not consider the invincible flag because stomp also sets it
-    this.invincible = true;
-    this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
-    this.damageSound.Play();
-    this.health -= 34;
+    if (this.state !== State.DEAD) {
+      this.invincible = true;
+      this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
+      this.damageSound.Play();
+      this.health -= 34;
 
-    vec3.set(this.velocity, pushbackForce[0], pushbackForce[1], 0);
+      vec3.set(this.velocity, pushbackForce[0], pushbackForce[1], 0);
+    }
   }
 
   public InteractWithProjectile(projectile: IProjectile): void {

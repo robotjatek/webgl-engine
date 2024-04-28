@@ -97,10 +97,11 @@ export class Game {
           projectileCenter,
           vec3.clone(sender.FacingDirection),
           (sender: Fireball) => {
+            // Despawn projectile that hit
             const p = _.partition(this.enemyProjectiles, p => p != sender);
             p[1].forEach(toDispose => toDispose.Dispose());
             this.enemyProjectiles = p[0];
-           },
+          },
           this.level.MainLayer));
       }
     )
@@ -124,7 +125,10 @@ export class Game {
   }
 
   private InitHero() {
-    this.hero = new Hero(vec3.fromValues(0, Environment.VerticalTiles - 5, 1), vec2.fromValues(3, 3), this.level.MainLayer,
+    this.hero = new Hero(vec3.fromValues(
+      0, Environment.VerticalTiles - 5, 1),
+      vec2.fromValues(3, 3),
+      this.level.MainLayer,
       () => this.RestartLevel());
   }
 
@@ -256,6 +260,13 @@ export class Game {
       p.Update(elapsedTime);
       if (p.IsCollidingWith(this.hero.BoundingBox)) {
         this.hero.InteractWithProjectile(p);
+      }
+
+      // Despawn out-of-bounds projectiles
+      if (this.level.MainLayer.IsOutsideBoundary(p.BoundingBox)) {
+        const partitions = _.partition(this.enemyProjectiles, item => p != item);
+        partitions[1].forEach(toDispose => toDispose.Dispose());
+        this.enemyProjectiles = partitions[0];
       }
     })
 

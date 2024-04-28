@@ -16,9 +16,10 @@ export class Layer implements ICollider {
         this.CreateSpriteBatches(tileMap);
     }
 
-    IsCollidingWidth(boundingBox: BoundingBox): boolean {
-        // Outside of the boundaries are considered as collisions. This way a hero cant fall of the edge of the world
-        if (this.IsOutsideBoundary(boundingBox)) {
+    public IsCollidingWidth(boundingBox: BoundingBox, collideWithUndefined: boolean): boolean {
+        // Outside of the boundaries are considered as collisions when collideWithUndefined is true.
+        // This way a hero cant fall of the edge of the world.
+        if (this.IsOutsideBoundary(boundingBox) && collideWithUndefined) {
             return true;
         }
 

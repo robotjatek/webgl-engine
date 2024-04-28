@@ -84,6 +84,7 @@ export class Fireball implements IProjectile {
 
     public Dispose(): void {
         // TODO: Dispose all disposables
+        console.error('Hey, you really should dispose this!');
     }
 
     public Draw(proj: mat4, view: mat4): void {
@@ -151,7 +152,7 @@ export class Fireball implements IProjectile {
         const topleft = vec3.sub(vec3.create(), nextPosition, vec3.fromValues(this.bbSize[0] / 2, this.bbSize[1] / 2, 0));
         const bbPos = vec3.add(vec3.create(), topleft, this.bbOffset);
         const nextBoundingBox = new BoundingBox(bbPos, this.bbSize);
-        return this.collider.IsCollidingWidth(nextBoundingBox);
+        return this.collider.IsCollidingWidth(nextBoundingBox, false);
     }
 
     private Animate(delta: number): void {

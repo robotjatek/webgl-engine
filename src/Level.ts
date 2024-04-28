@@ -64,10 +64,6 @@ export class Level {
         });
     }
 
-    public CollideWidthLayer(boundingBox: BoundingBox, layerId: number): boolean {
-        return this.Layers[layerId].IsCollidingWidth(boundingBox);
-    }
-
     public get MainLayer(): Layer {
         return this.Layers[0];
     }

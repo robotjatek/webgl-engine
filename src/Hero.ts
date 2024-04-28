@@ -208,7 +208,7 @@ export class Hero {
   }
 
   private HandleCollisionWithCollider() {
-    const colliding = this.collider.IsCollidingWidth(this.BoundingBox);
+    const colliding = this.collider.IsCollidingWidth(this.BoundingBox, true);
     if (colliding) {
       vec3.copy(this.position, this.lastPosition);
       this.velocity = vec3.create();
@@ -405,7 +405,7 @@ export class Hero {
 
   private checkCollision(nextPosition: vec3): boolean {
     const nextBoundingBox = new BoundingBox(vec3.add(vec3.create(), nextPosition, this.bbOffset), this.bbSize);
-    return this.collider.IsCollidingWidth(nextBoundingBox);
+    return this.collider.IsCollidingWidth(nextBoundingBox, true);
   }
 
   private calculateTextureOffset(direction: vec2): vec2 {

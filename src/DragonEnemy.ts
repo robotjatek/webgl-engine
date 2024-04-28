@@ -139,7 +139,7 @@ export class DragonEnemy implements ICollider {
 
     private CheckCollisionWithCollider(nextPosition: vec3): boolean {
         const nextBoundingBox = new BoundingBox(vec3.add(vec3.create(), nextPosition, this.bbOffset), this.bbSize);
-        return this.collider.IsCollidingWidth(nextBoundingBox);
+        return this.collider.IsCollidingWidth(nextBoundingBox, false);
     }
 
     private Animate(delta: number): void {

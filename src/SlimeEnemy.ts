@@ -156,7 +156,7 @@ export class SlimeEnemy implements ICollider {
 
     private checkCollision(nextPosition: vec3): boolean {
         const nextBoundingBox = new BoundingBox(vec3.add(vec3.create(), nextPosition, this.bbOffset), this.bbSize);
-        return this.collider.IsCollidingWidth(nextBoundingBox);
+        return this.collider.IsCollidingWidth(nextBoundingBox, false);
     }
 
     // TODO: make animation here similar to the one in the DragonEnemy
@@ -189,7 +189,7 @@ export class SlimeEnemy implements ICollider {
 
     // TODO: how to make this a component?
     private HandleCollisionWithCollider() {
-        const colliding = this.collider.IsCollidingWidth(this.BoundingBox);
+        const colliding = this.collider.IsCollidingWidth(this.BoundingBox, false);
         if (colliding) {
             vec3.copy(this.position, this.lastPosition);
             this.velocity = vec3.create();

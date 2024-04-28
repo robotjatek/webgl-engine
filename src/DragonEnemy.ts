@@ -1,4 +1,4 @@
-import { mat4, vec2, vec3 } from 'gl-matrix';
+import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
 import { BoundingBox } from './BoundingBox';
 import { ICollider } from './ICollider';
 import { Shader } from './Shader';
@@ -8,7 +8,11 @@ import { Texture } from './Texture';
 import { TexturePool } from './TexturePool';
 import { Utils } from './Utils';
 import { Hero } from './Hero';
+import { SoundEffectPool } from './SoundEffectPool';
 
+// TODO: dragon can actively attack with projectiles or a short range attack
+// TODO: short range attack can be a stationary projectile, like the hero's sword attack
+// TODO: do regular collision with the dragon should happen? Should stomp on dragon be possible?
 export class DragonEnemy implements ICollider {
     // Animation related
     private currentFrameTime: number = 0;
@@ -39,8 +43,18 @@ export class DragonEnemy implements ICollider {
     private timeSinceLastAttack = 0;
     private lastFacingDirection = vec3.fromValues(-1, 0, 0); // Facing right by default
 
-    private bbSize = vec2.fromValues(5, 5);
-    private bbOffset = vec3.fromValues(0, 0, 0);
+    private health = 3;
+    private enemyDamageSound = SoundEffectPool.GetInstance().GetAudio('audio/enemy_damage.wav');
+    private enemyDeathSound = SoundEffectPool.GetInstance().GetAudio('audio/enemy_death.wav');
+    private damagedTime = 0;
+    private damaged = false;
+
+    private bbSize = vec2.fromValues(4.8, 3);
+    private bbOffset = vec3.fromValues(0.1, 1.5, 0);
+
+    private bbShader = new Shader('shaders/VertexShader.vert', 'shaders/Colored.frag');
+    private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
+    private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
 
     constructor(
         private position: vec3,
@@ -51,6 +65,7 @@ export class DragonEnemy implements ICollider {
         private spawnProjectiles: (sender: DragonEnemy) => void
     ) {
         this.sprite.textureOffset = this.leftFacingAnimationFrames[0];
+        this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
     }
 
     public get Position(): vec3 {
@@ -76,6 +91,21 @@ export class DragonEnemy implements ICollider {
         return boundingBox.IsCollidingWith(this.BoundingBox);
     }
 
+    public Damage(pushbackForce: vec3): void {
+        this.enemyDamageSound.Play();
+        this.health--;
+        this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
+        //vec3.set(this.velocity, pushbackForce[0], pushbackForce[1], 0);
+
+        this.damaged = true;
+        if (this.health <= 0) {
+            if (this.onDeath) {
+                this.enemyDeathSound.Play();
+                this.onDeath(this);
+            }
+        }
+    }
+
     public Draw(proj: mat4, view: mat4): void {
         this.batch.Draw(proj, view);
         mat4.translate(this.batch.ModelMatrix, mat4.create(), this.position);
@@ -84,10 +114,17 @@ export class DragonEnemy implements ICollider {
             vec3.fromValues(this.visualScale[0], this.visualScale[1], 1));
 
         // TODO: bounding box drawing
+        this.bbBatch.Draw(proj, view);
+        mat4.translate(this.bbBatch.ModelMatrix, mat4.create(), this.BoundingBox.position);
+        mat4.scale(
+            this.bbBatch.ModelMatrix,
+            this.bbBatch.ModelMatrix,
+            vec3.fromValues(this.bbSize[0], this.bbSize[1], 1));
     }
 
     public Update(delta: number): void {
-        this.timeSinceLastAttack += delta;
+        // TODO: uncomment to make dragon to be able to attack
+        //this.timeSinceLastAttack += delta;
 
         // Face in the direction of the hero
         const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);
@@ -100,7 +137,7 @@ export class DragonEnemy implements ICollider {
         }
         this.Animate(delta);
 
-        // TODO: remove damage overlay
+        this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
 
         // Attack when hero is near
         if (vec3.distance(this.CenterPosition, this.hero.CenterPosition) < 30
@@ -115,6 +152,19 @@ export class DragonEnemy implements ICollider {
 
         // TODO: gravity to velocity -- flying enemy maybe does not need gravity?
         // TODO: velocity to position
+    }
+
+    // TODO: duplicated all over the place
+    private RemoveDamageOverlayAfter(delta: number, showOverlayTime: number) {
+        if (this.damaged) {
+            this.damagedTime += delta;
+        }
+
+        if (this.damagedTime > showOverlayTime) {
+            this.damagedTime = 0;
+            this.damaged = false;
+            this.shader.SetVec4Uniform('colorOverlay', vec4.create());
+        }
     }
 
     private MatchHeroHeight(delta: number): void {

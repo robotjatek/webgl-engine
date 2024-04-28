@@ -190,7 +190,7 @@ export class Hero {
       this.dirOnDeath = dir;
 
       this.bbSize = vec2.fromValues(this.bbSize[1], this.bbSize[0]);
-      // This is only kind-of correct, but im already in dead state so who cares
+      // This is only kind-of correct, but im already in dead state so who cares if the bb is not correctly aligned.
       // The only important thing is not to fall through the geometry...
       this.bbOffset[0] = dir[0] > 0 ? this.bbOffset[0] : 1.5 - this.bbOffset[0];
 
@@ -356,6 +356,7 @@ export class Hero {
   // TODO: make this generic tho be able to collide with other enemies
   // TODO: maybe an interact method
   // TODO: handle collision with other object types?
+  // TODO: visitor pattern for handling collisions with other enemy types?
   public Collide(enemy: SlimeEnemy, delta: number): void {
     if (this.state !== State.STOMP) {
       if (!this.invincible) {

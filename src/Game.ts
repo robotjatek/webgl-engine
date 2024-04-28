@@ -41,8 +41,10 @@ export class Game {
   private coins: CoinObject[] = [];
   private levelEnd: LevelEnd;
   private paused: boolean = false;
+
+  // TODO: spawned objects should be in the Level object itself, not in Game.ts
   private enemies: SlimeEnemy[] = [];
-  private dragon: DragonEnemy;
+  private dragons: DragonEnemy[] = [];
   private levelEndOpenSoundEffect = SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);
   private levelEndSoundPlayed = false;
 
@@ -82,13 +84,16 @@ export class Game {
   }
 
   private InitEnemies() {
-    this.dragon = new DragonEnemy(
+    this.dragons = [ new DragonEnemy(
       vec3.fromValues(20, Environment.VerticalTiles - 7, 1),
       vec2.fromValues(5, 5),
       this.level.MainLayer,
       this.hero, // To track where the hero is, i want to move as much of the game logic from the update loop as possible
-      (sender: DragonEnemy) => { }, // onDeath
 
+      (sender: DragonEnemy) => { this.RemoveDragon(sender) }, // onDeath
+
+      // TODO: spawn multiple types of projectiles
+      // Spawn projectile
       (sender: DragonEnemy) => {
         const projectileCenter = sender.FacingDirection[0] > 0 ?
           vec3.add(vec3.create(), sender.CenterPosition, vec3.fromValues(-3, 1, 0)) :
@@ -104,7 +109,7 @@ export class Game {
           },
           this.level.MainLayer));
       }
-    )
+    )];
 
     // this.enemies = [new SlimeEnemy(
     //   vec3.fromValues(25, Environment.VerticalTiles - 5, 1),
@@ -122,6 +127,11 @@ export class Game {
 
   private RemoveEnemy(toRemove: SlimeEnemy): void {
     this.enemies = this.enemies.filter(e => e !== toRemove);
+  }
+
+  // TODO: merge with Remove enemy
+  private RemoveDragon(toRemove: DragonEnemy): void {
+    this.dragons = this.dragons.filter(e => e !== toRemove);
   }
 
   private InitHero() {
@@ -180,7 +190,8 @@ export class Game {
 
     this.hero.Draw(this.projectionMatrix, this.camera.ViewMatrix);
     this.enemies.forEach(e => e.Draw(this.projectionMatrix, this.camera.ViewMatrix));
-    this.dragon?.Draw(this.projectionMatrix, this.camera.ViewMatrix);
+    // TODO: merge enemy arrays
+    this.dragons.forEach(d => d.Draw(this.projectionMatrix, this.camera.ViewMatrix));
     this.levelEnd.Draw(this.projectionMatrix, this.camera.ViewMatrix);
 
     this.attack?.Draw(this.projectionMatrix, this.camera.ViewMatrix);
@@ -205,8 +216,14 @@ export class Game {
 
     if (this.attack && !this.attack.AlreadyHit) {
       const enemiesCollidingWithProjectile = this.enemies.filter(e => e.IsCollidingWidth(this.attack.BoundingBox));
+      // Pushback force does not necessarily mean the amount of pushback. A big enemy can ignore a sword attack for example
       const pushbackForce = vec3.fromValues(this.hero.FacingDirection[0] / 10, -0.005, 0);
       enemiesCollidingWithProjectile.forEach(e => e.Damage(pushbackForce));
+
+      // TODO: merge dragon with other enemies
+      const collidingDragonsWithProjectile = this.dragons.filter(e => e.IsCollidingWidth(this.attack.BoundingBox));
+      collidingDragonsWithProjectile.forEach(d => d.Damage(vec3.create()));
+
       this.attack.AlreadyHit = true;
     }
 
@@ -269,8 +286,9 @@ export class Game {
         this.enemyProjectiles = partitions[0];
       }
     })
-
-    this.dragon?.Update(elapsedTime);
+    
+    // TODO: merge enemy arrays
+    this.dragons.forEach(e => e.Update(elapsedTime));
 
     this.camera.LookAtPosition(vec3.clone(this.hero.Position), this.level.MainLayer);
   }

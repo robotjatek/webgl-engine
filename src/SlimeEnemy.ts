@@ -10,6 +10,7 @@ import { BoundingBox } from './BoundingBox';
 import { SoundEffectPool } from './SoundEffectPool';
 import { Waypoint } from './Waypoint';
 
+// TODO: choose correct animation based on the facing direction (like in dragon or fireball)
 // TODO: spike enemy: stationary enemy, cannot be damaged
 // TODO: enemy that cannot be stomped only attacked (spiky enemy?)
 // TODO: enemy follows the player
@@ -18,9 +19,9 @@ export class SlimeEnemy implements ICollider {
 
     private targetWaypoint: Waypoint;
     // A little variation in movement speed;
-    readonly min: number = 0.002;
-    readonly max: number = 0.004;
-    private movementSpeed: number = Math.random() * (this.max - this.min) + this.min;
+    readonly minSpeed: number = 0.002;
+    readonly maxSpeed: number = 0.004;
+    private movementSpeed: number = Math.random() * (this.maxSpeed - this.minSpeed) + this.minSpeed;
 
     private currentFrameTime: number = 0;
     private currentAnimationFrame: number = 0;
@@ -79,6 +80,7 @@ export class SlimeEnemy implements ICollider {
     }
 
     // TODO: damage amount
+    // TODO: multiple types of enemies can be damaged, make this a component
     public Damage(pushbackForce: vec3) {
         this.enemyDamageSound.Play();
         this.health--;
@@ -122,6 +124,7 @@ export class SlimeEnemy implements ICollider {
         this.HandleCollisionWithCollider();
     }
 
+    // TODO: duplicated all over the place
     private RemoveDamageOverlayAfter(delta: number, showOverlayTime: number) {
         if (this.damaged) {
             this.damagedTime += delta;

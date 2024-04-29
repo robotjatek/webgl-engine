@@ -84,7 +84,7 @@ export class Game {
   }
 
   private InitEnemies() {
-    this.dragons = [ new DragonEnemy(
+    this.dragons = [new DragonEnemy(
       vec3.fromValues(20, Environment.VerticalTiles - 7, 1),
       vec2.fromValues(5, 5),
       this.level.MainLayer,
@@ -94,20 +94,10 @@ export class Game {
 
       // TODO: spawn multiple types of projectiles
       // Spawn projectile
-      (sender: DragonEnemy) => {
-        const projectileCenter = sender.FacingDirection[0] > 0 ?
-          vec3.add(vec3.create(), sender.CenterPosition, vec3.fromValues(-3, 1, 0)) :
-          vec3.add(vec3.create(), sender.CenterPosition, vec3.fromValues(3, 1, 0));
-        this.enemyProjectiles.push(new Fireball(
-          projectileCenter,
-          vec3.clone(sender.FacingDirection),
-          (sender: Fireball) => {
-            // Despawn projectile that hit
-            const p = _.partition(this.enemyProjectiles, p => p != sender);
-            p[1].forEach(toDispose => toDispose.Dispose());
-            this.enemyProjectiles = p[0];
-          },
-          this.level.MainLayer));
+      (sender: DragonEnemy, projectile: IProjectile) => {
+        this.enemyProjectiles.push(projectile);
+        // Despawn projectile that hit
+        projectile.OnHitListeners.push(s => this.RemoveProjectile(s));
       }
     )];
 
@@ -132,6 +122,12 @@ export class Game {
   // TODO: merge with Remove enemy
   private RemoveDragon(toRemove: DragonEnemy): void {
     this.dragons = this.dragons.filter(e => e !== toRemove);
+  }
+
+  private RemoveProjectile(projectile: IProjectile): void {
+    const p = _.partition(this.enemyProjectiles, p => p != projectile);
+    p[1].forEach(toDispose => toDispose.Dispose());
+    this.enemyProjectiles = p[0];
   }
 
   private InitHero() {
@@ -286,7 +282,7 @@ export class Game {
         this.enemyProjectiles = partitions[0];
       }
     })
-    
+
     // TODO: merge enemy arrays
     this.dragons.forEach(e => e.Update(elapsedTime));
 

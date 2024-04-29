@@ -45,6 +45,8 @@ export class MeleeAttack implements IProjectile {
         //  this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0, 0, 1, 0.5));
         //  this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.5));
     }
+
+    OnHitListeners: ((sender: IProjectile) => void)[] = [];
     CallHitEventHandlers(): void {
         throw new Error('Method not implemented.');
     }

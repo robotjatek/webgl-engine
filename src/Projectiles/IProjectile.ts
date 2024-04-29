@@ -11,4 +11,5 @@ export interface IProjectile extends IDisposable {
     Update(delta: number): void;
     IsCollidingWith(boundingBox: BoundingBox): boolean;
     CallHitEventHandlers(): void;
+    OnHitListeners: ((sender: IProjectile) => void)[];
 }

@@ -11,6 +11,8 @@ import { SoundEffectPool } from '../SoundEffectPool';
 import { IProjectile } from './IProjectile';
 
 export class Fireball implements IProjectile {
+    public OnHitListeners: ((sender: IProjectile) => void)[] = [];
+
     private hitSound = SoundEffectPool.GetInstance().GetAudio('audio/hero_stomp.wav');
     private spawnSound = SoundEffectPool.GetInstance().GetAudio('audio/fireball_spawn.mp3');
     private spawnSoundPlayed = false;
@@ -62,7 +64,6 @@ export class Fireball implements IProjectile {
     public constructor(
         private centerPosition: vec3,
         private moveDirection: vec3,
-        private onHit: (sender: Fireball) => void,
         private collider: ICollider) {
         this.shader.SetVec4Uniform('clr', vec4.fromValues(0, 1, 0, 0.4));
         this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
@@ -121,11 +122,14 @@ export class Fireball implements IProjectile {
         return this.BoundingBox.IsCollidingWith(boundingBox);
     }
 
+    /**
+     * This function is for to trigger every hit event listeners to fire.
+     * Now its only used when checking collision with the hero
+     * // TODO: Need a way to rework hero-projectile hit detection.
+     */
     public CallHitEventHandlers(): void {
         this.hitSound.Play();
-        if (this.onHit) {
-            this.onHit(this);
-        }
+        this.OnHitListeners.forEach(listener => listener(this));
     }
 
     private MoveInDirection(delta: number): void {
@@ -143,7 +147,7 @@ export class Fireball implements IProjectile {
         } else {
             this.hitSound.Play();
             this.alreadyHit = true;
-            this.onHit(this);
+            this.OnHitListeners.forEach(listener => listener(this));
         }
     }
 

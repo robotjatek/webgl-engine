@@ -9,6 +9,8 @@ import { TexturePool } from './TexturePool';
 import { Utils } from './Utils';
 import { Hero } from './Hero';
 import { SoundEffectPool } from './SoundEffectPool';
+import { IProjectile } from './Projectiles/IProjectile';
+import { Fireball } from './Projectiles/Fireball';
 
 // TODO: dragon can actively attack with projectiles or a short range attack
 // TODO: short range attack can be a stationary projectile, like the hero's sword attack
@@ -62,7 +64,7 @@ export class DragonEnemy implements ICollider {
         private collider: ICollider,
         private hero: Hero,
         private onDeath: (sender: DragonEnemy) => void,
-        private spawnProjectiles: (sender: DragonEnemy) => void
+        private spawnProjectiles: (sender: DragonEnemy, projectile: IProjectile) => void
     ) {
         this.sprite.textureOffset = this.leftFacingAnimationFrames[0];
         this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
@@ -95,6 +97,7 @@ export class DragonEnemy implements ICollider {
         this.enemyDamageSound.Play();
         this.health--;
         this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
+        // TODO: dragon does not have velocity at the moment
         //vec3.set(this.velocity, pushbackForce[0], pushbackForce[1], 0);
 
         this.damaged = true;
@@ -124,7 +127,7 @@ export class DragonEnemy implements ICollider {
 
     public Update(delta: number): void {
         // TODO: uncomment to make dragon to be able to attack
-        //this.timeSinceLastAttack += delta;
+        this.timeSinceLastAttack += delta;
 
         // Face in the direction of the hero
         const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);
@@ -143,7 +146,16 @@ export class DragonEnemy implements ICollider {
         if (vec3.distance(this.CenterPosition, this.hero.CenterPosition) < 30
             && this.timeSinceLastAttack > 3000) {
             this.timeSinceLastAttack = 0;
-            this.spawnProjectiles(this);
+
+            const projectileCenter = this.FacingDirection[0] > 0 ?
+                vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-3, 1, 0)) :
+                vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(3, 1, 0));
+            const fireball = new Fireball(
+                projectileCenter,
+                vec3.clone(this.FacingDirection),
+                this.collider);
+
+            this.spawnProjectiles(this, fireball);
         }
 
         // Follow hero on the Y axis with a little delay.

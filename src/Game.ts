@@ -11,7 +11,6 @@ import { LevelEnd } from './LevelEnd';
 import { SlimeEnemy } from './SlimeEnemy';
 import { SoundEffectPool } from './SoundEffectPool';
 import { MeleeAttack } from './Projectiles/MeleeAttack';
-import { Fireball } from './Projectiles/Fireball';
 import { IProjectile } from './Projectiles/IProjectile';
 import { ControllerHandler } from './ControllerHandler';
 import { XBoxControllerKeys } from './XBoxControllerKeys';
@@ -97,6 +96,7 @@ export class Game {
       (sender: DragonEnemy, projectile: IProjectile) => {
         this.enemyProjectiles.push(projectile);
         // Despawn projectile that hit
+         // TODO: instead of accessing a public array, projectiles should have a subscribe method
         projectile.OnHitListeners.push(s => this.RemoveProjectile(s));
       }
     )];
@@ -213,14 +213,13 @@ export class Game {
     if (this.attack && !this.attack.AlreadyHit) {
       const enemiesCollidingWithProjectile = this.enemies.filter(e => e.IsCollidingWidth(this.attack.BoundingBox));
       // Pushback force does not necessarily mean the amount of pushback. A big enemy can ignore a sword attack for example
-      const pushbackForce = vec3.fromValues(this.hero.FacingDirection[0] / 10, -0.005, 0);
-      enemiesCollidingWithProjectile.forEach(e => e.Damage(pushbackForce));
+      enemiesCollidingWithProjectile.forEach(e => e.Damage(this.attack.PushbackForce));
 
       // TODO: merge dragon with other enemies
       const collidingDragonsWithProjectile = this.dragons.filter(e => e.IsCollidingWidth(this.attack.BoundingBox));
       collidingDragonsWithProjectile.forEach(d => d.Damage(vec3.create()));
 
-      this.attack.AlreadyHit = true;
+      this.attack.OnHit();
     }
 
     this.CheckForEndCondition();
@@ -257,7 +256,8 @@ export class Game {
         vec3.add(vec3.create(), this.hero.Position, vec3.fromValues(-2.5, 0, 0));
       this.hero.Attack(() => {
         // TODO: creating an attack instance on every attack is wasteful.
-        this.attack = new MeleeAttack(attackPosition);
+        // TODO: I need to dispose resources after attack is done
+        this.attack = new MeleeAttack(attackPosition, this.hero.FacingDirection);
       });
     }
 
@@ -310,6 +310,9 @@ export class Game {
 
   private RestartLevel() {
     // TODO: dispose all disposables
+    this.enemyProjectiles.forEach(p => p.Dispose());
+    this.enemyProjectiles = [];
+
     this.InitCoins();
     this.InitHero();
     this.InitEnemies();

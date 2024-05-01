@@ -353,7 +353,7 @@ export class Hero {
     }
   }
 
-  // TODO: make this generic tho be able to collide with other enemies
+  // TODO: make this generic to be able to collide with other enemies
   // TODO: maybe an interact method
   // TODO: handle collision with other object types?
   // TODO: visitor pattern for handling collisions with other enemy types?
@@ -396,11 +396,10 @@ export class Hero {
   }
 
   public InteractWithProjectile(projectile: IProjectile): void {
-    if (!projectile.AlreadyHit) {
-      const pushbackForce = vec3.create(); // TODO: calculate pushback (is it needed here?)
+    if (!projectile.AlreadyHit && this.state !== State.DEAD) {
+      const pushbackForce = projectile.PushbackForce;
       this.Damage(pushbackForce);
-      projectile.AlreadyHit = true;
-      projectile.CallHitEventHandlers();
+      projectile.OnHit();
     }
   }
 

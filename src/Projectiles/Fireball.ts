@@ -73,8 +73,9 @@ export class Fireball implements IProjectile {
         return this.alreadyHit;
     }
 
-    public set AlreadyHit(value: boolean) {
-        this.alreadyHit = value;
+    public OnHit(): void {
+        this.hitSound.Play();
+        this.alreadyHit = true;
     }
 
     public get BoundingBox(): BoundingBox {
@@ -83,18 +84,25 @@ export class Fireball implements IProjectile {
         return new BoundingBox(bbPos, this.bbSize);
     }
 
+    public get PushbackForce(): vec3 {
+        // No pushback from a fireball
+        return vec3.create();
+    }
+
     public Dispose(): void {
         // TODO: Dispose all disposables
         console.error('Hey, you really should dispose this!');
     }
 
     public Draw(proj: mat4, view: mat4): void {
-        const topleft = vec3.sub(vec3.create(), this.centerPosition, vec3.fromValues(this.visualScale[0] / 2, this.visualScale[1] / 2, 0));
-        mat4.translate(this.batch.ModelMatrix, mat4.create(), topleft);
-        mat4.scale(this.batch.ModelMatrix,
-            this.batch.ModelMatrix,
-            vec3.fromValues(this.visualScale[0], this.visualScale[1], 1));
-        this.batch.Draw(proj, view);
+        if (!this.alreadyHit) {
+            const topleft = vec3.sub(vec3.create(), this.centerPosition, vec3.fromValues(this.visualScale[0] / 2, this.visualScale[1] / 2, 0));
+            mat4.translate(this.batch.ModelMatrix, mat4.create(), topleft);
+            mat4.scale(this.batch.ModelMatrix,
+                this.batch.ModelMatrix,
+                vec3.fromValues(this.visualScale[0], this.visualScale[1], 1));
+            this.batch.Draw(proj, view);
+        }
 
         // Draw bb
         // mat4.translate(this.bbBatch.ModelMatrix, mat4.create(), this.BoundingBox.position);
@@ -116,6 +124,10 @@ export class Fireball implements IProjectile {
             this.spawnSoundPlayed = true;
         }
         this.MoveInDirection(delta);
+
+        if (this.alreadyHit) {
+            this.OnHitListeners.forEach(l => l(this));
+        }
     }
 
     public IsCollidingWith(boundingBox: BoundingBox): boolean {

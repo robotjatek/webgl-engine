@@ -41,7 +41,7 @@ export class MeleeAttack implements IProjectile {
     private alreadyHit = false;
     private animationFinished = false;
 
-    constructor(private position: vec3) {
+    constructor(private position: vec3, private facingDirection: vec3) {
         //  this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0, 0, 1, 0.5));
         //  this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.5));
     }
@@ -52,6 +52,7 @@ export class MeleeAttack implements IProjectile {
     }
 
     public Dispose(): void {
+        // TODO: dispose
         throw new Error('Method not implemented.');
     }
 
@@ -64,12 +65,18 @@ export class MeleeAttack implements IProjectile {
         return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize);
     }
 
+    public get PushbackForce(): vec3 {
+        const pushbackForce = vec3.fromValues(this.facingDirection[0] / 10, -0.005, 0);
+        return pushbackForce;
+    }
+
     public get AlreadyHit(): boolean {
         return this.alreadyHit;
     }
 
-    public set AlreadyHit(hit: boolean) {
-        this.alreadyHit = hit;
+    public OnHit(): void {
+        this.alreadyHit = true;
+        // no hit sound here for the moment as it can differ on every enemy type
     }
 
     // TODO: drawing logic for entities should be an ECS

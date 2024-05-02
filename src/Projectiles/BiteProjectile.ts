@@ -17,6 +17,8 @@ export class BiteProjectile implements IProjectile {
     private animationFinished = false;
     private currentFrameTime: number = 0;
     private currentAnimationFrame: number = 0;
+    
+    // TODO: flip texure, to achive left and right facing bite attack
     private currentFrameSet: vec2[] = [
         vec2.fromValues(0 / 5, 0 / 2),
         vec2.fromValues(1 / 5, 0 / 2),
@@ -25,7 +27,7 @@ export class BiteProjectile implements IProjectile {
     ];
 
     private bbOffset = vec3.fromValues(0, 0, 0);
-    private bbSize = vec2.fromValues(1, 1);
+    private bbSize = vec2.fromValues(1.6, 1.6);
 
     private spriteVisualScale = vec3.fromValues(5, 5, 0);
     private texture = TexturePool.GetInstance().GetTexture('Fang.png');

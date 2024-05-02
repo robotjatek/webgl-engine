@@ -13,8 +13,10 @@ import { Waypoint } from './Waypoint';
 // TODO: choose correct animation based on the facing direction (like in dragon or fireball)
 // TODO: spike enemy: stationary enemy, cannot be damaged
 // TODO: enemy that cannot be stomped only attacked (spiky enemy?)
-// TODO: enemy follows the player
-// TODO: enemy attacks the player
+
+/**
+ * Slime enemy is a passive enemy, meaning it does not actively attack the player, but it hurts when contacted directly
+ */
 export class SlimeEnemy implements ICollider {
 
     private targetWaypoint: Waypoint;

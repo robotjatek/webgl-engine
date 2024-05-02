@@ -13,9 +13,25 @@ import { IProjectile } from './Projectiles/IProjectile';
 import { Fireball } from './Projectiles/Fireball';
 import { BiteProjectile } from './Projectiles/BiteProjectile';
 
-// TODO: dragon should signal the short range attack before attacking
-// TODO: do regular collision with the dragon should happen? Should stomp on dragon be possible?
+enum State {
+    IDLE = 'idle',
+    RUSH = 'rush'
+}
+
+enum RushState {
+    START = 'start',
+    BACKING = 'backing',
+    CHARGE = 'charge'
+}
+
 export class DragonEnemy implements ICollider {
+    private state: State = State.IDLE;
+    private rushState: RushState = RushState.START;
+    private timeInBacking = 0;
+    private timeInCharge = 0;
+    private timeSinceLastCharge = 0;
+    private herosLastPositionWhenTheChargingStarted = vec3.create();
+
     // Animation related
     private currentFrameTime: number = 0;
     private currentAnimationFrame: number = 0;
@@ -49,6 +65,8 @@ export class DragonEnemy implements ICollider {
     private enemyDamageSound = SoundEffectPool.GetInstance().GetAudio('audio/enemy_damage.wav');
     private enemyDeathSound = SoundEffectPool.GetInstance().GetAudio('audio/enemy_death.wav');
     private biteAttackSound = SoundEffectPool.GetInstance().GetAudio('audio/bite2.wav');
+    private rushSound = SoundEffectPool.GetInstance().GetAudio('audio/dragon_roar.mp3');
+    private backingStartSound = SoundEffectPool.GetInstance().GetAudio('audio/charge_up.mp3');
     private damagedTime = 0;
     private damaged = false;
 
@@ -68,7 +86,7 @@ export class DragonEnemy implements ICollider {
         private spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void
     ) {
         this.sprite.textureOffset = this.leftFacingAnimationFrames[0];
-        //this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
+        //  this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
     }
 
     public get Position(): vec3 {
@@ -95,12 +113,13 @@ export class DragonEnemy implements ICollider {
     }
 
     public Damage(pushbackForce: vec3): void {
+        // Dragon ignores pushback at the moment
+
         this.enemyDamageSound.Play();
         this.health--;
         this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
         // TODO: dragon does not have velocity at the moment
         //vec3.set(this.velocity, pushbackForce[0], pushbackForce[1], 0);
-        // Dragon ignores pushback at the moment
 
         this.damaged = true;
         if (this.health <= 0) {
@@ -118,7 +137,7 @@ export class DragonEnemy implements ICollider {
             this.batch.ModelMatrix,
             vec3.fromValues(this.visualScale[0], this.visualScale[1], 1));
 
-        // TODO: bounding box drawing
+        // Bounding box drawing
         this.bbBatch.Draw(proj, view);
         mat4.translate(this.bbBatch.ModelMatrix, mat4.create(), this.BoundingBox.position);
         mat4.scale(
@@ -128,10 +147,8 @@ export class DragonEnemy implements ICollider {
     }
 
     public Update(delta: number): void {
-        // TODO: separate timers for the long range and the short range attacks
-        // TODO: short range attack only when the hero spent some time near
-        // TODO: uncomment to make dragon to be able to attack
         this.timeSinceLastAttack += delta;
+        this.timeSinceLastCharge += delta;
 
         // Face in the direction of the hero
         const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);
@@ -148,29 +165,40 @@ export class DragonEnemy implements ICollider {
 
         // Attack when hero is near
         const distance = vec3.distance(this.CenterPosition, this.hero.CenterPosition);
-        if (this.timeSinceLastAttack > 3000) {
-            this.timeSinceLastAttack = 0;
+        if (this.state !== State.RUSH) {
+            if (this.timeSinceLastAttack > 2000) {
+                this.timeSinceLastAttack = 0;
 
-            if (distance < 30 && distance > 10) {
-                const projectileCenter = this.FacingDirection[0] > 0 ?
-                    vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-3, 1, 0)) :
-                    vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(3, 1, 0));
-                const fireball = new Fireball(
-                    projectileCenter,
-                    vec3.clone(this.FacingDirection),
-                    this.collider);
+                // Spit fireball
+                if (distance < 30 && distance > 10) {
+                    const projectileCenter = this.FacingDirection[0] > 0 ?
+                        vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-3, 1, 0)) :
+                        vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(3, 1, 0));
+                    const fireball = new Fireball(
+                        projectileCenter,
+                        vec3.clone(this.FacingDirection),
+                        this.collider);
 
-                this.spawnProjectile(this, fireball);
-            } else if (distance < 5) {
-                const projectileCenter = this.FacingDirection[0] > 0 ?
-                    vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-3, 1, 0)) :
-                    vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(3, 1, 0));
-                const bite = new BiteProjectile(projectileCenter, this.FacingDirection);
-                this.biteAttackSound.Play();
-                this.spawnProjectile(this, bite);
+                    this.spawnProjectile(this, fireball);
+                }
+                // Bite
+                else if (distance < 5) {
+                    const projectileCenter = this.FacingDirection[0] > 0 ?
+                        vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-3, 1, 0)) :
+                        vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(3, 1, 0));
+                    const bite = new BiteProjectile(projectileCenter, this.FacingDirection);
+                    this.biteAttackSound.Play();
+                    this.spawnProjectile(this, bite);
+                }
             }
         }
 
+        if (distance < 20 && distance > 5 && this.timeSinceLastCharge > 5000) {
+            this.state = State.RUSH;
+            this.timeSinceLastCharge = 0;
+            this.timeSinceLastAttack = 0;
+        }
+        this.HandleRushState(delta);
         // Follow hero on the Y axis with a little delay.
         // "Delay" is achieved by moving the dragon slower than the hero movement speed.
         this.MatchHeroHeight(delta);
@@ -193,15 +221,28 @@ export class DragonEnemy implements ICollider {
     }
 
     private MatchHeroHeight(delta: number): void {
-        // Reduce shaking by only moving when the distance is larger than a limit
-        const distance = Math.abs(this.hero.CenterPosition[1] - this.CenterPosition[1]);
-        if (distance > 0.2) {
-            const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);
-            if (dir[1] > 0) {
-                this.MoveOnY(-0.0025, delta);
-            } else if (dir[1] < 0) {
-                this.MoveOnY(0.0025, delta);
+        if (this.rushState !== RushState.CHARGE) {
+            // Reduce shaking by only moving when the distance is larger than a limit
+            const distance = Math.abs(this.hero.CenterPosition[1] - this.CenterPosition[1]);
+            if (distance > 0.2) {
+                const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);
+                if (dir[1] > 0) {
+                    this.MoveOnY(-0.0025, delta);
+                } else if (dir[1] < 0) {
+                    this.MoveOnY(0.0025, delta);
+                }
             }
+        }
+    }
+
+    private MoveOnX(amount: number, delta: number): void {
+        // TODO: this fails with fast movement speed
+        const nextPosition = vec3.fromValues(this.position[0] + amount * delta, this.position[1], 0);
+        if (!this.CheckCollisionWithCollider(nextPosition)) {
+            this.position = nextPosition;
+        } else {
+            this.state = State.IDLE;
+            this.rushState = RushState.START;
         }
     }
 
@@ -228,6 +269,65 @@ export class DragonEnemy implements ICollider {
             const currentFrame = this.currentFrameSet[this.currentAnimationFrame];
             this.sprite.textureOffset = currentFrame;
             this.currentFrameTime = 0;
+        }
+    }
+
+    private HandleRushState(delta: number): void {
+        if (this.state === State.RUSH) {
+            if (this.rushState === RushState.START) {
+                this.timeInBacking = 0;
+                this.rushState = RushState.BACKING;
+                this.backingStartSound.Play(1.0, 0.3);
+            } else if (this.rushState === RushState.BACKING) {
+                this.timeInBacking += delta
+                const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);
+                if (dir[0] > 0) {
+                    this.MoveOnX(0.0035, delta);
+                } else if (dir[0] < 0) {
+                    this.MoveOnX(-0.0035, delta);
+                }
+
+                if (this.timeInBacking > 3000 || (vec3.distance(this.CenterPosition, this.hero.CenterPosition) > 15 && this.timeInBacking > 1000)) {
+                    this.timeInBacking = 0;
+                    this.rushState = RushState.CHARGE;
+                    this.herosLastPositionWhenTheChargingStarted = vec3.clone(this.hero.CenterPosition);
+                    this.rushSound.Play();
+                }
+            } else if (this.rushState === RushState.CHARGE) {
+                this.timeInCharge += delta;
+                this.timeSinceLastAttack = 0;
+                this.timeSinceLastCharge = 0;
+                const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);
+                if (dir[0] > 0) {
+                    this.MoveOnX(-0.04, delta);
+                } else if (dir[0] < 0) {
+                    this.MoveOnX(0.04, delta);
+                }
+
+                // Move out of charge state when Y position is the same when charging started
+                const distanceOnX = Math.abs(this.CenterPosition[0] - this.hero.CenterPosition[0]);
+                if (distanceOnX < 4) {
+                    this.state = State.IDLE;
+                    this.rushState = RushState.START;
+                    this.timeInCharge = 0;
+
+                    // Spawn a bite projectile immediatelly
+                    // This is handled differently from the normal attack, when the hero remains close
+                    const projectileCenter = this.FacingDirection[0] > 0 ?
+                        vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-3, 1, 0)) :
+                        vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(3, 1, 0));
+                    const bite = new BiteProjectile(projectileCenter, vec3.clone(this.FacingDirection));
+                    this.biteAttackSound.Play();
+                    this.spawnProjectile(this, bite);
+                    this.timeSinceLastAttack = 0;
+                    return;
+                } else if (this.timeInCharge > 3000) {
+                    this.state = State.IDLE;
+                    this.rushState = RushState.START;
+                    this.timeInCharge = 0;
+                    return;
+                }
+            }
         }
     }
 

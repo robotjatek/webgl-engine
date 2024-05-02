@@ -41,6 +41,8 @@ export class TexturePool {
         this.GetTexture('ground0.png');
         this.GetTexture('exit.png');
         this.GetTexture('fireball.png');
+        this.GetTexture('Fang.png');
+        this.GetTexture('bg.jpg');
     }
 
     /**

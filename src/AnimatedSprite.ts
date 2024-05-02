@@ -1,6 +1,7 @@
 import { vec2 } from "gl-matrix";
 import { Sprite } from "./Sprite";
 
+// TODO: somehow I should reuse the for all animated sprites, like projectiles and enemies
 export class AnimatedSprite extends Sprite {
     private frameNumber = 0;
     private currentFrameTime = 0;

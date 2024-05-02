@@ -30,5 +30,17 @@ export class SoundEffectPool {
         this.GetAudio('audio/level.mp3', false);
         this.GetAudio('audio/fireball_spawn.mp3');
         this.GetAudio('audio/sword.mp3');
+        this.GetAudio('audio/enemy_damage.wav');
+        this.GetAudio('audio/enemy_death.wav');
+        this.GetAudio('audio/bite2.wav');
+        this.GetAudio('audio/jump.wav');
+        this.GetAudio('audio/land.wav', false);
+        this.GetAudio('audio/walk1.wav', false);
+        this.GetAudio('audio/hero_stomp.wav', true);
+        this.GetAudio('audio/hero_damage.wav');
+        this.GetAudio('audio/hero_die.wav', false);
+        this.GetAudio('audio/collect.mp3');
+        this.GetAudio('audio/dragon_roar.mp3');
+        this.GetAudio('audio/charge_up.mp3');
     }
 }

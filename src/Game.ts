@@ -8,14 +8,15 @@ import { Hero } from './Hero';
 import { Keys } from './Keys';
 import { CoinObject } from './CoinObject';
 import { LevelEnd } from './LevelEnd';
-import { SlimeEnemy } from './SlimeEnemy';
+import { SlimeEnemy } from './Enemies/SlimeEnemy';
 import { SoundEffectPool } from './SoundEffectPool';
 import { MeleeAttack } from './Projectiles/MeleeAttack';
 import { IProjectile } from './Projectiles/IProjectile';
 import { ControllerHandler } from './ControllerHandler';
 import { XBoxControllerKeys } from './XBoxControllerKeys';
 import { TexturePool } from './TexturePool';
-import { DragonEnemy } from './DragonEnemy';
+import { DragonEnemy } from './Enemies/DragonEnemy';
+import { IEnemy } from './Enemies/IEnemy';
 import * as _ from 'lodash';
 
 // TODO: recheck every vector passing. Sometimes vectors need to be cloned
@@ -42,8 +43,7 @@ export class Game {
   private paused: boolean = false;
 
   // TODO: spawned objects should be in the Level object itself, not in Game.ts
-  private enemies: SlimeEnemy[] = [];
-  private dragons: DragonEnemy[] = [];
+  private enemies: IEnemy[] = [];
   private levelEndOpenSoundEffect = SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);
   private levelEndSoundPlayed = false;
 
@@ -83,45 +83,47 @@ export class Game {
   }
 
   private InitEnemies() {
-    this.dragons = [new DragonEnemy(
-      vec3.fromValues(20, Environment.VerticalTiles - 7, 1),
-      vec2.fromValues(5, 5),
-      this.level.MainLayer,
-      this.hero, // To track where the hero is, i want to move as much of the game logic from the update loop as possible
+    const dragons = [
+      new DragonEnemy(
+        vec3.fromValues(55, Environment.VerticalTiles - 7, 1),
+        vec2.fromValues(5, 5),
+        this.level.MainLayer,
+        this.hero, // To track where the hero is, i want to move as much of the game logic from the update loop as possible
 
-      (sender: DragonEnemy) => { this.RemoveDragon(sender) }, // onDeath
+        (sender: DragonEnemy) => { this.RemoveEnemy(sender) }, // onDeath
 
-      // TODO: spawn multiple types of projectiles
-      // Spawn projectile
-      (sender: DragonEnemy, projectile: IProjectile) => {
-        this.enemyProjectiles.push(projectile);
-        // Despawn projectile that hit
-         // TODO: instead of accessing a public array, projectiles should have a subscribe method
-        projectile.OnHitListeners.push(s => this.RemoveProjectile(s));
-      }
-    )];
+        // Spawn projectile
+        (sender: DragonEnemy, projectile: IProjectile) => {
+          this.enemyProjectiles.push(projectile);
+          // Despawn projectile that hit
+          // TODO: instead of accessing a public array, projectiles should have a subscribe method
+          projectile.OnHitListeners.push(s => this.RemoveProjectile(s));
+        }
+      )
+    ];
 
-    // this.enemies = [new SlimeEnemy(
-    //   vec3.fromValues(25, Environment.VerticalTiles - 5, 1),
-    //   vec2.fromValues(3, 3),
-    //   this.level.MainLayer,
-    //   (e) => this.RemoveEnemy(e)),
+    const slimes = [
+      new SlimeEnemy(
+        vec3.fromValues(25, Environment.VerticalTiles - 5, 1),
+        vec2.fromValues(3, 3),
+        this.level.MainLayer,
+        (e) => this.RemoveEnemy(e)),
 
-    // new SlimeEnemy(
-    //   vec3.fromValues(34, Environment.VerticalTiles - 5, 1),
-    //   vec2.fromValues(3, 3),
-    //   this.level.MainLayer,
-    //   (e) => this.RemoveEnemy(e)),
-    // ];
+      new SlimeEnemy(
+        vec3.fromValues(34, Environment.VerticalTiles - 5, 1),
+        vec2.fromValues(3, 3),
+        this.level.MainLayer,
+        (e) => this.RemoveEnemy(e))
+    ];
+
+    this.enemies = [
+      ...slimes,
+      ...dragons
+    ];
   }
 
-  private RemoveEnemy(toRemove: SlimeEnemy): void {
+  private RemoveEnemy(toRemove: IEnemy): void {
     this.enemies = this.enemies.filter(e => e !== toRemove);
-  }
-
-  // TODO: merge with Remove enemy
-  private RemoveDragon(toRemove: DragonEnemy): void {
-    this.dragons = this.dragons.filter(e => e !== toRemove);
   }
 
   private RemoveProjectile(projectile: IProjectile): void {
@@ -186,8 +188,6 @@ export class Game {
 
     this.hero.Draw(this.projectionMatrix, this.camera.ViewMatrix);
     this.enemies.forEach(e => e.Draw(this.projectionMatrix, this.camera.ViewMatrix));
-    // TODO: merge enemy arrays
-    this.dragons.forEach(d => d.Draw(this.projectionMatrix, this.camera.ViewMatrix));
     this.levelEnd.Draw(this.projectionMatrix, this.camera.ViewMatrix);
 
     this.attack?.Draw(this.projectionMatrix, this.camera.ViewMatrix);
@@ -211,13 +211,9 @@ export class Game {
     this.coins = this.coins.filter((coin) => !coin.IsCollidingWidth(this.hero.BoundingBox))
 
     if (this.attack && !this.attack.AlreadyHit) {
-      const enemiesCollidingWithProjectile = this.enemies.filter(e => e.IsCollidingWidth(this.attack.BoundingBox));
+      const enemiesCollidingWithProjectile = this.enemies.filter(e => e.IsCollidingWidth(this.attack.BoundingBox, false));
       // Pushback force does not necessarily mean the amount of pushback. A big enemy can ignore a sword attack for example
       enemiesCollidingWithProjectile.forEach(e => e.Damage(this.attack.PushbackForce));
-
-      // TODO: merge dragon with other enemies
-      const collidingDragonsWithProjectile = this.dragons.filter(e => e.IsCollidingWidth(this.attack.BoundingBox));
-      collidingDragonsWithProjectile.forEach(d => d.Damage(vec3.create()));
 
       this.attack.OnHit();
     }
@@ -263,8 +259,8 @@ export class Game {
 
     this.enemies.forEach(e => {
       e.Update(elapsedTime);
-      if (e.IsCollidingWidth(this.hero.BoundingBox)) {
-        this.hero.Collide(e, elapsedTime);
+      if (e.IsCollidingWidth(this.hero.BoundingBox, false)) {
+        this.hero.Collide(e);
       }
     });
 
@@ -281,10 +277,7 @@ export class Game {
         partitions[1].forEach(toDispose => toDispose.Dispose());
         this.enemyProjectiles = partitions[0];
       }
-    })
-
-    // TODO: merge enemy arrays
-    this.dragons.forEach(e => e.Update(elapsedTime));
+    });
 
     this.camera.LookAtPosition(vec3.clone(this.hero.Position), this.level.MainLayer);
   }

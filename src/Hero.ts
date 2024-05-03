@@ -8,8 +8,10 @@ import { Utils } from './Utils';
 import { BoundingBox } from './BoundingBox';
 import { ICollider } from './ICollider';
 import { SoundEffectPool } from './SoundEffectPool';
-import { SlimeEnemy } from './SlimeEnemy';
+import { SlimeEnemy } from './Enemies/SlimeEnemy';
 import { IProjectile } from './Projectiles/IProjectile';
+import { DragonEnemy } from './Enemies/DragonEnemy';
+import { IEnemy } from './Enemies/IEnemy';
 
 enum State {
   IDLE = 'idle',
@@ -353,11 +355,16 @@ export class Hero {
     }
   }
 
-  // TODO: make this generic to be able to collide with other enemies
-  // TODO: maybe an interact method
   // TODO: handle collision with other object types?
-  // TODO: visitor pattern for handling collisions with other enemy types?
-  public Collide(enemy: SlimeEnemy, delta: number): void {
+  public Collide(enemy: IEnemy): void {
+    enemy.Visit(this);
+  }
+
+  public CollideWithDragon(enemy: DragonEnemy): void {
+    // Do nothing
+  }
+  
+  public CollideWithSlime(enemy: SlimeEnemy): void {
     if (this.state !== State.STOMP) {
       if (!this.invincible) {
         // Damage and pushback hero on collision.

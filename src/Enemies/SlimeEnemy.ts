@@ -1,14 +1,16 @@
-import { ICollider } from './ICollider';
+import { ICollider } from '../ICollider';
 import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
-import { Sprite } from './Sprite';
-import { Utils } from './Utils';
-import { SpriteBatch } from './SpriteBatch';
-import { Shader } from './Shader';
-import { Texture } from './Texture';
-import { TexturePool } from './TexturePool';
-import { BoundingBox } from './BoundingBox';
-import { SoundEffectPool } from './SoundEffectPool';
-import { Waypoint } from './Waypoint';
+import { Sprite } from '../Sprite';
+import { Utils } from '../Utils';
+import { SpriteBatch } from '../SpriteBatch';
+import { Shader } from '../Shader';
+import { Texture } from '../Texture';
+import { TexturePool } from '../TexturePool';
+import { BoundingBox } from '../BoundingBox';
+import { SoundEffectPool } from '../SoundEffectPool';
+import { Waypoint } from '../Waypoint';
+import { IEnemy } from './IEnemy';
+import { Hero } from '../Hero';
 
 // TODO: choose correct animation based on the facing direction (like in dragon or fireball)
 // TODO: spike enemy: stationary enemy, cannot be damaged
@@ -17,7 +19,7 @@ import { Waypoint } from './Waypoint';
 /**
  * Slime enemy is a passive enemy, meaning it does not actively attack the player, but it hurts when contacted directly
  */
-export class SlimeEnemy implements ICollider {
+export class SlimeEnemy implements IEnemy {
 
     private targetWaypoint: Waypoint;
     // A little variation in movement speed;
@@ -66,6 +68,10 @@ export class SlimeEnemy implements ICollider {
         this.targetWaypoint = new Waypoint(targetPosition);
         this.targetWaypoint.next = originalWaypoint;
         originalWaypoint.next = this.targetWaypoint;
+    }
+
+    public Visit(hero: Hero): void {
+        hero.CollideWithSlime(this);
     }
 
     public get Position(): vec3 {

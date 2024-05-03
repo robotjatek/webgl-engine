@@ -1,17 +1,18 @@
 import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
-import { BoundingBox } from './BoundingBox';
-import { ICollider } from './ICollider';
-import { Shader } from './Shader';
-import { Sprite } from './Sprite';
-import { SpriteBatch } from './SpriteBatch';
-import { Texture } from './Texture';
-import { TexturePool } from './TexturePool';
-import { Utils } from './Utils';
-import { Hero } from './Hero';
-import { SoundEffectPool } from './SoundEffectPool';
-import { IProjectile } from './Projectiles/IProjectile';
-import { Fireball } from './Projectiles/Fireball';
-import { BiteProjectile } from './Projectiles/BiteProjectile';
+import { BoundingBox } from '../BoundingBox';
+import { ICollider } from '../ICollider';
+import { Shader } from '../Shader';
+import { Sprite } from '../Sprite';
+import { SpriteBatch } from '../SpriteBatch';
+import { Texture } from '../Texture';
+import { TexturePool } from '../TexturePool';
+import { Utils } from '../Utils';
+import { Hero } from '../Hero';
+import { SoundEffectPool } from '../SoundEffectPool';
+import { IProjectile } from '../Projectiles/IProjectile';
+import { Fireball } from '../Projectiles/Fireball';
+import { BiteProjectile } from '../Projectiles/BiteProjectile';
+import { IEnemy } from './IEnemy';
 
 enum State {
     IDLE = 'idle',
@@ -24,7 +25,7 @@ enum RushState {
     CHARGE = 'charge'
 }
 
-export class DragonEnemy implements ICollider {
+export class DragonEnemy implements IEnemy {
     private state: State = State.IDLE;
     private rushState: RushState = RushState.START;
     private timeInBacking = 0;
@@ -89,6 +90,10 @@ export class DragonEnemy implements ICollider {
         //  this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
     }
 
+    public Visit(hero: Hero): void {
+        hero.CollideWithDragon(this);
+    }
+
     public get Position(): vec3 {
         return this.position;
     }
@@ -112,6 +117,7 @@ export class DragonEnemy implements ICollider {
         return boundingBox.IsCollidingWith(this.BoundingBox);
     }
 
+    // TODO: cancel charge when damaged
     public Damage(pushbackForce: vec3): void {
         // Dragon ignores pushback at the moment
 

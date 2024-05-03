@@ -22,7 +22,9 @@ enum State {
 enum RushState {
     START = 'start',
     BACKING = 'backing',
-    CHARGE = 'charge'
+    CHARGE = 'charge',
+    PRE_ATTACK = 'pre-attack',
+    ATTACK = 'attack'
 }
 
 export class DragonEnemy implements IEnemy {
@@ -31,6 +33,7 @@ export class DragonEnemy implements IEnemy {
     private timeInBacking = 0;
     private timeInCharge = 0;
     private timeSinceLastCharge = 0;
+    private timeinPreAttack = 0;
     private herosLastPositionWhenTheChargingStarted = vec3.create();
 
     // Animation related
@@ -87,7 +90,7 @@ export class DragonEnemy implements IEnemy {
         private spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void
     ) {
         this.sprite.textureOffset = this.leftFacingAnimationFrames[0];
-        //  this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
+          this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
     }
 
     public Visit(hero: Hero): void {
@@ -133,6 +136,11 @@ export class DragonEnemy implements IEnemy {
                 this.enemyDeathSound.Play();
                 this.onDeath(this);
             }
+        }
+
+        if (this.state === State.RUSH) {
+            this.state = State.IDLE;
+            this.rushState = RushState.START;
         }
     }
 
@@ -305,34 +313,37 @@ export class DragonEnemy implements IEnemy {
                 this.timeSinceLastCharge = 0;
                 const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);
                 if (dir[0] > 0) {
-                    this.MoveOnX(-0.04, delta);
+                    this.MoveOnX(-0.035, delta);
                 } else if (dir[0] < 0) {
-                    this.MoveOnX(0.04, delta);
+                    this.MoveOnX(0.035, delta);
                 }
 
-                // Move out of charge state when Y position is the same when charging started
+                // Move out of charge state when distance on the Y axis is close enough
                 const distanceOnX = Math.abs(this.CenterPosition[0] - this.hero.CenterPosition[0]);
-                if (distanceOnX < 4) {
-                    this.state = State.IDLE;
-                    this.rushState = RushState.START;
+                if (distanceOnX < 3) {
+                    this.rushState = RushState.PRE_ATTACK;
                     this.timeInCharge = 0;
-
-                    // Spawn a bite projectile immediatelly
-                    // This is handled differently from the normal attack, when the hero remains close
-                    const projectileCenter = this.FacingDirection[0] > 0 ?
-                        vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-3, 1, 0)) :
-                        vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(3, 1, 0));
-                    const bite = new BiteProjectile(projectileCenter, vec3.clone(this.FacingDirection));
-                    this.biteAttackSound.Play();
-                    this.spawnProjectile(this, bite);
-                    this.timeSinceLastAttack = 0;
-                    return;
-                } else if (this.timeInCharge > 3000) {
-                    this.state = State.IDLE;
-                    this.rushState = RushState.START;
-                    this.timeInCharge = 0;
-                    return;
                 }
+            } else if (this.rushState === RushState.PRE_ATTACK) {
+                this.timeinPreAttack += delta;
+
+                if (this.timeinPreAttack > 96) {
+                    this.timeinPreAttack = 0;
+                    this.rushState = RushState.ATTACK;
+                }
+            } else if (this.rushState === RushState.ATTACK) {
+                // Spawn a bite projectile
+                // This is handled differently from the normal attack, when the hero remains close
+                const projectileCenter = this.FacingDirection[0] > 0 ?
+                    vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-2.5, 1, 0)) :
+                    vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(2.5, 1, 0));
+                const bite = new BiteProjectile(projectileCenter, vec3.clone(this.FacingDirection));
+                this.biteAttackSound.Play();
+                this.spawnProjectile(this, bite);
+                this.timeSinceLastAttack = 0;
+                this.state = State.IDLE;
+                this.rushState = RushState.START;
+                return;
             }
         }
     }

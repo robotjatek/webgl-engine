@@ -36,13 +36,14 @@ export class TexturePool {
         this.GetTexture('Sword1.png');
         this.GetTexture('coin.png');
         this.GetTexture('monster1.png');
-        this.GetTexture('monster2.png');
+        this.GetTexture('Monster2.png');
         this.GetTexture('hero1.png');
         this.GetTexture('ground0.png');
         this.GetTexture('exit.png');
         this.GetTexture('fireball.png');
-        this.GetTexture('Fang.png');
+        this.GetTexture('fang.png');
         this.GetTexture('bg.jpg');
+        this.GetTexture('spike.png');
     }
 
     /**

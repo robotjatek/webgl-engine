@@ -30,7 +30,7 @@ export class BiteProjectile implements IProjectile {
     private bbSize = vec2.fromValues(1.6, 1.6);
 
     private spriteVisualScale = vec3.fromValues(5, 5, 0);
-    private texture = TexturePool.GetInstance().GetTexture('Fang.png');
+    private texture = TexturePool.GetInstance().GetTexture('fang.png');
     // TODO: i really should rename the fragment shader
     private shader: Shader = new Shader('shaders/VertexShader.vert', 'shaders/Hero.frag');
     private sprite: Sprite = new Sprite(Utils.DefaultSpriteVertices,

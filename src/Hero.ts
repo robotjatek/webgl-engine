@@ -12,6 +12,7 @@ import { SlimeEnemy } from './Enemies/SlimeEnemy';
 import { IProjectile } from './Projectiles/IProjectile';
 import { DragonEnemy } from './Enemies/DragonEnemy';
 import { IEnemy } from './Enemies/IEnemy';
+import { Spike } from './Enemies/Spike';
 
 enum State {
   IDLE = 'idle',
@@ -389,10 +390,17 @@ export class Hero {
     }
   }
 
+  public CollideWithSpike(enemy: Spike): void {
+    const pushback = vec3.fromValues(0, -0.018, 0);
+    if (!this.invincible) {
+      this.Damage(pushback);
+    }
+  }
+
   public Damage(pushbackForce: vec3): void {
     // TODO: This is almost a 1:1 copy from the Collide method
 
-    // Damage method should not consider the invincible flag because stomp also sets it
+    // Damage method should not consider the invincible flag because I dont want to cancel damage with projectiles when stomping
     if (this.state !== State.DEAD) {
       this.invincible = true;
       this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));

@@ -12,8 +12,6 @@ import { Waypoint } from '../Waypoint';
 import { IEnemy } from './IEnemy';
 import { Hero } from '../Hero';
 
-// TODO: choose correct animation based on the facing direction (like in dragon or fireball)
-// TODO: spike enemy: stationary enemy, cannot be damaged
 // TODO: enemy that cannot be stomped only attacked (spiky enemy?)
 
 /**

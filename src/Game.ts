@@ -18,6 +18,7 @@ import { TexturePool } from './TexturePool';
 import { DragonEnemy } from './Enemies/DragonEnemy';
 import { IEnemy } from './Enemies/IEnemy';
 import * as _ from 'lodash';
+import { Spike } from './Enemies/Spike';
 
 // TODO: recheck every vector passing. Sometimes vectors need to be cloned
 // TODO: correctly dispose objects that no longer exist => delete opengl resources, when an object is destroyed
@@ -116,9 +117,24 @@ export class Game {
         (e) => this.RemoveEnemy(e))
     ];
 
+    const spikes = [
+      new Spike(
+        vec3.fromValues(11, Environment.VerticalTiles - 2, 0),
+        vec2.fromValues(1, 1)),
+
+      new Spike(
+        vec3.fromValues(12, Environment.VerticalTiles - 2, 0),
+        vec2.fromValues(1, 1)),
+
+      new Spike(
+        vec3.fromValues(13, Environment.VerticalTiles - 2, 0),
+        vec2.fromValues(1, 1)),
+    ];
+
     this.enemies = [
       ...slimes,
-      ...dragons
+      ...dragons,
+      ...spikes
     ];
   }
 
@@ -142,8 +158,8 @@ export class Game {
 
   private InitCoins() {
     this.coins = [];
-    this.coins.push(new CoinObject(vec3.fromValues(10, 10, 0)));
-    this.coins.push(new CoinObject(vec3.fromValues(12, 10, 0)));
+    this.coins.push(new CoinObject(vec3.fromValues(21, 10, 0)));
+    this.coins.push(new CoinObject(vec3.fromValues(23, 10, 0)));
     this.coins.push(new CoinObject(vec3.fromValues(14, Environment.VerticalTiles - 3, 0)));
     this.coins.push(new CoinObject(vec3.fromValues(15, Environment.VerticalTiles - 3, 0)));
     this.coins.push(new CoinObject(vec3.fromValues(16, Environment.VerticalTiles - 3, 0)));
@@ -186,7 +202,6 @@ export class Game {
       coin.Update(elapsedTime);
     });
 
-    this.hero.Draw(this.projectionMatrix, this.camera.ViewMatrix);
     this.enemies.forEach(e => e.Draw(this.projectionMatrix, this.camera.ViewMatrix));
     this.levelEnd.Draw(this.projectionMatrix, this.camera.ViewMatrix);
 
@@ -195,13 +210,15 @@ export class Game {
 
     this.enemyProjectiles.forEach(p => p.Draw(this.projectionMatrix, this.camera.ViewMatrix));
 
+    this.hero.Draw(this.projectionMatrix, this.camera.ViewMatrix);
+
     requestAnimationFrame(this.Run.bind(this));
   }
 
   private Update(elapsedTime: number): void {
     // TODO: this is a hack because audio playback needs one user interaction before it can start. Also loading is async so I can start an audio file before its loaded
     // The later can be avoided by a press start screen, before starting the game
-    // this.level.PlayMusic(0.5);
+    this.level.PlayMusic(0.5);
 
     this.hero.Update(elapsedTime);
 
@@ -283,7 +300,7 @@ export class Game {
   }
 
   private CheckForEndCondition() {
-    this.levelEnd.IsEnabled = this.coins.length === 0 && this.enemies.length === 0;
+    this.levelEnd.IsEnabled = this.coins.length === 0;
     if (this.levelEnd.IsEnabled && !this.levelEndSoundPlayed) {
       this.levelEndOpenSoundEffect.Play();
       this.levelEndSoundPlayed = true;

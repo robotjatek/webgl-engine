@@ -52,7 +52,7 @@ export class DragonEnemy implements IEnemy {
     private currentFrameSet = this.leftFacingAnimationFrames;
 
     // Rendering related
-    private texture: Texture = TexturePool.GetInstance().GetTexture('monster2.png');
+    private texture: Texture = TexturePool.GetInstance().GetTexture('Monster2.png');
     private shader: Shader = new Shader('shaders/VertexShader.vert', 'shaders/Hero.frag');
     private sprite: Sprite = new Sprite(
         Utils.DefaultSpriteVertices,
@@ -94,7 +94,7 @@ export class DragonEnemy implements IEnemy {
     }
 
     public Visit(hero: Hero): void {
-        hero.CollideWithDragon(this);
+        hero.CollideWithDragon(this); // This call is not needad at all as hero does nothing with this interaction
     }
 
     public get Position(): vec3 {

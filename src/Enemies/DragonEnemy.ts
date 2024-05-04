@@ -90,7 +90,7 @@ export class DragonEnemy implements IEnemy {
         private spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void
     ) {
         this.sprite.textureOffset = this.leftFacingAnimationFrames[0];
-          this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
+        // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
     }
 
     public Visit(hero: Hero): void {
@@ -138,6 +138,7 @@ export class DragonEnemy implements IEnemy {
             }
         }
 
+        // Cancel rush on damage
         if (this.state === State.RUSH) {
             this.state = State.IDLE;
             this.rushState = RushState.START;
@@ -207,6 +208,7 @@ export class DragonEnemy implements IEnemy {
             }
         }
 
+        // Change to charge attack when the hero is in the attack interval
         if (distance < 20 && distance > 5 && this.timeSinceLastCharge > 5000) {
             this.state = State.RUSH;
             this.timeSinceLastCharge = 0;
@@ -251,12 +253,10 @@ export class DragonEnemy implements IEnemy {
 
     private MoveOnX(amount: number, delta: number): void {
         // TODO: this fails with fast movement speed
-        const nextPosition = vec3.fromValues(this.position[0] + amount * delta, this.position[1], 0);
+        const nextPosition =
+            vec3.fromValues(this.position[0] + amount * delta, this.position[1], this.position[2]);
         if (!this.CheckCollisionWithCollider(nextPosition)) {
             this.position = nextPosition;
-        } else {
-            this.state = State.IDLE;
-            this.rushState = RushState.START;
         }
     }
 
@@ -268,8 +268,11 @@ export class DragonEnemy implements IEnemy {
     }
 
     private CheckCollisionWithCollider(nextPosition: vec3): boolean {
-        const nextBoundingBox = new BoundingBox(vec3.add(vec3.create(), nextPosition, this.bbOffset), this.bbSize);
-        return this.collider.IsCollidingWidth(nextBoundingBox, false);
+        const nextBbPos = vec3.add(vec3.create(), nextPosition, this.bbOffset);
+        const nextBoundingBox = new BoundingBox(nextBbPos, this.bbSize);
+        const colliding = this.collider.IsCollidingWidth(nextBoundingBox, true);
+
+        return colliding;
     }
 
     private Animate(delta: number): void {
@@ -325,6 +328,7 @@ export class DragonEnemy implements IEnemy {
                     this.timeInCharge = 0;
                 }
             } else if (this.rushState === RushState.PRE_ATTACK) {
+                // The charge is completed but we wait a couple of frames before executing an attack
                 this.timeinPreAttack += delta;
 
                 if (this.timeinPreAttack > 96) {

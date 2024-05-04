@@ -33,6 +33,7 @@ export class Hero {
   private lastPosition: vec3 = vec3.fromValues(0, 0, 1);
   private velocity: vec3 = vec3.fromValues(0, 0, 0);
 
+  // TODO: BUG: Hero sometimes spawns its attack projectile in the wrong direction
   // TODO: longer range but much slower attack
   // TODO: make bb variables parametrizable
   // TODO: double jump

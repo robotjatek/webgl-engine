@@ -29,6 +29,18 @@ export class SlimeEnemy implements IEnemy {
 
     private currentFrameTime: number = 0;
     private currentAnimationFrame: number = 0;
+    private leftFacingAnimationFrames: vec2[] = [
+        vec2.fromValues(0 / 12, 3 / 8),
+        vec2.fromValues(1 / 12, 3 / 8),
+        vec2.fromValues(2 / 12, 3 / 8),
+    ];
+    private rightFacingAnimationFrames: vec2[] = [
+        vec2.fromValues(0 / 12, 1 / 8),
+        vec2.fromValues(1 / 12, 1 / 8),
+        vec2.fromValues(2 / 12, 1 / 8),
+    ];
+    private currentFrameSet = this.leftFacingAnimationFrames;
+
     private velocity: vec3 = vec3.fromValues(0, 0, 0);
     private lastPosition: vec3;
     private shader: Shader = new Shader('shaders/VertexShader.vert', 'shaders/Hero.frag');
@@ -120,11 +132,10 @@ export class SlimeEnemy implements IEnemy {
     }
 
     public Update(delta: number): void {
-        this.Animate(delta);
         this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
 
-        // TODO: correct animation based on the moving direction
         this.MoveTowardsNextWaypoint(delta);
+        this.Animate(delta);
 
         vec3.copy(this.lastPosition, this.position);
         this.ApplyGravityToVelocity(delta);
@@ -148,8 +159,10 @@ export class SlimeEnemy implements IEnemy {
     private MoveTowardsNextWaypoint(delta: number): void {
         const dir = vec3.sub(vec3.create(), this.position, this.targetWaypoint.position);
         if (dir[0] < 0) {
+            this.ChangeFrameSet(this.rightFacingAnimationFrames);
             this.MoveOnX(this.movementSpeed, delta);
         } else if (dir[0] > 0) {
+            this.ChangeFrameSet(this.leftFacingAnimationFrames);
             this.MoveOnX(-this.movementSpeed, delta);
         }
 
@@ -158,16 +171,26 @@ export class SlimeEnemy implements IEnemy {
         }
     }
 
+    /**
+     * Helper function to make frame changes seamless by immediatelly changing the spite offset when a frame change happens
+     */
+    private ChangeFrameSet(frames: vec2[]) {
+        this.currentFrameSet = frames;
+        this.sprite.textureOffset = this.currentFrameSet[this.currentAnimationFrame];
+    }
+
     private MoveOnX(amount: number, delta: number): void {
-        const nextPosition = vec3.fromValues(this.position[0] + amount * delta, this.position[1], this.position[2]);
+        const nextPosition =
+            vec3.fromValues(this.position[0] + amount * delta, this.position[1], this.position[2]);
         if (!this.checkCollision(nextPosition)) {
             this.position = nextPosition;
         }
     }
 
     private checkCollision(nextPosition: vec3): boolean {
-        const nextBoundingBox = new BoundingBox(vec3.add(vec3.create(), nextPosition, this.bbOffset), this.bbSize);
-        return this.collider.IsCollidingWidth(nextBoundingBox, false);
+        const nextBbPos = vec3.add(vec3.create(), nextPosition, this.bbOffset);
+        const nextBoundingBox = new BoundingBox(nextBbPos, this.bbSize);
+        return this.collider.IsCollidingWidth(nextBoundingBox, true);
     }
 
     // TODO: make animation here similar to the one in the DragonEnemy
@@ -179,7 +202,8 @@ export class SlimeEnemy implements IEnemy {
                 this.currentAnimationFrame = 0;
             }
 
-            this.sprite.textureOffset = vec2.fromValues(this.currentAnimationFrame / 12.0, 2 / 8.0);
+            const currentFrame = this.currentFrameSet[this.currentAnimationFrame];
+            this.sprite.textureOffset = currentFrame;
             this.currentFrameTime = 0;
         }
     }
@@ -192,6 +216,7 @@ export class SlimeEnemy implements IEnemy {
 
     // TODO: make this a component system
     private ApplyVelocityToPosition(delta: number) {
+        // TODO: check if next position causes a collision. Do not apply velocity if collision happens
         const moveValue = vec3.create();
         vec3.scale(moveValue, this.velocity, delta);
         vec3.add(this.position, this.position, moveValue);

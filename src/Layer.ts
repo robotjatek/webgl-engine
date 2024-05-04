@@ -23,11 +23,7 @@ export class Layer implements ICollider {
             return true;
         }
 
-        const collidingTiles = this.Tiles.filter((t) => {
-            return t.isCollindingWith(boundingBox);
-        });
-
-        return collidingTiles.length > 0;
+        return this.Tiles.some(tiles => tiles.isCollindingWith(boundingBox));
     }
 
     public get MaxX(): number {
@@ -39,13 +35,13 @@ export class Layer implements ICollider {
     }
 
     public IsOutsideBoundary(boundingBox: BoundingBox) {
-        const minX = this.MinX + 1;
-        const maxX = this.MaxX - 1;
+        const minX = this.MinX;
+        const maxX = this.MaxX;
         const bbMinX = boundingBox.position[0];
         const bbMaxX = boundingBox.position[0] + boundingBox.size[0];
 
-        const isInsideBoundary = bbMinX < maxX && bbMaxX > minX
-        return !isInsideBoundary;
+        const inside = bbMinX > minX && bbMaxX < maxX;
+        return !inside;
     }
 
     public Draw(projectionMatrix: mat4, viewMatrix: mat4): void {

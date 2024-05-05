@@ -120,7 +120,6 @@ export class DragonEnemy implements IEnemy {
         return boundingBox.IsCollidingWith(this.BoundingBox);
     }
 
-    // TODO: cancel charge when damaged
     public Damage(pushbackForce: vec3): void {
         // Dragon ignores pushback at the moment
 

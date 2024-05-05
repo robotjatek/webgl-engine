@@ -21,7 +21,6 @@ import * as _ from 'lodash';
 import { Spike } from './Enemies/Spike';
 import { Cactus } from './Enemies/Cactus';
 
-// TODO: die when falling into a pit
 // TODO: flip sprite
 // TODO: recheck every vector passing. Sometimes vectors need to be cloned
 // TODO: correctly dispose objects that no longer exist => delete opengl resources, when an object is destroyed
@@ -31,6 +30,7 @@ import { Cactus } from './Enemies/Cactus';
 // TODO: update ts version
 // TODO: render bounding boxes in debug mode
 // TODO: text rendering
+// TODO: health pickup
 // TODO: texture map padding
 export class Game {
   private Width: number;
@@ -122,15 +122,15 @@ export class Game {
 
     const spikes = [
       new Spike(
-        vec3.fromValues(11, Environment.VerticalTiles - 2, 0),
+        vec3.fromValues(52, Environment.VerticalTiles - 2, 0),
         vec2.fromValues(1, 1)),
 
       new Spike(
-        vec3.fromValues(12, Environment.VerticalTiles - 2, 0),
+        vec3.fromValues(53, Environment.VerticalTiles - 2, 0),
         vec2.fromValues(1, 1)),
 
       new Spike(
-        vec3.fromValues(13, Environment.VerticalTiles - 2, 0),
+        vec3.fromValues(54, Environment.VerticalTiles - 2, 0),
         vec2.fromValues(1, 1)),
     ];
 
@@ -228,9 +228,12 @@ export class Game {
   private Update(elapsedTime: number): void {
     // TODO: this is a hack because audio playback needs one user interaction before it can start. Also loading is async so I can start an audio file before its loaded
     // The later can be avoided by a press start screen, before starting the game
-    //this.level.PlayMusic(0.5);
+    this.level.PlayMusic(0.5);
 
     this.hero.Update(elapsedTime);
+    if (this.level.MainLayer.IsUnder(this.hero.BoundingBox)) {
+      this.hero.Kill();
+    }
 
     // Remove the colliding coin from the list
     const collidingCoins = this.coins.filter(c => c.IsCollidingWidth(this.hero.BoundingBox));

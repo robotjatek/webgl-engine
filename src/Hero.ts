@@ -429,6 +429,12 @@ export class Hero {
     }
   }
 
+  public Kill(): void {
+    if(this.state !== State.DEAD) {
+      this.health = 0;
+    }
+  }
+
   public InteractWithProjectile(projectile: IProjectile): void {
     if (!projectile.AlreadyHit && this.state !== State.DEAD) {
       const pushbackForce = projectile.PushbackForce;

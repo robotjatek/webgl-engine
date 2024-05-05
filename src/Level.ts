@@ -49,12 +49,18 @@ export class Level {
         for (let i = 0; i < 11; i++) {
             tiles.push(new Tile(i, Environment.VerticalTiles - 2, texturePool.GetTexture("ground0.png")))
         }
-        for (let i = 14; i < 64; i++) {
+        for (let i = 14; i < 52; i++) {
+            tiles.push(new Tile(i, Environment.VerticalTiles - 2, texturePool.GetTexture("ground0.png")))
+        }
+        for (let i = 55; i < 64; i++) {
             tiles.push(new Tile(i, Environment.VerticalTiles - 2, texturePool.GetTexture("ground0.png")))
         }
 
 
-        for (let i = 0; i < 64; i++) {
+        for (let i = 0; i < 11; i++) {
+            tiles.push(new Tile(i, Environment.VerticalTiles - 1, texturePool.GetTexture("ground0.png")))
+        }
+        for (let i = 14; i < 64; i++) {
             tiles.push(new Tile(i, Environment.VerticalTiles - 1, texturePool.GetTexture("ground0.png")))
         }
         this.Layers = [new Layer(tiles)];

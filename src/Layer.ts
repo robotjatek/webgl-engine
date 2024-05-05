@@ -1,3 +1,4 @@
+import { BoundingBox } from 'src/BoundingBox';
 import { ICollider } from './ICollider';
 import { mat4 } from "gl-matrix";
 import { Shader } from "./Shader";
@@ -6,7 +7,7 @@ import { SpriteBatch } from "./SpriteBatch";
 import { Texture } from "./Texture";
 import { Tile } from "./Tile";
 import { Utils } from "./Utils";
-import { BoundingBox } from './BoundingBox';
+import { Environment } from './Environment';
 
 export class Layer implements ICollider {
     private SpriteBatches: SpriteBatch[] = [];
@@ -27,21 +28,34 @@ export class Layer implements ICollider {
     }
 
     public get MaxX(): number {
-        return Math.max(...this.Tiles.map(t => t.PositionX));
+        return Math.max(...this.Tiles.map(t => t.PositionX), Environment.HorizontalTiles);
     }
 
     public get MinX(): number {
         return Math.min(...this.Tiles.map(t => t.PositionX));
     }
 
-    public IsOutsideBoundary(boundingBox: BoundingBox) {
+    public get MinY(): number {
+        return Math.min(...this.Tiles.map(t => t.PositionY), 0);
+    }
+
+    public get MaxY(): number {
+        return Math.max(...this.Tiles.map(t => t.PositionY), Environment.VerticalTiles);
+    }
+
+    public IsOutsideBoundary(boundingBox: BoundingBox): boolean {
         const minX = this.MinX;
         const maxX = this.MaxX;
+
         const bbMinX = boundingBox.position[0];
         const bbMaxX = boundingBox.position[0] + boundingBox.size[0];
 
         const inside = bbMinX > minX && bbMaxX < maxX;
         return !inside;
+    }
+
+    public IsUnder(boundingBox: BoundingBox): boolean {
+        return this.MaxY < boundingBox.position[1];
     }
 
     public Draw(projectionMatrix: mat4, viewMatrix: mat4): void {

@@ -19,7 +19,10 @@ import { DragonEnemy } from './Enemies/DragonEnemy';
 import { IEnemy } from './Enemies/IEnemy';
 import * as _ from 'lodash';
 import { Spike } from './Enemies/Spike';
+import { Cactus } from './Enemies/Cactus';
 
+// TODO: die when falling into a pit
+// TODO: flip sprite
 // TODO: recheck every vector passing. Sometimes vectors need to be cloned
 // TODO: correctly dispose objects that no longer exist => delete opengl resources, when an object is destroyed
 // TODO: "press start" screen
@@ -131,10 +134,18 @@ export class Game {
         vec2.fromValues(1, 1)),
     ];
 
+    const cacti: IEnemy[] = [
+      new Cactus(
+        vec3.fromValues(45, Environment.VerticalTiles - 5, 0),
+        (sender: IEnemy) => this.RemoveEnemy(sender)
+      )
+    ];
+
     this.enemies = [
       ...slimes,
       ...dragons,
-      ...spikes
+      ...spikes,
+      ...cacti
     ];
   }
 
@@ -157,20 +168,19 @@ export class Game {
   }
 
   private InitCoins() {
-    this.coins = [];
-    this.coins.push(new CoinObject(vec3.fromValues(21, 10, 0)));
-    this.coins.push(new CoinObject(vec3.fromValues(23, 10, 0)));
-    this.coins.push(new CoinObject(vec3.fromValues(14, Environment.VerticalTiles - 3, 0)));
-    this.coins.push(new CoinObject(vec3.fromValues(15, Environment.VerticalTiles - 3, 0)));
-    this.coins.push(new CoinObject(vec3.fromValues(16, Environment.VerticalTiles - 3, 0)));
-
-    this.coins.push(new CoinObject(vec3.fromValues(30, Environment.VerticalTiles - 3, 0)));
-    this.coins.push(new CoinObject(vec3.fromValues(31, Environment.VerticalTiles - 3, 0)));
-    this.coins.push(new CoinObject(vec3.fromValues(32, Environment.VerticalTiles - 3, 0)));
-
-    this.coins.push(new CoinObject(vec3.fromValues(50, Environment.VerticalTiles - 3, 0)));
-    this.coins.push(new CoinObject(vec3.fromValues(51, Environment.VerticalTiles - 3, 0)));
-    this.coins.push(new CoinObject(vec3.fromValues(52, Environment.VerticalTiles - 3, 0)));
+    this.coins = [
+      new CoinObject(vec3.fromValues(21, 10, 0)),
+      new CoinObject(vec3.fromValues(23, 10, 0)),
+      new CoinObject(vec3.fromValues(14, Environment.VerticalTiles - 3, 0)),
+      new CoinObject(vec3.fromValues(15, Environment.VerticalTiles - 3, 0)),
+      new CoinObject(vec3.fromValues(16, Environment.VerticalTiles - 3, 0)),
+      new CoinObject(vec3.fromValues(30, Environment.VerticalTiles - 3, 0)),
+      new CoinObject(vec3.fromValues(31, Environment.VerticalTiles - 3, 0)),
+      new CoinObject(vec3.fromValues(32, Environment.VerticalTiles - 3, 0)),
+      new CoinObject(vec3.fromValues(50, Environment.VerticalTiles - 3, 0)),
+      new CoinObject(vec3.fromValues(51, Environment.VerticalTiles - 3, 0)),
+      new CoinObject(vec3.fromValues(52, Environment.VerticalTiles - 3, 0)),
+    ];
   }
 
   public Run(): void {
@@ -218,7 +228,7 @@ export class Game {
   private Update(elapsedTime: number): void {
     // TODO: this is a hack because audio playback needs one user interaction before it can start. Also loading is async so I can start an audio file before its loaded
     // The later can be avoided by a press start screen, before starting the game
-    this.level.PlayMusic(0.5);
+    //this.level.PlayMusic(0.5);
 
     this.hero.Update(elapsedTime);
 
@@ -322,6 +332,8 @@ export class Game {
     // TODO: dispose all disposables
     this.enemyProjectiles.forEach(p => p.Dispose());
     this.enemyProjectiles = [];
+    //this.enemies.forEach(e => e.Dispose());
+    this.enemies = [];
 
     this.InitCoins();
     this.InitHero();

@@ -8,6 +8,7 @@ import { Tile } from "./Tile";
 import { Environment } from './Environment';
 import { SoundEffectPool } from './SoundEffectPool';
 
+// TODO: parallax scrolling
 /*
 TODO:
 Level file format

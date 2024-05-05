@@ -31,7 +31,7 @@ export class TexturePool {
     }
 
     // TODO: preload parameter
-    // TODO: file loading itself is case insensitive, but the cache is not
+    // TODO: file loading itself is case insensitive, but the cache is not -- not entirely true: web server dependent
     public Preload(): void {
         this.GetTexture('Sword1.png');
         this.GetTexture('coin.png');
@@ -44,6 +44,7 @@ export class TexturePool {
         this.GetTexture('fang.png');
         this.GetTexture('bg.jpg');
         this.GetTexture('spike.png');
+        this.GetTexture('cactus1.png')
     }
 
     /**

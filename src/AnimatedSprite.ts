@@ -13,7 +13,7 @@ export class AnimatedSprite extends Sprite {
     public Update(elapsedTime: number): void {
         super.Update(elapsedTime);
         this.currentFrameTime += elapsedTime;
-        if (this.currentFrameTime > 66) {
+        if (this.currentFrameTime > 64) {
             if (this.frameNumber === 9) {
                 this.textureOffset = vec2.fromValues(0, 0);
                 this.frameNumber = 0;

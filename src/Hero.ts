@@ -13,6 +13,7 @@ import { IProjectile } from './Projectiles/IProjectile';
 import { DragonEnemy } from './Enemies/DragonEnemy';
 import { IEnemy } from './Enemies/IEnemy';
 import { Spike } from './Enemies/Spike';
+import { Cactus } from './Enemies/Cactus';
 
 enum State {
   IDLE = 'idle',
@@ -365,7 +366,7 @@ export class Hero {
   public CollideWithDragon(enemy: DragonEnemy): void {
     // Do nothing
   }
-  
+
   public CollideWithSlime(enemy: SlimeEnemy): void {
     if (this.state !== State.STOMP) {
       if (!this.invincible) {
@@ -394,6 +395,23 @@ export class Hero {
     const pushback = vec3.fromValues(0, -0.018, 0);
     if (!this.invincible) {
       this.Damage(pushback);
+    }
+  }
+
+  public CollideWithCactus(enemy: Cactus): void {
+    if (this.state !== State.STOMP) {
+      const dir = vec3.subtract(vec3.create(), this.position, enemy.Position);
+      vec3.normalize(dir, dir);
+      const pushback = vec3.scale(vec3.create(), dir, 0.01);
+      pushback[1] -= 0.01;
+      if (!this.invincible) {
+        this.Damage(pushback);
+      }
+    } else {
+      const pushback = vec3.fromValues(0, -0.025, 0);
+      this.Damage(pushback);
+      this.state = State.JUMP;
+      this.jumping = true;
     }
   }
 

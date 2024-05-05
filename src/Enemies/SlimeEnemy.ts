@@ -12,8 +12,6 @@ import { Waypoint } from '../Waypoint';
 import { IEnemy } from './IEnemy';
 import { Hero } from '../Hero';
 
-// TODO: enemy that cannot be stomped only attacked (spiky enemy?)
-
 /**
  * Slime enemy is a passive enemy, meaning it does not actively attack the player, but it hurts when contacted directly
  */
@@ -116,7 +114,9 @@ export class SlimeEnemy implements IEnemy {
 
     public Draw(proj: mat4, view: mat4): void {
         this.batch.Draw(proj, view);
-        mat4.translate(this.batch.ModelMatrix, mat4.create(), this.position);
+        this.batch.ModelMatrix = mat4.create();
+
+        mat4.translate(this.batch.ModelMatrix, this.batch.ModelMatrix, this.position);
         mat4.scale(this.batch.ModelMatrix,
             this.batch.ModelMatrix,
             vec3.fromValues(this.visualScale[0], this.visualScale[1], 1));

@@ -165,6 +165,7 @@ export class DragonEnemy implements IEnemy {
         this.timeSinceLastAttack += delta;
         this.timeSinceLastCharge += delta;
 
+        // TODO: immediatelly change texture offset when changing frameset (like in SlimeEnemy)
         // Face in the direction of the hero
         const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);
         if (dir[0] < 0) {

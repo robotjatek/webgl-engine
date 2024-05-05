@@ -8,7 +8,12 @@ import { Utils } from './Utils';
 import { BoundingBox } from './BoundingBox';
 import { ICollider } from './ICollider';
 import { SoundEffectPool } from './SoundEffectPool';
-import { SlimeEnemy } from './SlimeEnemy';
+import { SlimeEnemy } from './Enemies/SlimeEnemy';
+import { IProjectile } from './Projectiles/IProjectile';
+import { DragonEnemy } from './Enemies/DragonEnemy';
+import { IEnemy } from './Enemies/IEnemy';
+import { Spike } from './Enemies/Spike';
+import { Cactus } from './Enemies/Cactus';
 
 enum State {
   IDLE = 'idle',
@@ -16,6 +21,7 @@ enum State {
   DEAD = 'dead',
   STOMP = 'stomp',
   JUMP = 'jump',
+  DASH = 'dash'
 }
 
 export class Hero {
@@ -29,10 +35,12 @@ export class Hero {
   private lastPosition: vec3 = vec3.fromValues(0, 0, 1);
   private velocity: vec3 = vec3.fromValues(0, 0, 0);
 
+  // TODO: BUG: Hero sometimes spawns its attack projectile in the wrong direction
+  // TODO: longer range but much slower attack
   // TODO: make bb variables parametrizable
-  // TODO: sword attack
-  // TODO: dash
   // TODO: double jump
+  // TODO: ECS system
+  // TODO: state machines
   private bbOffset = vec3.fromValues(1.2, 1.1, 0);
   private bbSize = vec2.fromValues(0.8, 1.8);
   private shader = new Shader('shaders/VertexShader.vert', 'shaders/Hero.frag');
@@ -49,6 +57,9 @@ export class Hero {
   private invincibleTime: number = 0;
   private dirOnDeath: vec3;
   private timeSinceLastStomp: number = 0;
+  private timeSinceLastDash: number = 0;
+  private dashAvailable = true;
+  private timeSinceLastMeleeAttack = 0;
 
   private bbShader = new Shader('shaders/VertexShader.vert', 'shaders/Colored.frag');
   private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
@@ -59,13 +70,26 @@ export class Hero {
       const bbPosition = vec3.add(vec3.create(), this.position, this.bbOffset);
       return new BoundingBox(bbPosition, this.bbSize);
     } else {
-      const bbPosition = vec3.add(vec3.create(), this.position, vec3.fromValues(1.0, 1.0, 0));
-      return new BoundingBox(bbPosition, vec2.fromValues(1, 2));
+      const bbPosition = vec3.add(vec3.create(), this.position, vec3.fromValues(0.75, 1.0, 0));
+      return new BoundingBox(bbPosition, vec2.fromValues(1.5, 2));
     }
+  }
+
+  private lastFacingDirection: vec3 = vec3.fromValues(1, 0, 0);
+
+  public get FacingDirection(): vec3 {
+    return this.lastFacingDirection;
   }
 
   public get Position(): vec3 {
     return this.position;
+  }
+
+  public get CenterPosition(): vec3 {
+    return vec3.fromValues(
+      this.position[0] + this.visualScale[0] / 2,
+      this.position[1] + this.visualScale[1] / 2,
+      0);
   }
 
   constructor(
@@ -138,10 +162,26 @@ export class Hero {
       if (this.state !== State.STOMP) {
         this.timeSinceLastStomp += delta;
       }
+
+      this.timeSinceLastDash += delta;
+      this.timeSinceLastMeleeAttack += delta;
+
+      if (this.state === State.DASH && this.timeSinceLastDash > 300) {
+        this.state = State.WALK;
+      }
+
+      if (this.invincible) {
+        this.invincibleTime += delta;
+      }
     }
 
+    const dir = vec3.subtract(vec3.create(), this.position, this.lastPosition);
+    if (dir[0]) {
+      this.lastFacingDirection = dir;
+    }
     vec3.copy(this.lastPosition, this.position);
     this.ApplyGravityToVelocity(delta);
+    this.ReduceHorizontalVelocityWhenDashing();
     this.ApplyVelocityToPosition(delta);
     this.HandleCollisionWithCollider();
   }
@@ -155,7 +195,7 @@ export class Hero {
       this.dirOnDeath = dir;
 
       this.bbSize = vec2.fromValues(this.bbSize[1], this.bbSize[0]);
-      // This is only kind-of correct, but im already in dead state so who cares
+      // This is only kind-of correct, but im already in dead state so who cares if the bb is not correctly aligned.
       // The only important thing is not to fall through the geometry...
       this.bbOffset[0] = dir[0] > 0 ? this.bbOffset[0] : 1.5 - this.bbOffset[0];
 
@@ -173,7 +213,7 @@ export class Hero {
   }
 
   private HandleCollisionWithCollider() {
-    const colliding = this.collider.IsCollidingWidth(this.BoundingBox);
+    const colliding = this.collider.IsCollidingWidth(this.BoundingBox, true);
     if (colliding) {
       vec3.copy(this.position, this.lastPosition);
       this.velocity = vec3.create();
@@ -190,8 +230,15 @@ export class Hero {
   }
 
   private ApplyGravityToVelocity(delta: number): void {
-    const gravity = vec3.fromValues(0, 0.00004, 0);
-    vec3.add(this.velocity, this.velocity, vec3.scale(vec3.create(), gravity, delta));
+    if (this.state !== State.DASH) {
+      const gravity = vec3.fromValues(0, 0.00004, 0);
+      vec3.add(this.velocity, this.velocity, vec3.scale(vec3.create(), gravity, delta));
+    }
+  }
+
+  private ReduceHorizontalVelocityWhenDashing() {
+    if (!this.dashAvailable)
+      this.velocity[0] *= 0.75;
   }
 
   private Animate(delta: number): void {
@@ -228,6 +275,7 @@ export class Hero {
     const isOnGround = this.velocity[1] === 0 && !this.jumping;
     if (this.wasInAir && isOnGround) {
       this.landSound.Play(1.8, 0.5);
+      this.dashAvailable = true;
     }
     this.wasInAir = !isOnGround;
 
@@ -237,9 +285,9 @@ export class Hero {
     }
   }
 
-  // TODO: move left, and moveright should a change the velocity not the position itself
+  // TODO: move left, and move right should a change the velocity not the position itself
   public MoveRight(amount: number, delta: number): void {
-    if (this.state !== State.DEAD) {
+    if (this.state !== State.DEAD && this.state !== State.STOMP && this.state !== State.DASH) {
       this.state = State.WALK;
       if (!this.invincible) {
         const nextPosition = vec3.fromValues(this.position[0] + amount * delta, this.position[1], this.position[2]);
@@ -251,7 +299,7 @@ export class Hero {
   }
 
   public MoveLeft(amount: number, delta: number): void {
-    if (this.state !== State.DEAD) {
+    if (this.state !== State.DEAD && this.state !== State.STOMP && this.state !== State.DASH) {
       this.state = State.WALK;
 
       if (!this.invincible) {
@@ -283,10 +331,43 @@ export class Hero {
     }
   }
 
-  // TODO: make this generic
-  // TODO: maybe an interact method
-  // TODO: a little bigger bounding box while stomping
-  public Collide(enemy: SlimeEnemy, delta: number): void {
+  public Dash(): void {
+    if (this.state !== State.DEAD
+      && this.state !== State.IDLE
+      && this.timeSinceLastDash > 300
+      && this.state !== State.STOMP
+      && this.dashAvailable) {
+      this.state = State.DASH;
+      const dir = vec3.create();
+      vec3.subtract(dir, this.position, this.lastPosition);
+      this.velocity[0] = 0.7 * dir[0];
+      this.velocity[1] = -0.0001; // TODO: yet another little hack to make dash play nicely with collision detection
+      this.stompSound.Play();
+      this.timeSinceLastDash = 0;
+      this.dashAvailable = false;
+    }
+  }
+
+  public Attack(afterAttack: () => void): void {
+    // TODO: yet another magic number
+    if (this.state !== State.DEAD && this.timeSinceLastMeleeAttack > 350) {
+      this.timeSinceLastMeleeAttack = 0;
+      if (afterAttack) {
+        afterAttack();
+      }
+    }
+  }
+
+  // TODO: handle collision with other object types?
+  public Collide(enemy: IEnemy): void {
+    enemy.Visit(this);
+  }
+
+  public CollideWithDragon(enemy: DragonEnemy): void {
+    // Do nothing
+  }
+
+  public CollideWithSlime(enemy: SlimeEnemy): void {
     if (this.state !== State.STOMP) {
       if (!this.invincible) {
         // Damage and pushback hero on collision.
@@ -301,20 +382,64 @@ export class Hero {
         // TODO: this is a hack to make sure that the hero is not detected as colliding with the ground, so a pushback can happen
         damagePushback[1] -= 0.01;
         vec3.set(this.velocity, damagePushback[0], damagePushback[1], damagePushback[2]);
-      } else if (this.invincible) {
-        this.invincibleTime += delta;
       }
     } else if (this.state === State.STOMP) {
       vec3.set(this.velocity, 0, -0.025, 0);
       this.state = State.JUMP;
       this.jumping = true;
-      enemy.Damage();
+      enemy.Damage(vec3.create()); // Damage the enemy without pushing it to any direction
+    }
+  }
+
+  public CollideWithSpike(enemy: Spike): void {
+    const pushback = vec3.fromValues(0, -0.018, 0);
+    if (!this.invincible) {
+      this.Damage(pushback);
+    }
+  }
+
+  public CollideWithCactus(enemy: Cactus): void {
+    if (this.state !== State.STOMP) {
+      const dir = vec3.subtract(vec3.create(), this.position, enemy.Position);
+      vec3.normalize(dir, dir);
+      const pushback = vec3.scale(vec3.create(), dir, 0.01);
+      pushback[1] -= 0.01;
+      if (!this.invincible) {
+        this.Damage(pushback);
+      }
+    } else {
+      const pushback = vec3.fromValues(0, -0.025, 0);
+      this.Damage(pushback);
+      this.state = State.JUMP;
+      this.jumping = true;
+    }
+  }
+
+  public Damage(pushbackForce: vec3): void {
+    // TODO: This is almost a 1:1 copy from the Collide method
+
+    // Damage method should not consider the invincible flag because I dont want to cancel damage with projectiles when stomping
+    if (this.state !== State.DEAD) {
+      this.invincible = true;
+      this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
+      this.damageSound.Play();
+      this.health -= 34;
+
+      vec3.set(this.velocity, pushbackForce[0], pushbackForce[1], 0);
+    }
+  }
+
+  public InteractWithProjectile(projectile: IProjectile): void {
+    if (!projectile.AlreadyHit && this.state !== State.DEAD) {
+      const pushbackForce = projectile.PushbackForce;
+      this.Damage(pushbackForce);
+      projectile.OnHit();
     }
   }
 
   private checkCollision(nextPosition: vec3): boolean {
     const nextBoundingBox = new BoundingBox(vec3.add(vec3.create(), nextPosition, this.bbOffset), this.bbSize);
-    return this.collider.IsCollidingWidth(nextBoundingBox);
+    return this.collider.IsCollidingWidth(nextBoundingBox, true);
   }
 
   private calculateTextureOffset(direction: vec2): vec2 {

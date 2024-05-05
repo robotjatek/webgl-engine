@@ -2,14 +2,15 @@
     "compilerOptions": {
         "module": "amd",
         "target": "es6",
-        "outDir": "bin",
         "rootDir": "src",
         "baseUrl": ".",
-        "sourceMap": false,
+        "sourceMap": true,
         "types": [
             "gl-matrix",
-            "webgl2"
+            "webgl2",
+            "lodash"
         ],
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "outFile": "bin/main.js"
     }
 }

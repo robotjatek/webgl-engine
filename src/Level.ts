@@ -6,9 +6,9 @@ import { SpriteBatch } from "./SpriteBatch";
 import { TexturePool } from "./TexturePool";
 import { Tile } from "./Tile";
 import { Environment } from './Environment';
-import { BoundingBox } from './BoundingBox';
 import { SoundEffectPool } from './SoundEffectPool';
 
+// TODO: parallax scrolling
 /*
 TODO:
 Level file format
@@ -37,19 +37,25 @@ export class Level {
     public constructor(levelName: string) {
         const texturePool = TexturePool.GetInstance();
 
-        const tile = new Tile(10, 11, texturePool.GetTexture("ground0.png"));
-        const tile2 = new Tile(12, 11, texturePool.GetTexture("ground0.png"));
-        const tile3 = new Tile(13, 11, texturePool.GetTexture("ground0.png"));
-        const tile4 = new Tile(5, 14, texturePool.GetTexture("ground0.png"));
-        const tile5 = new Tile(6, 14, texturePool.GetTexture("ground0.png"));
+        const tile = new Tile(21, 11, texturePool.GetTexture("ground0.png"));
+        const tile2 = new Tile(22, 11, texturePool.GetTexture("ground0.png"));
+        const tile3 = new Tile(23, 11, texturePool.GetTexture("ground0.png"));
+        const tile4 = new Tile(18, 14, texturePool.GetTexture("ground0.png"));
+        const tile5 = new Tile(19, 14, texturePool.GetTexture("ground0.png"));
 
         const tiles = [tile, tile2, tile3, tile4, tile5];
 
         // Bottom tiles of the level
-        for (let j = Environment.VerticalTiles - 2; j < Environment.VerticalTiles; j++) {
-            for (let i = 0; i < 64; i++) {
-                tiles.push(new Tile(i, j, texturePool.GetTexture("ground0.png")))
-            }
+        for (let i = 0; i < 11; i++) {
+            tiles.push(new Tile(i, Environment.VerticalTiles - 2, texturePool.GetTexture("ground0.png")))
+        }
+        for (let i = 14; i < 64; i++) {
+            tiles.push(new Tile(i, Environment.VerticalTiles - 2, texturePool.GetTexture("ground0.png")))
+        }
+
+
+        for (let i = 0; i < 64; i++) {
+            tiles.push(new Tile(i, Environment.VerticalTiles - 1, texturePool.GetTexture("ground0.png")))
         }
         this.Layers = [new Layer(tiles)];
 
@@ -62,10 +68,6 @@ export class Level {
         this.Layers.forEach((layer) => {
             layer.Draw(projectionMatrix, viewMatrix);
         });
-    }
-
-    public CollideWidthLayer(boundingBox: BoundingBox, layerId: number): boolean {
-        return this.Layers[layerId].IsCollidingWidth(boundingBox);
     }
 
     public get MainLayer(): Layer {

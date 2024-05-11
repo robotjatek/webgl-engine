@@ -7,7 +7,7 @@ import { Hero } from '../Hero';
 
 export interface IEnemy extends ICollider {
     Draw(proj: mat4, view: mat4): void;
-    Update(delta: number): void;
+    Update(delta: number): Promise<void>;
     Damage(pushbackForce: vec3): void;
     get Position(): vec3;
     Visit(hero: Hero): void;

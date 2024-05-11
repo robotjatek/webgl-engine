@@ -18,8 +18,6 @@ export class MeleeAttack implements IProjectile {
     private currentFrameTime: number = 0;
     private currentAnimationFrame: number = 0;
     private texture: Texture = TexturePool.GetInstance().GetTexture('Sword1.png');
-    // TODO: i really should rename the fragment shader
-    private shader: Shader = new Shader('shaders/VertexShader.vert', 'shaders/Hero.frag');
     private spriteVisualScale: vec3 = vec3.fromValues(4, 3, 0);
     private sprite: Sprite = new Sprite(Utils.DefaultSpriteVertices,
         Utils.CreateTextureCoordinates(
@@ -35,15 +33,23 @@ export class MeleeAttack implements IProjectile {
         this.spriteVisualScale[0] / 2 - (this.bbSize[0] / 2),
         this.spriteVisualScale[1] / 2 - this.bbSize[1] / 2,
         0);
-    private bbShader = new Shader('shaders/VertexShader.vert', 'shaders/Colored.frag');
     private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
     private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
     private alreadyHit = false;
     private animationFinished = false;
 
-    constructor(private position: vec3, private facingDirection: vec3) {
+    private constructor(private position: vec3, private facingDirection: vec3, private shader: Shader, private bbShader: Shader) {
         //  this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0, 0, 1, 0.5));
         //  this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.5));
+    }
+
+    public static async Create(position: vec3, facingDirection: vec3): Promise<MeleeAttack> {
+        // TODO: i really should rename the fragment shader from Hero.frag as everything seems to use it...
+        const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
+        const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
+
+        const attack = new MeleeAttack(position, facingDirection, shader, bbShader);
+        return attack;
     }
 
     OnHitListeners: ((sender: IProjectile) => void)[] = [];

@@ -9,6 +9,7 @@ domready(async () => {
   const controllerHandler = new ControllerHandler();
 
   const game = await Game.Create(keyHandler, controllerHandler);
+  await game.Init();
 
   const isSpecialKey = (code: string) => {
     const specialKeys = [Keys.LEFT_CONTROL, Keys.RIGHT_CONTROL, Keys.SPACE];

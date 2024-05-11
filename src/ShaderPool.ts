@@ -2,7 +2,7 @@ export class ShaderPool {
     private constructor() { }
 
     private static instance: ShaderPool;
-    private shaders = new Map<string, string>();
+    private shaderSources = new Map<string, string>();
 
     public static GetInstance(): ShaderPool {
         if (!this.instance) {
@@ -11,23 +11,18 @@ export class ShaderPool {
         return this.instance;
     }
 
-    public LoadShaderSource(path: string): string {
-        const source = this.shaders.get(path);
+    public async LoadShaderSource(path: string): Promise<string> {
+        const source = this.shaderSources.get(path);
         if (!source) {
-            const loaded = this.GetSourceFromUrl(path)
-            this.shaders.set(path, loaded);
+            const loaded = await this.GetSourceFromUrl(path)
+            this.shaderSources.set(path, loaded);
             return loaded;
         }
 
         return source;
     }
 
-    // TODO: make this async
-    private GetSourceFromUrl(url: string): string {
-        const req = new XMLHttpRequest();
-        req.open("GET", url, false);
-        req.overrideMimeType("text/plain");
-        req.send(null);
-        return req.responseText;
+    private async GetSourceFromUrl(url: string): Promise<string> {
+        return await (await fetch(url)).text();
     }
 }

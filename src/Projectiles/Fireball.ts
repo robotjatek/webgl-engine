@@ -46,7 +46,6 @@ export class Fireball implements IProjectile {
     private currentFrameSet = this.leftFacingAnimationFrames;
 
     // TODO: somehow I need to detect when an object is destroyed, and call a clean up for WebGL resources
-    private shader: Shader = new Shader('shaders/VertexShader.vert', 'shaders/Hero.frag');
     private texture: Texture = TexturePool.GetInstance().GetTexture('fireball.png');
     private sprite = new Sprite(
         Utils.DefaultSpriteVertices,
@@ -57,16 +56,24 @@ export class Fireball implements IProjectile {
     // TODO: altough i dont use bbOffset here I kept all duplicated code nearly the same, to make refactors easier
     private bbOffset = vec3.fromValues(0, 0, 0);
     private bbSize = vec2.fromValues(2.0, 1.0);
-    private bbShader = new Shader('shaders/VertexShader.vert', 'shaders/Colored.frag');
     private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
     private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
 
-    public constructor(
+    private constructor(
         private centerPosition: vec3,
         private moveDirection: vec3,
-        private collider: ICollider) {
+        private collider: ICollider,
+        private shader: Shader,
+        private bbShader: Shader) {
         this.shader.SetVec4Uniform('clr', vec4.fromValues(0, 1, 0, 0.4));
         this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
+    }
+
+    public static async Create(centerPosition: vec3, moveDirection: vec3, collider: ICollider): Promise<Fireball> {
+        const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
+        const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
+        const fireball = new Fireball(centerPosition, moveDirection, collider, shader, bbShader);
+        return fireball;
     }
 
     public get AlreadyHit(): boolean {
@@ -158,7 +165,7 @@ export class Fireball implements IProjectile {
         const bbPos = vec3.add(vec3.create(), topleft, this.bbOffset);
         const nextBoundingBox = new BoundingBox(bbPos, this.bbSize);
         const colliding = this.collider.IsCollidingWidth(nextBoundingBox, false);
-        
+
         return colliding;
     }
 

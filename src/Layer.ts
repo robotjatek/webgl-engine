@@ -10,11 +10,16 @@ import { Utils } from "./Utils";
 import { Environment } from './Environment';
 
 export class Layer implements ICollider {
-    private SpriteBatches: SpriteBatch[] = [];
 
-    public constructor(private Tiles: Tile[]) {
-        const tileMap = this.CreateTileMap(Tiles);
-        this.CreateSpriteBatches(tileMap);
+    private constructor(private SpriteBatches: SpriteBatch[],
+        private Tiles: Tile[]
+    ) { }
+
+    public static async Create(tiles: Tile[]): Promise<Layer> {
+        const tileMap = Layer.CreateTileMap(tiles);
+        const batches = await Layer.CreateSpriteBatches(tileMap);
+        const layer = new Layer(batches, tiles);
+        return layer;
     }
 
     public IsCollidingWidth(boundingBox: BoundingBox, collideWithUndefined: boolean): boolean {
@@ -68,7 +73,7 @@ export class Layer implements ICollider {
      * @param tiles The tile array to map
      * @returns The created tile map
      */
-    private CreateTileMap(tiles: Tile[]): Map<Texture, Tile[]> {
+    private static CreateTileMap(tiles: Tile[]): Map<Texture, Tile[]> {
         const tileMap = new Map<Texture, Tile[]>();
         tiles.forEach((tile) => {
             const tileBatch = tileMap.get(tile.Texture);
@@ -82,14 +87,19 @@ export class Layer implements ICollider {
         return tileMap;
     }
 
-    private CreateSpriteBatches(tileMap: Map<Texture, Tile[]>) {
-        const shader = new Shader("shaders/VertexShader.vert", "shaders/FragmentShader.frag");
+    private static async CreateSpriteBatches(tileMap: Map<Texture, Tile[]>): Promise<SpriteBatch[]> {
+        // TODO: do I really need a new shader PER BATCH?
+        const tileShader = await Shader.Create("shaders/VertexShader.vert", "shaders/FragmentShader.frag");
+        const batches: SpriteBatch[] = [];
+        
         tileMap.forEach((tiles, texture) => {
             const sprites = tiles.map((t) => {
                 const vertices = Utils.CreateSpriteVertices(t.PositionX, t.PositionY);
                 return new Sprite(vertices, Utils.DefaultSpriteTextureCoordinates);
             });
-            this.SpriteBatches.push(new SpriteBatch(shader, sprites, texture));
+            batches.push(new SpriteBatch(tileShader, sprites, texture));
         });
+
+        return batches;
     }
 }

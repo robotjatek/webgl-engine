@@ -46,7 +46,6 @@ export class Hero {
   // TODO: state machines
   private bbOffset = vec3.fromValues(1.2, 1.1, 0);
   private bbSize = vec2.fromValues(0.8, 1.8);
-  private shader = new Shader('shaders/VertexShader.vert', 'shaders/Hero.frag');
   private jumpSound = SoundEffectPool.GetInstance().GetAudio('audio/jump.wav');
   private landSound = SoundEffectPool.GetInstance().GetAudio('audio/land.wav', false);
   private walkSound = SoundEffectPool.GetInstance().GetAudio('audio/walk1.wav', false);
@@ -65,7 +64,6 @@ export class Hero {
   private timeSinceLastMeleeAttack = 0;
   private timeInOverHeal = 0;
 
-  private bbShader = new Shader('shaders/VertexShader.vert', 'shaders/Colored.frag');
   private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
   private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
 
@@ -107,11 +105,13 @@ export class Hero {
       0);
   }
 
-  constructor(
+  private constructor(
     private position: vec3,
     private visualScale: vec2,
     private collider: ICollider,
-    private onDeath: () => void) {
+    private onDeath: () => void,
+    private shader: Shader,
+    private bbShader: Shader) {
     this.sprite = new Sprite(
       Utils.DefaultSpriteVertices,
       // TODO: parametrize tex coords
@@ -130,6 +130,13 @@ export class Hero {
       this.texture
     );
     // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 1));
+  }
+
+  public static async Create(position: vec3, visualScale: vec2, collider: ICollider, onDeath: () => void): Promise<Hero> {
+    const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
+    const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
+    const hero = new Hero(position, visualScale, collider, onDeath, shader, bbShader);
+    return hero;
   }
 
   public Draw(proj: mat4, view: mat4): void {

@@ -134,16 +134,6 @@ export class Fireball implements IProjectile {
         return this.BoundingBox.IsCollidingWith(boundingBox);
     }
 
-    /**
-     * This function is for to trigger every hit event listeners to fire.
-     * Now its only used when checking collision with the hero
-     * // TODO: Need a way to rework hero-projectile hit detection.
-     */
-    public CallHitEventHandlers(): void {
-        this.hitSound.Play();
-        this.OnHitListeners.forEach(listener => listener(this));
-    }
-
     private MoveInDirection(delta: number): void {
         if (this.moveDirection[0] < 0) {
             this.MoveOnX(0.01, delta);
@@ -159,7 +149,6 @@ export class Fireball implements IProjectile {
         } else {
             this.hitSound.Play();
             this.alreadyHit = true;
-            this.OnHitListeners.forEach(listener => listener(this));
         }
     }
 
@@ -168,7 +157,9 @@ export class Fireball implements IProjectile {
         const topleft = vec3.sub(vec3.create(), nextPosition, vec3.fromValues(this.bbSize[0] / 2, this.bbSize[1] / 2, 0));
         const bbPos = vec3.add(vec3.create(), topleft, this.bbOffset);
         const nextBoundingBox = new BoundingBox(bbPos, this.bbSize);
-        return this.collider.IsCollidingWidth(nextBoundingBox, false);
+        const colliding = this.collider.IsCollidingWidth(nextBoundingBox, false);
+        
+        return colliding;
     }
 
     private Animate(delta: number): void {

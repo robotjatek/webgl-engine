@@ -14,6 +14,9 @@ import { DragonEnemy } from './Enemies/DragonEnemy';
 import { IEnemy } from './Enemies/IEnemy';
 import { Spike } from './Enemies/Spike';
 import { Cactus } from './Enemies/Cactus';
+import { HealthPickup } from './Pickups/HealthPickup';
+import { CoinObject } from './Pickups/CoinObject';
+import { IPickup } from './Pickups/IPickup';
 
 enum State {
   IDLE = 'idle',
@@ -60,6 +63,7 @@ export class Hero {
   private timeSinceLastDash: number = 0;
   private dashAvailable = true;
   private timeSinceLastMeleeAttack = 0;
+  private timeInOverHeal = 0;
 
   private bbShader = new Shader('shaders/VertexShader.vert', 'shaders/Colored.frag');
   private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
@@ -169,6 +173,16 @@ export class Hero {
       this.HandleLanding();
       this.DisableInvincibleStateAfter(delta, 15); // ~15 frame (1/60*1000*15)
       this.HandleDeath();
+
+      // Slowly drain health when overhealed
+      if (this.Health > 100) {
+        this.timeInOverHeal += delta;
+      }
+
+      if (this.timeInOverHeal > 1000) {
+        this.timeInOverHeal = 0;
+        this.Health--;
+      }
 
       if (this.state !== State.STOMP) {
         this.timeSinceLastStomp += delta;
@@ -374,6 +388,18 @@ export class Hero {
     enemy.Visit(this);
   }
 
+  public CollideWithPickup(pickup: IPickup): void {
+    pickup.Visit(this);
+  }
+
+  public CollideWithHealth(healthPickup: HealthPickup): void {
+    this.Health += healthPickup.Increase;
+  }
+
+  public CollideWithCoin(coin: CoinObject): void {
+    // TODO: increase score?
+  }
+
   public CollideWithDragon(enemy: DragonEnemy): void {
     // Do nothing
   }
@@ -441,7 +467,7 @@ export class Hero {
   }
 
   public Kill(): void {
-    if(this.state !== State.DEAD) {
+    if (this.state !== State.DEAD) {
       this.Health = 0;
     }
   }

@@ -17,10 +17,10 @@ import { XBoxControllerKeys } from './XBoxControllerKeys';
 import { TexturePool } from './TexturePool';
 import { DragonEnemy } from './Enemies/DragonEnemy';
 import { IEnemy } from './Enemies/IEnemy';
-import * as _ from 'lodash';
 import { Spike } from './Enemies/Spike';
 import { Cactus } from './Enemies/Cactus';
 import { Textbox } from './Textbox';
+import { Utils } from './Utils';
 
 // TODO: flip sprite
 // TODO: recheck every vector passing. Sometimes vectors need to be cloned
@@ -32,7 +32,6 @@ import { Textbox } from './Textbox';
 // TODO: render bounding boxes in debug mode
 // TODO: health pickup
 // TODO: texture map padding
-// TODO: kill lodash
 export class Game {
   private Width: number;
   private Height: number;
@@ -67,13 +66,13 @@ export class Game {
       -1,
       1
     );
-    
+
 
     TexturePool.GetInstance().Preload();
     SoundEffectPool.GetInstance().Preload();
 
     gl.disable(gl.DEPTH_TEST); // TODO: Depth test has value when rendering layers. Shouldn't be disabled completely
-    gl.blendFunc(gl.BLEND_SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.viewport(0, 0, this.Width, this.Height);
     gl.clearColor(0, 1, 0, 1);
 
@@ -162,9 +161,9 @@ export class Game {
   }
 
   private RemoveProjectile(projectile: IProjectile): void {
-    const p = _.partition(this.enemyProjectiles, p => p != projectile);
-    p[1].forEach(toDispose => toDispose.Dispose());
-    this.enemyProjectiles = p[0];
+    const p = Utils.Partition(this.enemyProjectiles, p => p != projectile);
+    p.nonMatching.forEach(toDispose => toDispose.Dispose());
+    this.enemyProjectiles = p.matching;
   }
 
   private InitHero() {
@@ -223,7 +222,7 @@ export class Game {
     this.enemies.forEach(e => e.Draw(this.projectionMatrix, this.camera.ViewMatrix));
     this.levelEnd.Draw(this.projectionMatrix, this.camera.ViewMatrix);
 
-    this.attack?.Draw(this.projectionMatrix, this.camera.ViewMatrix);    
+    this.attack?.Draw(this.projectionMatrix, this.camera.ViewMatrix);
 
     this.enemyProjectiles.forEach(p => p.Draw(this.projectionMatrix, this.camera.ViewMatrix));
 
@@ -238,7 +237,7 @@ export class Game {
   private Update(elapsedTime: number): void {
     // TODO: this is a hack because audio playback needs one user interaction before it can start. Also loading is async so I can start an audio file before its loaded
     // The later can be avoided by a press start screen, before starting the game
-    this.level.PlayMusic(0.5);
+    //this.level.PlayMusic(0.5);
 
     this.hero.Update(elapsedTime);
     if (this.level.MainLayer.IsUnder(this.hero.BoundingBox)) {
@@ -314,9 +313,9 @@ export class Game {
 
       // Despawn out-of-bounds projectiles
       if (this.level.MainLayer.IsOutsideBoundary(p.BoundingBox)) {
-        const partitions = _.partition(this.enemyProjectiles, item => p != item);
-        partitions[1].forEach(toDispose => toDispose.Dispose());
-        this.enemyProjectiles = partitions[0];
+        const partitions = Utils.Partition(this.enemyProjectiles, item => p != item);
+        partitions.nonMatching.forEach(toDispose => toDispose.Dispose());
+        this.enemyProjectiles = partitions.matching;
       }
     });
 

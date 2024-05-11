@@ -53,4 +53,10 @@ export class Utils {
             positionX + width, positionY + height,
         ];
     }
+
+    public static Partition<T>(array: Array<T>, criteria: (e: T) => boolean): {matching: T[], nonMatching: T[]} {
+        const matching = array.filter(e => criteria(e));
+        const nonMatching = array.filter(e => !criteria(e));
+        return { matching, nonMatching };
+      }
 }

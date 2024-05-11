@@ -7,8 +7,7 @@
         "sourceMap": true,
         "types": [
             "gl-matrix",
-            "webgl2",
-            "lodash"
+            "webgl2"
         ],
         "skipLibCheck": true,
         "outFile": "bin/main.js"

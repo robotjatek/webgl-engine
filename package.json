@@ -13,15 +13,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/domready": "^1.0.0",
-    "@types/gl-matrix": "^2.4.4",
-    "@types/webgl2": "^0.0.4",
     "domready": "^1.0.8",
     "gl-matrix": "^2.8.1",
-    "lodash": "^4.17.21",
     "requirejs": "^2.3.6"
   },
   "devDependencies": {
-    "@types/lodash": "^4.17.0"
+    "@types/domready": "^1.0.0",
+    "@types/gl-matrix": "^2.4.4",
+    "@types/webgl2": "^0.0.4"
   }
 }

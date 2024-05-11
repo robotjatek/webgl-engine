@@ -4,11 +4,11 @@ import { ControllerHandler } from "./ControllerHandler";
 import { KeyHandler } from './KeyHandler';
 import { Keys } from './Keys';
 
-domready(() => {
+domready(async () => {
   const keyHandler = new KeyHandler();
   const controllerHandler = new ControllerHandler();
 
-  const game = new Game(keyHandler, controllerHandler);
+  const game = await Game.Create(keyHandler, controllerHandler);
 
   const isSpecialKey = (code: string) => {
     const specialKeys = [Keys.LEFT_CONTROL, Keys.RIGHT_CONTROL, Keys.SPACE];

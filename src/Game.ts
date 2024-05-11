@@ -20,6 +20,7 @@ import { IEnemy } from './Enemies/IEnemy';
 import * as _ from 'lodash';
 import { Spike } from './Enemies/Spike';
 import { Cactus } from './Enemies/Cactus';
+import { Textbox } from './Textbox';
 
 // TODO: flip sprite
 // TODO: recheck every vector passing. Sometimes vectors need to be cloned
@@ -29,13 +30,12 @@ import { Cactus } from './Enemies/Cactus';
 // TODO: FF8 Starting Up/FF9 Hunter's Chance - for the final BOSS music?
 // TODO: update ts version
 // TODO: render bounding boxes in debug mode
-// TODO: text rendering
 // TODO: health pickup
 // TODO: texture map padding
+// TODO: kill lodash
 export class Game {
   private Width: number;
   private Height: number;
-  private Canvas: HTMLCanvasElement;
   private start: number;
   private level: Level;
   private projectionMatrix = mat4.create();
@@ -54,12 +54,9 @@ export class Game {
   private attack: IProjectile; // This is related to the hero
   private enemyProjectiles: IProjectile[] = [];
 
-  public constructor(private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler) {
+  private constructor(private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler, private textbox: Textbox) {
     this.Width = window.innerWidth;
     this.Height = window.innerHeight;
-    this.Canvas = document.getElementById('canvas') as HTMLCanvasElement;
-    this.Canvas.width = this.Width;
-    this.Canvas.height = this.Height;
 
     this.projectionMatrix = mat4.ortho(
       this.projectionMatrix,
@@ -70,12 +67,13 @@ export class Game {
       -1,
       1
     );
-    WebGLUtils.CreateGLRenderingContext(this.Canvas);
+    
 
     TexturePool.GetInstance().Preload();
     SoundEffectPool.GetInstance().Preload();
 
-    gl.disable(gl.DEPTH_TEST);
+    gl.disable(gl.DEPTH_TEST); // TODO: Depth test has value when rendering layers. Shouldn't be disabled completely
+    gl.blendFunc(gl.BLEND_SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.viewport(0, 0, this.Width, this.Height);
     gl.clearColor(0, 1, 0, 1);
 
@@ -84,6 +82,16 @@ export class Game {
 
     this.levelEnd = new LevelEnd(vec3.fromValues(58, Environment.VerticalTiles - 4, 0));
     this.RestartLevel();
+  }
+
+  public static async Create(keyHandler: KeyHandler, controllerHandler: ControllerHandler): Promise<Game> {
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    WebGLUtils.CreateGLRenderingContext(canvas);
+
+    const textbox = await Textbox.Create('Consolas');
+    return new Game(keyHandler, controllerHandler, textbox);
   }
 
   private InitEnemies() {
@@ -215,12 +223,14 @@ export class Game {
     this.enemies.forEach(e => e.Draw(this.projectionMatrix, this.camera.ViewMatrix));
     this.levelEnd.Draw(this.projectionMatrix, this.camera.ViewMatrix);
 
-    this.attack?.Draw(this.projectionMatrix, this.camera.ViewMatrix);
-    this.attack?.Update(elapsedTime);
+    this.attack?.Draw(this.projectionMatrix, this.camera.ViewMatrix);    
 
     this.enemyProjectiles.forEach(p => p.Draw(this.projectionMatrix, this.camera.ViewMatrix));
 
     this.hero.Draw(this.projectionMatrix, this.camera.ViewMatrix);
+
+    const textProjMat = mat4.ortho(mat4.create(), 0, this.Width, this.Height, 0, -1, 1);
+    this.textbox.WithText(`Health: ${this.hero.Health}`, vec2.fromValues(0, 0), 0.5).Draw(textProjMat);
 
     requestAnimationFrame(this.Run.bind(this));
   }
@@ -240,6 +250,7 @@ export class Game {
     collidingCoins.forEach(c => c.Interact(this.hero));
     this.coins = this.coins.filter((coin) => !coin.IsCollidingWidth(this.hero.BoundingBox))
 
+    this.attack?.Update(elapsedTime);
     if (this.attack && !this.attack.AlreadyHit) {
       const enemiesCollidingWithProjectile = this.enemies.filter(e => e.IsCollidingWidth(this.attack.BoundingBox, false));
       // Pushback force does not necessarily mean the amount of pushback. A big enemy can ignore a sword attack for example

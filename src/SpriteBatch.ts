@@ -1,10 +1,11 @@
+import { IDisposable } from './IDisposable';
 import { mat4 } from "gl-matrix";
 import { Shader } from "./Shader";
 import { Sprite } from "./Sprite";
 import { Texture } from "./Texture";
 import { gl } from "./WebGLUtils";
 
-export class SpriteBatch
+export class SpriteBatch implements IDisposable
 {
     private BatchShader: Shader;
     private Vertices: number[];
@@ -35,6 +36,13 @@ export class SpriteBatch
         this.TextureCoordinateBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.TextureCoordinateBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.TextureCoordinates), gl.STATIC_DRAW);
+    }
+    public Dispose(): void {
+        // Shader & texture are external dependencies: they are not disposed here
+        this.Vertices = null;
+        this.TextureCoordinates = null;
+        gl.deleteBuffer(this.VertexBuffer);
+        gl.deleteBuffer(this.TextureCoordinateBuffer);
     }
 
     public Draw(projectionMatrix: mat4, viewMatrix: mat4): void

@@ -1,3 +1,5 @@
+import { vec2 } from 'gl-matrix';
+
 export class Utils {
     public static readonly DefaultSpriteVertices: number[] = [
         0.0, 0.0, 0.0,
@@ -27,6 +29,17 @@ export class Utils {
             positionX, positionY + 1.0, 0.0,
             positionX + 1.0, positionY, 0.0,
             positionX + 1.0, positionY + 1.0, 0.0,
+        ];
+    }
+
+    public static CreateCharacterVertices(position: vec2, width: number, height: number): number[] {
+        return [
+            position[0], position[1], 0,
+            position[0] + width, position[1], 0,
+            position[0], position[1] + height, 0,
+            position[0], position[1] + height, 0,
+            position[0] + width, position[1], 0,
+            position[0] + width, position[1] + height, 0
         ];
     }
 

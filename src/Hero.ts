@@ -75,6 +75,17 @@ export class Hero {
     }
   }
 
+  public get Health(): number {
+    return this.health;
+  }
+
+  private set Health(value: number) {
+    this.health = value;
+    if (this.health < 0) {
+      this.health = 0;
+    }
+  }
+
   private lastFacingDirection: vec3 = vec3.fromValues(1, 0, 0);
 
   public get FacingDirection(): vec3 {
@@ -187,7 +198,7 @@ export class Hero {
   }
 
   private HandleDeath() {
-    if (this.health <= 0) {
+    if (this.Health <= 0) {
       this.state = State.DEAD;
       this.dieSound.Play();
       const dir = vec3.create();
@@ -374,7 +385,7 @@ export class Hero {
         this.invincible = true;
         this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
         this.damageSound.Play();
-        this.health -= 34;
+        this.Health -= 34;
 
         const dir = vec3.subtract(vec3.create(), this.position, enemy.Position);
         vec3.normalize(dir, dir);
@@ -423,7 +434,7 @@ export class Hero {
       this.invincible = true;
       this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
       this.damageSound.Play();
-      this.health -= 34;
+      this.Health -= 34;
 
       vec3.set(this.velocity, pushbackForce[0], pushbackForce[1], 0);
     }
@@ -431,7 +442,7 @@ export class Hero {
 
   public Kill(): void {
     if(this.state !== State.DEAD) {
-      this.health = 0;
+      this.Health = 0;
     }
   }
 

@@ -21,7 +21,6 @@ export class Cactus implements IEnemy {
     private damagedTime = 0;
     private damaged = false;
 
-    private shader: Shader = new Shader('shaders/VertexShader.vert', 'shaders/Hero.frag');
     private texture: Texture = TexturePool.GetInstance().GetTexture('cactus1.png');
     private sprite: Sprite = new Sprite(
         Utils.DefaultSpriteVertices,
@@ -94,15 +93,23 @@ export class Cactus implements IEnemy {
     private bbOffset: vec3 = vec3.fromValues(0.35, 0.5, 0);
     private bbSize: vec2 = vec2.fromValues(2.3, 2.5);
 
-    private bbShader = new Shader('shaders/VertexShader.vert', 'shaders/Colored.frag');
     private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
     private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
 
-    public constructor(
+    private constructor(
         private position: vec3,
-        private onDeath: (sender: IEnemy) => void
+        private onDeath: (sender: IEnemy) => void,
+        private shader: Shader,
+        private bbShader: Shader
     ) {
        // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
+    }
+
+    public static async Create(position: vec3, onDeath: (sender: IEnemy) => void): Promise<Cactus> {
+        const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
+        const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
+
+        return new Cactus(position, onDeath, shader, bbShader);
     }
 
     public Draw(proj: mat4, view: mat4): void {
@@ -122,7 +129,7 @@ export class Cactus implements IEnemy {
             vec3.fromValues(this.bbSize[0], this.bbSize[1], 1));
     }
 
-    public Update(delta: number): void {
+    public async Update(delta: number): Promise<void> {
         this.Animate(delta);
 
         this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);

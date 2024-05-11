@@ -13,17 +13,23 @@ import { SoundEffectPool } from '../SoundEffectPool';
 export class HealthPickup implements IPickup {
     private pickupSound = SoundEffectPool.GetInstance().GetAudio('audio/item1.wav', false);
     private visualScale = vec3.fromValues(2, 2, 1);
-    private shader: Shader = new Shader('shaders/VertexShader.vert', 'shaders/Hero.frag');
     private texture: Texture = TexturePool.GetInstance().GetTexture('potion.png');
     private sprite: Sprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
     private batch: SpriteBatch = new SpriteBatch(this.shader, [this.sprite], this.texture);
     private startPosition: vec3;
 
-    public constructor(
+    private constructor(
         private position: vec3,
-        private onPickup: (sender: HealthPickup) => void
+        private onPickup: (sender: HealthPickup) => void,
+        private shader: Shader
     ) {
         this.startPosition = vec3.clone(position);
+    }
+
+    public static async Create(position: vec3, onPickup: (sender: HealthPickup) => void): Promise<HealthPickup> {
+        const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
+        const health = new HealthPickup(position, onPickup, shader);
+        return health;
     }
 
     get EndCondition(): boolean {
@@ -48,7 +54,7 @@ export class HealthPickup implements IPickup {
 
     private currentTime = 0;
 
-    public Update(delta: number): void {
+    public async Update(delta: number): Promise<void> {
         this.currentTime += delta;
         const frequency = 0.5; // 0.5 Hz
         const amplitude = 0.15;

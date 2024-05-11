@@ -36,12 +36,10 @@ export class Game {
   private Width: number;
   private Height: number;
   private start: number;
-  private level: Level;
   private projectionMatrix = mat4.create();
   private camera = new Camera(vec3.create());
 
   private hero: Hero;
-  private levelEnd: LevelEnd;
   private paused: boolean = false;
 
   // TODO: spawned objects should be in the Level object itself, not in Game.ts
@@ -53,7 +51,11 @@ export class Game {
   private levelEndOpenSoundEffect = SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);
   private levelEndSoundPlayed = false;
 
-  private constructor(private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler, private textbox: Textbox) {
+  private constructor(private keyHandler: KeyHandler,
+    private gamepadHandler: ControllerHandler,
+    private textbox: Textbox,
+    private level: Level,
+    private levelEnd: LevelEnd) {
     this.Width = window.innerWidth;
     this.Height = window.innerHeight;
 
@@ -76,11 +78,8 @@ export class Game {
     gl.viewport(0, 0, this.Width, this.Height);
     gl.clearColor(0, 1, 0, 1);
 
-    this.level = new Level('');
+    this.level = level;
     this.start = performance.now();
-
-    this.levelEnd = new LevelEnd(vec3.fromValues(58, Environment.VerticalTiles - 4, 0));
-    this.RestartLevel();
   }
 
   public static async Create(keyHandler: KeyHandler, controllerHandler: ControllerHandler): Promise<Game> {
@@ -90,12 +89,18 @@ export class Game {
     WebGLUtils.CreateGLRenderingContext(canvas);
 
     const textbox = await Textbox.Create('Consolas');
-    return new Game(keyHandler, controllerHandler, textbox);
+    const level = await Level.Create();
+    const levelend = await LevelEnd.Create(vec3.fromValues(58, Environment.VerticalTiles - 4, 0))
+    return new Game(keyHandler, controllerHandler, textbox, level, levelend);
   }
 
-  private InitEnemies() {
+  public async Init() {
+    await this.RestartLevel();
+  }
+
+  private async CreateEnemies() {
     const dragons = [
-      new DragonEnemy(
+      await DragonEnemy.Create(
         vec3.fromValues(55, Environment.VerticalTiles - 7, 1),
         vec2.fromValues(5, 5),
         this.level.MainLayer,
@@ -114,13 +119,13 @@ export class Game {
     ];
 
     const slimes = [
-      new SlimeEnemy(
+      await SlimeEnemy.Create(
         vec3.fromValues(25, Environment.VerticalTiles - 5, 1),
         vec2.fromValues(3, 3),
         this.level.MainLayer,
         (e) => this.RemoveEnemy(e)),
 
-      new SlimeEnemy(
+      await SlimeEnemy.Create(
         vec3.fromValues(34, Environment.VerticalTiles - 5, 1),
         vec2.fromValues(3, 3),
         this.level.MainLayer,
@@ -128,27 +133,27 @@ export class Game {
     ];
 
     const spikes = [
-      new Spike(
+      await Spike.Create(
         vec3.fromValues(52, Environment.VerticalTiles - 2, 0),
         vec2.fromValues(1, 1)),
 
-      new Spike(
+      await Spike.Create(
         vec3.fromValues(53, Environment.VerticalTiles - 2, 0),
         vec2.fromValues(1, 1)),
 
-      new Spike(
+      await Spike.Create(
         vec3.fromValues(54, Environment.VerticalTiles - 2, 0),
         vec2.fromValues(1, 1)),
     ];
 
     const cacti: IEnemy[] = [
-      new Cactus(
+      await Cactus.Create(
         vec3.fromValues(45, Environment.VerticalTiles - 5, 0),
         (sender: IEnemy) => this.RemoveEnemy(sender)
       )
     ];
 
-    this.enemies = [
+    this.enemies =  [
       ...slimes,
       ...dragons,
       ...spikes,
@@ -169,31 +174,31 @@ export class Game {
     projectile.Dispose();
   }
 
-  private InitHero() {
-    this.hero = new Hero(vec3.fromValues(
+  private async InitHero(): Promise<void> {
+    this.hero = await Hero.Create(vec3.fromValues(
       0, Environment.VerticalTiles - 5, 1),
       vec2.fromValues(3, 3),
       this.level.MainLayer,
-      () => this.RestartLevel());
+      async () => await this.RestartLevel());
   }
 
-  private InitPickups() {
+  private async InitPickups() {
     const coins = [
-      new CoinObject(vec3.fromValues(21, 10, 0), c => this.RemovePickup(c)),
-      new CoinObject(vec3.fromValues(23, 10, 0), c => this.RemovePickup(c)),
-      new CoinObject(vec3.fromValues(14, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
-      new CoinObject(vec3.fromValues(15, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
-      new CoinObject(vec3.fromValues(16, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
-      new CoinObject(vec3.fromValues(30, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
-      new CoinObject(vec3.fromValues(31, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
-      new CoinObject(vec3.fromValues(32, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
-      new CoinObject(vec3.fromValues(50, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
-      new CoinObject(vec3.fromValues(51, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
-      new CoinObject(vec3.fromValues(52, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+      await CoinObject.Create(vec3.fromValues(21, 10, 0), c => this.RemovePickup(c)),
+      await CoinObject.Create(vec3.fromValues(23, 10, 0), c => this.RemovePickup(c)),
+      await CoinObject.Create(vec3.fromValues(14, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+      await CoinObject.Create(vec3.fromValues(15, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+      await CoinObject.Create(vec3.fromValues(16, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+      await CoinObject.Create(vec3.fromValues(30, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+      await CoinObject.Create(vec3.fromValues(31, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+      await CoinObject.Create(vec3.fromValues(32, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+      await CoinObject.Create(vec3.fromValues(50, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+      await CoinObject.Create(vec3.fromValues(51, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+      await CoinObject.Create(vec3.fromValues(52, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
     ];
 
     const healthPickups = [
-      new HealthPickup(
+      await HealthPickup.Create(
         vec3.fromValues(28, Environment.VerticalTiles - 4, 0),
         (sender: HealthPickup) => this.RemovePickup(sender))
     ];
@@ -201,13 +206,13 @@ export class Game {
     this.pickups = [...coins, ...healthPickups]
   }
 
-  public Run(): void {
+  public async Run(): Promise<void> {
     const end = performance.now();
     const elapsed = Math.min(end - this.start, 32);
     this.start = end;
     this.Render(elapsed);
     if (!this.paused) {
-      this.Update(elapsed);
+      await this.Update(elapsed);
     }
   }
 
@@ -254,7 +259,7 @@ export class Game {
     requestAnimationFrame(this.Run.bind(this));
   }
 
-  private Update(elapsedTime: number): void {
+  private async Update(elapsedTime: number): Promise<void> {
     // TODO: this is a hack because audio playback needs one user interaction before it can start. Also loading is async so I can start an audio file before its loaded
     // The later can be avoided by a press start screen, before starting the game
     //this.level.PlayMusic(0.5);
@@ -305,22 +310,22 @@ export class Game {
       const attackPosition = this.hero.FacingDirection[0] > 0 ?
         vec3.add(vec3.create(), this.hero.Position, vec3.fromValues(1.5, 0, 0)) :
         vec3.add(vec3.create(), this.hero.Position, vec3.fromValues(-2.5, 0, 0));
-      this.hero.Attack(() => {
+      this.hero.Attack(async () => {
         // TODO: creating an attack instance on every attack is wasteful.
         // TODO: I need to dispose resources after attack is done
-        this.attack = new MeleeAttack(attackPosition, this.hero.FacingDirection);
+        this.attack = await MeleeAttack.Create(attackPosition, this.hero.FacingDirection);
       });
     }
 
-    this.enemies.forEach(e => {
-      e.Update(elapsedTime);
+    this.enemies.forEach(async (e) => {
+      await e.Update(elapsedTime);
       if (e.IsCollidingWidth(this.hero.BoundingBox, false)) {
         this.hero.Collide(e);
       }
     });
 
-    this.pickups.forEach(e => {
-      e.Update(elapsedTime);
+    this.pickups.forEach(async e => {
+      await e.Update(elapsedTime);
       if (e.IsCollidingWidth(this.hero.BoundingBox, false)) {
         this.hero.CollideWithPickup(e);
       }
@@ -357,26 +362,26 @@ export class Game {
         this.level.SetMusicVolume(0.25);
       }
 
-      this.levelEnd.Interact(this.hero, () => {
-        this.RestartLevel();
+      this.levelEnd.Interact(this.hero, async () => {
+        await this.RestartLevel();
       });
     }
   }
 
-  private RestartLevel() {
+  private async RestartLevel() {
     // TODO: dispose all disposables
     this.enemyProjectiles.forEach(p => p.Dispose());
     this.enemyProjectiles = [];
     //this.enemies.forEach(e => e.Dispose());
     this.enemies = [];
 
-    this.InitHero();
-    this.InitEnemies();
+    await this.InitHero();
+    await this.CreateEnemies();
 
     // TODO: dispose pickups
     //this.pickups.forEach(p => p.Dispose());
-    this.pickups = []
-    this.InitPickups();
+    this.pickups = [];
+    await this.InitPickups();
 
     this.paused = false;
     this.levelEndSoundPlayed = false;

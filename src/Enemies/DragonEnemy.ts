@@ -53,7 +53,6 @@ export class DragonEnemy implements IEnemy {
 
     // Rendering related
     private texture: Texture = TexturePool.GetInstance().GetTexture('Monster2.png');
-    private shader: Shader = new Shader('shaders/VertexShader.vert', 'shaders/Hero.frag');
     private sprite: Sprite = new Sprite(
         Utils.DefaultSpriteVertices,
         Utils.CreateTextureCoordinates(0.0 / 12.0, 0.0 / 8.0,
@@ -77,12 +76,13 @@ export class DragonEnemy implements IEnemy {
     private bbSize = vec2.fromValues(4.8, 3);
     private bbOffset = vec3.fromValues(0.1, 1.5, 0);
 
-    private bbShader = new Shader('shaders/VertexShader.vert', 'shaders/Colored.frag');
     private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
     private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
 
-    constructor(
+    private constructor(
         private position: vec3,
+        private shader: Shader,
+        private bbShader: Shader,
         private visualScale: vec2, // TODO: this should not be a parameter but hardcoded
         private collider: ICollider,
         private hero: Hero,
@@ -91,6 +91,20 @@ export class DragonEnemy implements IEnemy {
     ) {
         this.sprite.textureOffset = this.leftFacingAnimationFrames[0];
         // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
+    }
+
+    public static async Create(position: vec3,
+        visualScale: vec2,
+        collider: ICollider,
+        hero: Hero,
+        onDeath: (enemy: DragonEnemy) => void,
+        spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void
+    ): Promise<DragonEnemy> {
+        const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
+        const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
+
+        const dragon = new DragonEnemy(position, shader, bbShader, visualScale, collider, hero, onDeath, spawnProjectile);
+        return dragon;
     }
 
     public Visit(hero: Hero): void {
@@ -160,7 +174,7 @@ export class DragonEnemy implements IEnemy {
             vec3.fromValues(this.bbSize[0], this.bbSize[1], 1));
     }
 
-    public Update(delta: number): void {
+    public async Update(delta: number): Promise<void> {
         this.timeSinceLastAttack += delta;
         this.timeSinceLastCharge += delta;
 
@@ -189,7 +203,7 @@ export class DragonEnemy implements IEnemy {
                     const projectileCenter = this.FacingDirection[0] > 0 ?
                         vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-3, 1, 0)) :
                         vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(3, 1, 0));
-                    const fireball = new Fireball(
+                    const fireball = await Fireball.Create(
                         projectileCenter,
                         vec3.clone(this.FacingDirection),
                         this.collider);
@@ -201,7 +215,7 @@ export class DragonEnemy implements IEnemy {
                     const projectileCenter = this.FacingDirection[0] > 0 ?
                         vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-3, 1, 0)) :
                         vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(3, 1, 0));
-                    const bite = new BiteProjectile(projectileCenter, this.FacingDirection);
+                    const bite = await BiteProjectile.Create(projectileCenter, this.FacingDirection);
                     this.biteAttackSound.Play();
                     this.spawnProjectile(this, bite);
                 }
@@ -214,7 +228,7 @@ export class DragonEnemy implements IEnemy {
             this.timeSinceLastCharge = 0;
             this.timeSinceLastAttack = 0;
         }
-        this.HandleRushState(delta);
+        await this.HandleRushState(delta);
         // Follow hero on the Y axis with a little delay.
         // "Delay" is achieved by moving the dragon slower than the hero movement speed.
         this.MatchHeroHeight(delta);
@@ -289,7 +303,7 @@ export class DragonEnemy implements IEnemy {
         }
     }
 
-    private HandleRushState(delta: number): void {
+    private async HandleRushState(delta: number): Promise<void> {
         if (this.state === State.RUSH) {
             if (this.rushState === RushState.START) {
                 this.timeInBacking = 0;
@@ -341,7 +355,7 @@ export class DragonEnemy implements IEnemy {
                 const projectileCenter = this.FacingDirection[0] > 0 ?
                     vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-2.5, 1, 0)) :
                     vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(2.5, 1, 0));
-                const bite = new BiteProjectile(projectileCenter, vec3.clone(this.FacingDirection));
+                const bite = await BiteProjectile.Create(projectileCenter, vec3.clone(this.FacingDirection));
                 this.biteAttackSound.Play();
                 this.spawnProjectile(this, bite);
                 this.timeSinceLastAttack = 0;

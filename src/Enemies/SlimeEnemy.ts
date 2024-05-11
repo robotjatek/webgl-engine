@@ -39,7 +39,6 @@ export class SlimeEnemy implements IEnemy {
 
     private velocity: vec3 = vec3.fromValues(0, 0, 0);
     private lastPosition: vec3;
-    private shader: Shader = new Shader('shaders/VertexShader.vert', 'shaders/Hero.frag');
     private texture: Texture = TexturePool.GetInstance().GetTexture('monster1.png');
     private sprite: Sprite = new Sprite(
         Utils.DefaultSpriteVertices,
@@ -58,12 +57,13 @@ export class SlimeEnemy implements IEnemy {
 
     private bbOffset = vec3.fromValues(1.2, 1.8, 0);
     private bbSize = vec2.fromValues(0.8, 1.0);
-    private bbShader = new Shader('shaders/VertexShader.vert', 'shaders/Colored.frag');
     private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
     private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
 
-    public constructor(
+    private constructor(
         private position: vec3,
+        private shader: Shader,
+        private bbShader: Shader,
         private visualScale: vec2,
         private collider: ICollider,
         private onDeath: (sender: SlimeEnemy) => void
@@ -76,6 +76,18 @@ export class SlimeEnemy implements IEnemy {
         this.targetWaypoint = new Waypoint(targetPosition);
         this.targetWaypoint.next = originalWaypoint;
         originalWaypoint.next = this.targetWaypoint;
+    }
+
+    public static async Create(position: vec3,
+        visualScale: vec2,
+        collider: ICollider,
+        onDeath: (sender: SlimeEnemy) => void): Promise<SlimeEnemy> {
+
+        const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
+        const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
+
+        const slime = new SlimeEnemy(position, shader, bbShader, visualScale, collider, onDeath);
+        return slime;
     }
 
     public Visit(hero: Hero): void {
@@ -129,7 +141,7 @@ export class SlimeEnemy implements IEnemy {
             vec3.fromValues(this.bbSize[0], this.bbSize[1], 1));
     }
 
-    public Update(delta: number): void {
+    public async Update(delta: number): Promise<void> {
         this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
 
         this.MoveTowardsNextWaypoint(delta);

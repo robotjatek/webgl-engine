@@ -29,12 +29,15 @@ Tile materials:
 */
 
 export class Level {
-    private Layers: Layer[];
     private Background: SpriteBatch;
     private BackgroundViewMatrix = mat4.create();
     private music = SoundEffectPool.GetInstance().GetAudio('audio/level.mp3', false);
 
-    public constructor(levelName: string) {
+    private constructor(private Layers: Layer[], private bgShader: Shader) {
+        this.Background = new SpriteBatch(bgShader, [new Background()], TexturePool.GetInstance().GetTexture("bg.jpg"));
+    }
+
+    public static async Create(): Promise<Level> {
         const texturePool = TexturePool.GetInstance();
 
         const tile = new Tile(21, 11, texturePool.GetTexture("ground0.png"));
@@ -44,7 +47,7 @@ export class Level {
         const tile5 = new Tile(19, 14, texturePool.GetTexture("ground0.png"));
 
         const tiles = [
-           tile, tile2, tile3, tile4, tile5
+            tile, tile2, tile3, tile4, tile5
         ];
 
         // Bottom tiles of the level
@@ -65,10 +68,12 @@ export class Level {
         for (let i = 14; i < 64; i++) {
             tiles.push(new Tile(i, Environment.VerticalTiles - 1, texturePool.GetTexture("ground0.png")))
         }
-        this.Layers = [new Layer(tiles)];
 
-        const shader = new Shader("shaders/VertexShader.vert", "shaders/FragmentShader.frag");
-        this.Background = new SpriteBatch(shader, [new Background()], texturePool.GetTexture("bg.jpg"));
+        const layers = [await Layer.Create(tiles)];
+        const bgShader: Shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
+
+        return new Level(layers, bgShader);
+
     }
 
     public Draw(projectionMatrix: mat4, viewMatrix: mat4): void {

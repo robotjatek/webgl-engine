@@ -1,4 +1,4 @@
-import { vec2, vec3, vec4 } from 'gl-matrix';
+import { vec2, vec4 } from 'gl-matrix';
 import { ShaderPool } from './ShaderPool';
 import { gl } from "./WebGLUtils";
 
@@ -6,13 +6,19 @@ export class Shader {
     private program: WebGLProgram;
     private valid: boolean;
 
-    constructor(vertexPath: string, fragmentPath: string) {
-        const vertexId = this.LoadShader(vertexPath, gl.VERTEX_SHADER);
-        const fragment = this.LoadShader(fragmentPath, gl.FRAGMENT_SHADER);
-        this.program = this.createProgram(vertexId, fragment);
-        gl.deleteShader(vertexId);
-        gl.deleteShader(fragment);
+    private constructor(vertexShader: WebGLShader, fragmentShader: WebGLShader) {
+        this.program = this.createProgram(vertexShader, fragmentShader);
         this.valid = true;
+    }
+
+    // TODO: for every create call there should exist a Destroy/Dispose call
+    public static async Create(vertexPath: string, fragmentPath: string): Promise<Shader> {
+        const vertexShader = await Shader.LoadShader(vertexPath, gl.VERTEX_SHADER);
+        const fragmentShader = await Shader.LoadShader(fragmentPath, gl.FRAGMENT_SHADER);
+        const shader = new Shader(vertexShader, fragmentShader);
+        gl.deleteShader(vertexShader);
+        gl.deleteShader(fragmentShader);
+        return shader;
     }
 
     public Use(): void {
@@ -54,19 +60,19 @@ export class Shader {
         gl.uniform4fv(location, value);
     }
 
-    private createProgram(vertexId: WebGLShader, fragment: WebGLShader): WebGLProgram {
+    private createProgram(vertex: WebGLShader, fragment: WebGLShader): WebGLProgram {
         const program = gl.createProgram();
-        gl.attachShader(program, vertexId);
+        gl.attachShader(program, vertex);
         gl.attachShader(program, fragment);
         gl.linkProgram(program);
-        gl.detachShader(program, vertexId);
+        gl.detachShader(program, vertex);
         gl.detachShader(program, fragment);
         return program;
     }
 
-    private LoadShader(elementPath: string, type: number): WebGLShader {
+    private static async LoadShader(elementPath: string, type: number): Promise<WebGLShader> {
         const id = gl.createShader(type);
-        const src = ShaderPool.GetInstance().LoadShaderSource(elementPath);
+        const src = await ShaderPool.GetInstance().LoadShaderSource(elementPath);
         gl.shaderSource(id, src);
         gl.compileShader(id);
         const error = gl.getShaderInfoLog(id);

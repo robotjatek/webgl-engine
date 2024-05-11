@@ -31,8 +31,7 @@ export class BiteProjectile implements IProjectile {
 
     private spriteVisualScale = vec3.fromValues(5, 5, 0);
     private texture = TexturePool.GetInstance().GetTexture('fang.png');
-    // TODO: i really should rename the fragment shader
-    private shader: Shader = new Shader('shaders/VertexShader.vert', 'shaders/Hero.frag');
+
     private sprite: Sprite = new Sprite(Utils.DefaultSpriteVertices,
         Utils.CreateTextureCoordinates(
             0 / 5,
@@ -41,17 +40,26 @@ export class BiteProjectile implements IProjectile {
             1 / 2));
     private batch: SpriteBatch = new SpriteBatch(this.shader, [this.sprite], this.texture);
 
-    private bbShader = new Shader('shaders/VertexShader.vert', 'shaders/Colored.frag');
     private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
     private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
 
-    public constructor(
+    private constructor(
         private centerPosition: vec3,
-        private facingDirection: vec3
+        private facingDirection: vec3,
+        private shader: Shader,
+        private bbShader: Shader,
     ) {
         this.sprite.textureOffset = this.currentFrameSet[0];
         // this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0, 0, 0, 1));
         // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
+    }
+
+    public static async Create(centerPosition: vec3, facingDirection: vec3): Promise<BiteProjectile> {
+        const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
+        const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
+
+        const projectile = new BiteProjectile(centerPosition, facingDirection, shader, bbShader);
+        return projectile;
     }
 
     public get AlreadyHit(): boolean {

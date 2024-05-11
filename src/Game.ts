@@ -5,8 +5,9 @@ import { KeyHandler } from './KeyHandler';
 import { Level } from './Level';
 import { gl, WebGLUtils } from './WebGLUtils';
 import { Hero } from './Hero';
+import { IPickup } from './Pickups/IPickup';
 import { Keys } from './Keys';
-import { CoinObject } from './CoinObject';
+import { CoinObject } from './Pickups/CoinObject';
 import { LevelEnd } from './LevelEnd';
 import { SlimeEnemy } from './Enemies/SlimeEnemy';
 import { SoundEffectPool } from './SoundEffectPool';
@@ -20,18 +21,16 @@ import { IEnemy } from './Enemies/IEnemy';
 import { Spike } from './Enemies/Spike';
 import { Cactus } from './Enemies/Cactus';
 import { Textbox } from './Textbox';
-import { Utils } from './Utils';
-import { HealthPickup } from './HealthPickup';
+import { HealthPickup } from './Pickups/HealthPickup';
 
+// TODO: "press start" screen
+// TODO: correctly dispose objects that no longer exist => delete opengl resources, when an object is destroyed
 // TODO: flip sprite
 // TODO: recheck every vector passing. Sometimes vectors need to be cloned
-// TODO: correctly dispose objects that no longer exist => delete opengl resources, when an object is destroyed
-// TODO: "press start" screen
 // TODO: multiple level support
 // TODO: FF8 Starting Up/FF9 Hunter's Chance - for the final BOSS music?
 // TODO: update ts version
 // TODO: render bounding boxes in debug mode
-// TODO: health pickup
 // TODO: texture map padding
 export class Game {
   private Width: number;
@@ -42,18 +41,17 @@ export class Game {
   private camera = new Camera(vec3.create());
 
   private hero: Hero;
-  private healthPickups: HealthPickup[] = [];
-  private coins: CoinObject[] = [];
   private levelEnd: LevelEnd;
   private paused: boolean = false;
 
   // TODO: spawned objects should be in the Level object itself, not in Game.ts
   private enemies: IEnemy[] = [];
+  private pickups: IPickup[] = [];
+  private enemyProjectiles: IProjectile[] = [];
+  private attack: IProjectile; // This is related to the hero
+
   private levelEndOpenSoundEffect = SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);
   private levelEndSoundPlayed = false;
-
-  private attack: IProjectile; // This is related to the hero
-  private enemyProjectiles: IProjectile[] = [];
 
   private constructor(private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler, private textbox: Textbox) {
     this.Width = window.innerWidth;
@@ -162,19 +160,13 @@ export class Game {
     this.enemies = this.enemies.filter(e => e !== toRemove);
   }
 
-  // TODO: Generic interface
-  private RemovePickup(toRemove: HealthPickup): void {
-    this.healthPickups = this.healthPickups.filter(e => e !== toRemove);
-  }
-
-  private RemoveCoin(toRemove: CoinObject): void {
-    this.coins = this.coins.filter(e => e !== toRemove);
+  private RemovePickup(toRemove: IPickup): void {
+    this.pickups = this.pickups.filter(e => e !== toRemove);
   }
 
   private RemoveProjectile(projectile: IProjectile): void {
-    const p = Utils.Partition(this.enemyProjectiles, p => p != projectile);
-    p.nonMatching.forEach(toDispose => toDispose.Dispose());
-    this.enemyProjectiles = p.matching;
+    this.enemyProjectiles = this.enemyProjectiles.filter(p => p !== projectile);
+    projectile.Dispose();
   }
 
   private InitHero() {
@@ -185,20 +177,28 @@ export class Game {
       () => this.RestartLevel());
   }
 
-  private InitCoins() {
-    this.coins = [
-      new CoinObject(vec3.fromValues(21, 10, 0)),
-      new CoinObject(vec3.fromValues(23, 10, 0)),
-      new CoinObject(vec3.fromValues(14, Environment.VerticalTiles - 3, 0)),
-      new CoinObject(vec3.fromValues(15, Environment.VerticalTiles - 3, 0)),
-      new CoinObject(vec3.fromValues(16, Environment.VerticalTiles - 3, 0)),
-      new CoinObject(vec3.fromValues(30, Environment.VerticalTiles - 3, 0)),
-      new CoinObject(vec3.fromValues(31, Environment.VerticalTiles - 3, 0)),
-      new CoinObject(vec3.fromValues(32, Environment.VerticalTiles - 3, 0)),
-      new CoinObject(vec3.fromValues(50, Environment.VerticalTiles - 3, 0)),
-      new CoinObject(vec3.fromValues(51, Environment.VerticalTiles - 3, 0)),
-      new CoinObject(vec3.fromValues(52, Environment.VerticalTiles - 3, 0)),
+  private InitPickups() {
+    const coins = [
+      new CoinObject(vec3.fromValues(21, 10, 0), c => this.RemovePickup(c)),
+      new CoinObject(vec3.fromValues(23, 10, 0), c => this.RemovePickup(c)),
+      new CoinObject(vec3.fromValues(14, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+      new CoinObject(vec3.fromValues(15, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+      new CoinObject(vec3.fromValues(16, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+      new CoinObject(vec3.fromValues(30, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+      new CoinObject(vec3.fromValues(31, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+      new CoinObject(vec3.fromValues(32, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+      new CoinObject(vec3.fromValues(50, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+      new CoinObject(vec3.fromValues(51, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+      new CoinObject(vec3.fromValues(52, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
     ];
+
+    const healthPickups = [
+      new HealthPickup(
+        vec3.fromValues(28, Environment.VerticalTiles - 4, 0),
+        (sender: HealthPickup) => this.RemovePickup(sender))
+    ];
+
+    this.pickups = [...coins, ...healthPickups]
   }
 
   public Run(): void {
@@ -223,14 +223,7 @@ export class Game {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     this.level.Draw(this.projectionMatrix, this.camera.ViewMatrix);
 
-    this.healthPickups.forEach(h => h.Draw(this.projectionMatrix, this.camera.ViewMatrix));
-    this.coins.forEach(coin => {
-      coin.Draw(
-        this.projectionMatrix,
-        this.camera.ViewMatrix
-      );
-      coin.Update(elapsedTime);
-    });
+    this.pickups.forEach(h => h.Draw(this.projectionMatrix, this.camera.ViewMatrix));
 
     this.enemies.forEach(e => e.Draw(this.projectionMatrix, this.camera.ViewMatrix));
     this.levelEnd.Draw(this.projectionMatrix, this.camera.ViewMatrix);
@@ -250,7 +243,7 @@ export class Game {
       } else {
         return { hue: 0, saturation: 0, value: 100 / 100 };
       }
-    })();   
+    })();
     this.textbox
       .WithText(`Health: ${this.hero.Health}`, vec2.fromValues(10, 0), 0.5)
       .WithHue(textColor.hue)
@@ -270,11 +263,6 @@ export class Game {
     if (this.level.MainLayer.IsUnder(this.hero.BoundingBox)) {
       this.hero.Kill();
     }
-
-    // Remove the colliding coin from the list
-    const collidingCoins = this.coins.filter(c => c.IsCollidingWidth(this.hero.BoundingBox));
-    collidingCoins.forEach(c => c.Interact(this.hero));
-    this.coins = this.coins.filter((coin) => !coin.IsCollidingWidth(this.hero.BoundingBox))
 
     this.attack?.Update(elapsedTime);
     if (this.attack && !this.attack.AlreadyHit) {
@@ -331,8 +319,7 @@ export class Game {
       }
     });
 
-    // TODO: Merge with enemies and coins
-    this.healthPickups.forEach(e => {
+    this.pickups.forEach(e => {
       e.Update(elapsedTime);
       if (e.IsCollidingWidth(this.hero.BoundingBox, false)) {
         this.hero.CollideWithPickup(e);
@@ -348,9 +335,8 @@ export class Game {
 
       // Despawn out-of-bounds projectiles
       if (this.level.MainLayer.IsOutsideBoundary(p.BoundingBox)) {
-        const partitions = Utils.Partition(this.enemyProjectiles, item => p != item);
-        partitions.nonMatching.forEach(toDispose => toDispose.Dispose());
-        this.enemyProjectiles = partitions.matching;
+        this.enemyProjectiles = this.enemyProjectiles.filter(item => item !== p);
+        p.Dispose();
       }
     });
 
@@ -358,7 +344,8 @@ export class Game {
   }
 
   private CheckForEndCondition() {
-    this.levelEnd.IsEnabled = this.coins.length === 0;
+    const numberOfEndConditions = this.pickups.filter(p => p.EndCondition).length;
+    this.levelEnd.IsEnabled = numberOfEndConditions === 0;
     if (this.levelEnd.IsEnabled && !this.levelEndSoundPlayed) {
       this.levelEndOpenSoundEffect.Play();
       this.levelEndSoundPlayed = true;
@@ -383,17 +370,13 @@ export class Game {
     //this.enemies.forEach(e => e.Dispose());
     this.enemies = [];
 
-    this.InitCoins();
     this.InitHero();
     this.InitEnemies();
 
-    this.healthPickups = [];
-    this.healthPickups.push(
-      new HealthPickup(
-        vec3.fromValues(28, Environment.VerticalTiles - 4, 0),
-        (sender: HealthPickup) => this.RemovePickup(sender)
-      )
-    );
+    // TODO: dispose pickups
+    //this.pickups.forEach(p => p.Dispose());
+    this.pickups = []
+    this.InitPickups();
 
     this.paused = false;
     this.levelEndSoundPlayed = false;

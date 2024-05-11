@@ -47,9 +47,6 @@ export class MeleeAttack implements IProjectile {
     }
 
     OnHitListeners: ((sender: IProjectile) => void)[] = [];
-    CallHitEventHandlers(): void {
-        throw new Error('Method not implemented.');
-    }
 
     public Dispose(): void {
         // TODO: dispose

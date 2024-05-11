@@ -43,7 +43,9 @@ export class Level {
         const tile4 = new Tile(18, 14, texturePool.GetTexture("ground0.png"));
         const tile5 = new Tile(19, 14, texturePool.GetTexture("ground0.png"));
 
-        const tiles = [tile, tile2, tile3, tile4, tile5];
+        const tiles = [
+           tile, tile2, tile3, tile4, tile5
+        ];
 
         // Bottom tiles of the level
         for (let i = 0; i < 11; i++) {

@@ -14,7 +14,9 @@ import { DragonEnemy } from './Enemies/DragonEnemy';
 import { IEnemy } from './Enemies/IEnemy';
 import { Spike } from './Enemies/Spike';
 import { Cactus } from './Enemies/Cactus';
-import { HealthPickup } from './HealthPickup';
+import { HealthPickup } from './Pickups/HealthPickup';
+import { CoinObject } from './Pickups/CoinObject';
+import { IPickup } from './Pickups/IPickup';
 
 enum State {
   IDLE = 'idle',
@@ -386,13 +388,16 @@ export class Hero {
     enemy.Visit(this);
   }
 
-  // TODO: generic IPickup
-  public CollideWithPickup(pickup: HealthPickup): void {
+  public CollideWithPickup(pickup: IPickup): void {
     pickup.Visit(this);
   }
 
   public CollideWithHealth(healthPickup: HealthPickup): void {
     this.Health += healthPickup.Increase;
+  }
+
+  public CollideWithCoin(coin: CoinObject): void {
+    // TODO: increase score?
   }
 
   public CollideWithDragon(enemy: DragonEnemy): void {

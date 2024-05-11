@@ -1,4 +1,4 @@
-import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
+import { mat4, vec2, vec3 } from 'gl-matrix';
 import { BoundingBox } from '../BoundingBox';
 import { Shader } from '../Shader';
 import { Sprite } from '../Sprite';
@@ -104,11 +104,6 @@ export class BiteProjectile implements IProjectile {
 
     public IsCollidingWith(boundingBox: BoundingBox): boolean {
         return boundingBox.IsCollidingWith(this.BoundingBox);
-    }
-
-    public CallHitEventHandlers(): void {
-        this.biteDamageSound.Play();
-        this.OnHitListeners.forEach(listener => listener(this));
     }
 
     public OnHitListeners: ((sender: IProjectile) => void)[] = [];

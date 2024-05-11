@@ -9,7 +9,6 @@ export interface IProjectile extends IDisposable {
     Draw(proj: mat4, view: mat4): void;
     Update(delta: number): void;
     IsCollidingWith(boundingBox: BoundingBox): boolean;
-    CallHitEventHandlers(): void;
     OnHitListeners: ((sender: IProjectile) => void)[]; // TODO: make this a SubscribeToHitEventMethod
     get PushbackForce(): vec3;
 }

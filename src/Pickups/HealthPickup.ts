@@ -1,22 +1,22 @@
 import { mat4, vec2, vec3 } from 'gl-matrix';
-import { BoundingBox } from './BoundingBox';
-import { ICollider } from './ICollider';
-import { Shader } from './Shader';
-import { Texture } from './Texture';
-import { TexturePool } from './TexturePool';
-import { Sprite } from './Sprite';
-import { Utils } from './Utils';
-import { SpriteBatch } from './SpriteBatch';
-import { Hero } from './Hero';
-import { SoundEffectPool } from './SoundEffectPool';
+import { BoundingBox } from '../BoundingBox';
+import { Shader } from '../Shader';
+import { Texture } from '../Texture';
+import { TexturePool } from '../TexturePool';
+import { Sprite } from '../Sprite';
+import { Utils } from '../Utils';
+import { SpriteBatch } from '../SpriteBatch';
+import { Hero } from '../Hero';
+import { IPickup } from './IPickup';
+import { SoundEffectPool } from '../SoundEffectPool';
 
-export class HealthPickup implements ICollider {
+export class HealthPickup implements IPickup {
     private pickupSound = SoundEffectPool.GetInstance().GetAudio('audio/item1.wav', false);
     private visualScale = vec3.fromValues(2, 2, 1);
     private shader: Shader = new Shader('shaders/VertexShader.vert', 'shaders/Hero.frag');
     private texture: Texture = TexturePool.GetInstance().GetTexture('potion.png');
     private sprite: Sprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
-    private batch: SpriteBatch = new SpriteBatch(this.shader, [ this.sprite ], this.texture);
+    private batch: SpriteBatch = new SpriteBatch(this.shader, [this.sprite], this.texture);
     private startPosition: vec3;
 
     public constructor(
@@ -24,7 +24,11 @@ export class HealthPickup implements ICollider {
         private onPickup: (sender: HealthPickup) => void
     ) {
         this.startPosition = vec3.clone(position);
-     }
+    }
+
+    get EndCondition(): boolean {
+        return false;
+    }
 
     public get BoundingBox(): BoundingBox {
         return new BoundingBox(this.position, vec2.fromValues(this.visualScale[0], this.visualScale[1]));
@@ -59,6 +63,6 @@ export class HealthPickup implements ICollider {
     public Visit(hero: Hero): void {
         this.pickupSound.Play();
         hero.CollideWithHealth(this);
-        this.onPickup(this);
+        this.onPickup(this); // Despawning is handled by the Game object, so we need no notify it that it can now despawn the object
     }
 }

@@ -21,6 +21,7 @@ import { Spike } from './Enemies/Spike';
 import { Cactus } from './Enemies/Cactus';
 import { Textbox } from './Textbox';
 import { Utils } from './Utils';
+import { HealthPickup } from './HealthPickup';
 
 // TODO: flip sprite
 // TODO: recheck every vector passing. Sometimes vectors need to be cloned
@@ -41,6 +42,7 @@ export class Game {
   private camera = new Camera(vec3.create());
 
   private hero: Hero;
+  private healthPickups: HealthPickup[] = [];
   private coins: CoinObject[] = [];
   private levelEnd: LevelEnd;
   private paused: boolean = false;
@@ -160,6 +162,15 @@ export class Game {
     this.enemies = this.enemies.filter(e => e !== toRemove);
   }
 
+  // TODO: Generic interface
+  private RemovePickup(toRemove: HealthPickup): void {
+    this.healthPickups = this.healthPickups.filter(e => e !== toRemove);
+  }
+
+  private RemoveCoin(toRemove: CoinObject): void {
+    this.coins = this.coins.filter(e => e !== toRemove);
+  }
+
   private RemoveProjectile(projectile: IProjectile): void {
     const p = Utils.Partition(this.enemyProjectiles, p => p != projectile);
     p.nonMatching.forEach(toDispose => toDispose.Dispose());
@@ -211,6 +222,8 @@ export class Game {
   private Render(elapsedTime: number): void {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     this.level.Draw(this.projectionMatrix, this.camera.ViewMatrix);
+
+    this.healthPickups.forEach(h => h.Draw(this.projectionMatrix, this.camera.ViewMatrix));
     this.coins.forEach(coin => {
       coin.Draw(
         this.projectionMatrix,
@@ -229,7 +242,21 @@ export class Game {
     this.hero.Draw(this.projectionMatrix, this.camera.ViewMatrix);
 
     const textProjMat = mat4.ortho(mat4.create(), 0, this.Width, this.Height, 0, -1, 1);
-    this.textbox.WithText(`Health: ${this.hero.Health}`, vec2.fromValues(0, 0), 0.5).Draw(textProjMat);
+    const textColor = (() => {
+      if (this.hero.Health < 35) {
+        return { hue: 0, saturation: 100 / 100, value: 100 / 100 };
+      } else if (this.hero.Health > 100) {
+        return { hue: 120 / 360, saturation: 100 / 100, value: 100 / 100 };
+      } else {
+        return { hue: 0, saturation: 0, value: 100 / 100 };
+      }
+    })();   
+    this.textbox
+      .WithText(`Health: ${this.hero.Health}`, vec2.fromValues(10, 0), 0.5)
+      .WithHue(textColor.hue)
+      .WithSaturation(textColor.saturation)
+      .WithValue(textColor.value)
+      .Draw(textProjMat);
 
     requestAnimationFrame(this.Run.bind(this));
   }
@@ -304,6 +331,14 @@ export class Game {
       }
     });
 
+    // TODO: Merge with enemies and coins
+    this.healthPickups.forEach(e => {
+      e.Update(elapsedTime);
+      if (e.IsCollidingWidth(this.hero.BoundingBox, false)) {
+        this.hero.CollideWithPickup(e);
+      }
+    });
+
     // TODO: should merge these together into handling "game objects" that can collide/interact with the hero
     this.enemyProjectiles.forEach((p: IProjectile) => {
       p.Update(elapsedTime);
@@ -351,6 +386,15 @@ export class Game {
     this.InitCoins();
     this.InitHero();
     this.InitEnemies();
+
+    this.healthPickups = [];
+    this.healthPickups.push(
+      new HealthPickup(
+        vec3.fromValues(28, Environment.VerticalTiles - 4, 0),
+        (sender: HealthPickup) => this.RemovePickup(sender)
+      )
+    );
+
     this.paused = false;
     this.levelEndSoundPlayed = false;
     this.enemyProjectiles = [];

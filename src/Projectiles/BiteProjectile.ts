@@ -7,12 +7,12 @@ import { TexturePool } from '../TexturePool';
 import { Utils } from '../Utils';
 import { SoundEffectPool } from '../SoundEffectPool';
 import { IProjectile } from './IProjectile';
+import { SoundEffect } from 'src/SoundEffect';
 
 /**
  * A stationary projectile that attacks the player
  */
 export class BiteProjectile implements IProjectile {
-    private biteDamageSound = SoundEffectPool.GetInstance().GetAudio('audio/bite.wav');
     private alreadyHit = false;
     private animationFinished = false;
     private currentFrameTime: number = 0;
@@ -48,6 +48,7 @@ export class BiteProjectile implements IProjectile {
         private facingDirection: vec3,
         private shader: Shader,
         private bbShader: Shader,
+        private biteDamageSound: SoundEffect
     ) {
         this.sprite.textureOffset = this.currentFrameSet[0];
         // this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0, 0, 0, 1));
@@ -57,9 +58,9 @@ export class BiteProjectile implements IProjectile {
     public static async Create(centerPosition: vec3, facingDirection: vec3): Promise<BiteProjectile> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
+        const biteDamageSound = await SoundEffectPool.GetInstance().GetAudio('audio/bite.wav');
 
-        const projectile = new BiteProjectile(centerPosition, facingDirection, shader, bbShader);
-        return projectile;
+        return new BiteProjectile(centerPosition, facingDirection, shader, bbShader, biteDamageSound);
     }
 
     public get AlreadyHit(): boolean {

@@ -13,6 +13,7 @@ import { IProjectile } from '../Projectiles/IProjectile';
 import { Fireball } from '../Projectiles/Fireball';
 import { BiteProjectile } from '../Projectiles/BiteProjectile';
 import { IEnemy } from './IEnemy';
+import { SoundEffect } from 'src/SoundEffect';
 
 enum State {
     IDLE = 'idle',
@@ -65,11 +66,6 @@ export class DragonEnemy implements IEnemy {
     private lastFacingDirection = vec3.fromValues(-1, 0, 0); // Facing right by default
 
     private health = 3;
-    private enemyDamageSound = SoundEffectPool.GetInstance().GetAudio('audio/enemy_damage.wav');
-    private enemyDeathSound = SoundEffectPool.GetInstance().GetAudio('audio/enemy_death.wav');
-    private biteAttackSound = SoundEffectPool.GetInstance().GetAudio('audio/bite2.wav');
-    private rushSound = SoundEffectPool.GetInstance().GetAudio('audio/dragon_roar.mp3');
-    private backingStartSound = SoundEffectPool.GetInstance().GetAudio('audio/charge_up.mp3');
     private damagedTime = 0;
     private damaged = false;
 
@@ -87,7 +83,12 @@ export class DragonEnemy implements IEnemy {
         private collider: ICollider,
         private hero: Hero,
         private onDeath: (sender: DragonEnemy) => void,
-        private spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void
+        private spawnProjectile: (sender: DragonEnemy, projectile: IProjectile,) => void,
+        private enemyDamageSound: SoundEffect,
+        private enemyDeathSound: SoundEffect,
+        private biteAttackSound: SoundEffect,
+        private rushSound: SoundEffect,
+        private backingStartSound: SoundEffect
     ) {
         this.sprite.textureOffset = this.leftFacingAnimationFrames[0];
         // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
@@ -102,9 +103,25 @@ export class DragonEnemy implements IEnemy {
     ): Promise<DragonEnemy> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
+        const enemyDamageSound = await SoundEffectPool.GetInstance().GetAudio('audio/enemy_damage.wav');
+        const enemyDeathSound = await SoundEffectPool.GetInstance().GetAudio('audio/enemy_death.wav');
+        const biteAttackSound = await SoundEffectPool.GetInstance().GetAudio('audio/bite2.wav');
+        const rushSound = await SoundEffectPool.GetInstance().GetAudio('audio/dragon_roar.mp3');
+        const backingStartSound = await SoundEffectPool.GetInstance().GetAudio('audio/charge_up.mp3');
 
-        const dragon = new DragonEnemy(position, shader, bbShader, visualScale, collider, hero, onDeath, spawnProjectile);
-        return dragon;
+        return new DragonEnemy(position,
+            shader,
+            bbShader,
+            visualScale,
+            collider,
+            hero,
+            onDeath,
+            spawnProjectile,
+            enemyDamageSound,
+            enemyDeathSound,
+            biteAttackSound,
+            rushSound,
+            backingStartSound);
     }
 
     public Visit(hero: Hero): void {

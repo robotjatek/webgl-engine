@@ -17,6 +17,7 @@ import { Cactus } from './Enemies/Cactus';
 import { HealthPickup } from './Pickups/HealthPickup';
 import { CoinObject } from './Pickups/CoinObject';
 import { IPickup } from './Pickups/IPickup';
+import { SoundEffect } from './SoundEffect';
 
 enum State {
   IDLE = 'idle',
@@ -46,12 +47,6 @@ export class Hero {
   // TODO: state machines
   private bbOffset = vec3.fromValues(1.2, 1.1, 0);
   private bbSize = vec2.fromValues(0.8, 1.8);
-  private jumpSound = SoundEffectPool.GetInstance().GetAudio('audio/jump.wav');
-  private landSound = SoundEffectPool.GetInstance().GetAudio('audio/land.wav', false);
-  private walkSound = SoundEffectPool.GetInstance().GetAudio('audio/walk1.wav', false);
-  private stompSound = SoundEffectPool.GetInstance().GetAudio('audio/hero_stomp.wav', true);
-  private damageSound = SoundEffectPool.GetInstance().GetAudio('audio/hero_damage.wav');
-  private dieSound = SoundEffectPool.GetInstance().GetAudio('audio/hero_die.wav', false);
   private jumping: boolean = false;
   private onGround: boolean = true;
   private wasInAir: boolean = false;
@@ -111,7 +106,14 @@ export class Hero {
     private collider: ICollider,
     private onDeath: () => void,
     private shader: Shader,
-    private bbShader: Shader) {
+    private bbShader: Shader,
+    private jumpSound: SoundEffect,
+    private landSound: SoundEffect,
+    private walkSound: SoundEffect,
+    private stompSound: SoundEffect,
+    private damageSound: SoundEffect,
+    private dieSound: SoundEffect
+  ) {
     this.sprite = new Sprite(
       Utils.DefaultSpriteVertices,
       // TODO: parametrize tex coords
@@ -135,7 +137,17 @@ export class Hero {
   public static async Create(position: vec3, visualScale: vec2, collider: ICollider, onDeath: () => void): Promise<Hero> {
     const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
     const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
-    const hero = new Hero(position, visualScale, collider, onDeath, shader, bbShader);
+
+    const jumpSound = await SoundEffectPool.GetInstance().GetAudio('audio/jump.wav');
+    const landSound = await SoundEffectPool.GetInstance().GetAudio('audio/land.wav', false);
+    const walkSound = await SoundEffectPool.GetInstance().GetAudio('audio/walk1.wav', false);
+    const stompSound = await SoundEffectPool.GetInstance().GetAudio('audio/hero_stomp.wav', true);
+    const damageSound = await SoundEffectPool.GetInstance().GetAudio('audio/hero_damage.wav');
+    const dieSound = await SoundEffectPool.GetInstance().GetAudio('audio/hero_die.wav', false);
+
+    const hero = new Hero(position, visualScale, collider, onDeath, shader, bbShader,
+      jumpSound, landSound, walkSound, stompSound, damageSound, dieSound);
+
     return hero;
   }
 

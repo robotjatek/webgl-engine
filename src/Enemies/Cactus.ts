@@ -9,6 +9,7 @@ import { Sprite } from 'src/Sprite';
 import { Utils } from 'src/Utils';
 import { SpriteBatch } from 'src/SpriteBatch';
 import { SoundEffectPool } from 'src/SoundEffectPool';
+import { SoundEffect } from 'src/SoundEffect';
 
 /**
  * Stationary enemy that cannot be stomped on (like spikes), but it can be damaged with a sword attack
@@ -16,8 +17,6 @@ import { SoundEffectPool } from 'src/SoundEffectPool';
 export class Cactus implements IEnemy {
 
     private health = 3;
-    private enemyDamageSound = SoundEffectPool.GetInstance().GetAudio('audio/enemy_damage.wav');
-    private enemyDeathSound = SoundEffectPool.GetInstance().GetAudio('audio/enemy_death.wav');
     private damagedTime = 0;
     private damaged = false;
 
@@ -100,7 +99,9 @@ export class Cactus implements IEnemy {
         private position: vec3,
         private onDeath: (sender: IEnemy) => void,
         private shader: Shader,
-        private bbShader: Shader
+        private bbShader: Shader,
+        private enemyDamageSound: SoundEffect,
+        private enemyDeathSound: SoundEffect
     ) {
        // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
     }
@@ -108,8 +109,10 @@ export class Cactus implements IEnemy {
     public static async Create(position: vec3, onDeath: (sender: IEnemy) => void): Promise<Cactus> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
+        const damegeSound = await SoundEffectPool.GetInstance().GetAudio('audio/enemy_damage.wav');
+        const deathSound = await SoundEffectPool.GetInstance().GetAudio('audio/enemy_death.wav');
 
-        return new Cactus(position, onDeath, shader, bbShader);
+        return new Cactus(position, onDeath, shader, bbShader, damegeSound, deathSound);
     }
 
     public Draw(proj: mat4, view: mat4): void {

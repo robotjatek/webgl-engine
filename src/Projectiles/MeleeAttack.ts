@@ -8,10 +8,10 @@ import { TexturePool } from '../TexturePool';
 import { Utils } from '../Utils';
 import { SoundEffectPool } from '../SoundEffectPool';
 import { IProjectile } from './IProjectile';
+import { SoundEffect } from 'src/SoundEffect';
 
 // MeleeAttack is considered as a stationary projectile
 export class MeleeAttack implements IProjectile {
-    private attackSound = SoundEffectPool.GetInstance().GetAudio('audio/sword.mp3');
     private attackSoundPlayed: boolean = false;
 
     // TODO: animation also could be a component
@@ -38,7 +38,8 @@ export class MeleeAttack implements IProjectile {
     private alreadyHit = false;
     private animationFinished = false;
 
-    private constructor(private position: vec3, private facingDirection: vec3, private shader: Shader, private bbShader: Shader) {
+    private constructor(private position: vec3, private facingDirection: vec3,
+        private shader: Shader, private bbShader: Shader, private attackSound: SoundEffect) {
         //  this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0, 0, 1, 0.5));
         //  this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.5));
     }
@@ -47,9 +48,9 @@ export class MeleeAttack implements IProjectile {
         // TODO: i really should rename the fragment shader from Hero.frag as everything seems to use it...
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
+        const attackSound = await SoundEffectPool.GetInstance().GetAudio('audio/sword.mp3');
 
-        const attack = new MeleeAttack(position, facingDirection, shader, bbShader);
-        return attack;
+        return new MeleeAttack(position, facingDirection, shader, bbShader, attackSound);
     }
 
     OnHitListeners: ((sender: IProjectile) => void)[] = [];
@@ -101,7 +102,7 @@ export class MeleeAttack implements IProjectile {
     }
 
     public Update(delta: number): void {
-        if (!this.attackSoundPlayed){
+        if (!this.attackSoundPlayed) {
             this.attackSound.Play();
             this.attackSoundPlayed = true;
         }

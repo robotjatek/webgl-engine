@@ -16,12 +16,12 @@ export class CoinObject implements IPickup {
     private batch: SpriteBatch;
     private sprite: Sprite;
     private texture: Texture;
-    private pickupSound: SoundEffect;
 
     private constructor(
         private position: vec3,
         private onPickup: (pickup: IPickup) => void,
-        shader: Shader
+        shader: Shader,
+        private pickupSound: SoundEffect
     ) {
         this.sprite = new AnimatedSprite(
             Utils.DefaultSpriteVertices, // Im translating to the position on draw, this way a position can be dynamic
@@ -32,14 +32,12 @@ export class CoinObject implements IPickup {
             shader,
             [this.sprite],
             this.texture);
-
-        this.pickupSound = SoundEffectPool.GetInstance().GetAudio('audio/collect.mp3');
     }
 
     public static async Create(position: vec3, onPickup: (pickup: IPickup) => void): Promise<CoinObject> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
-        const coin = new CoinObject(position, onPickup, shader);
-        return coin;
+        const pickupSound = await SoundEffectPool.GetInstance().GetAudio('audio/collect.mp3');
+        return new CoinObject(position, onPickup, shader, pickupSound);
     }
     
     public get EndCondition(): boolean {

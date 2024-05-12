@@ -15,7 +15,6 @@ export class LevelEnd implements ICollider {
     private sprite: Sprite;
     private batch: SpriteBatch;
     private enabled: boolean = false;
-    private endReachedEffect: SoundEffect = SoundEffectPool.GetInstance().GetAudio('audio/ding.wav', false);
     private static readonly transparentValue: number = 0.5;
     private size: vec3 = vec3.fromValues(2, 1, 0)
 
@@ -28,7 +27,7 @@ export class LevelEnd implements ICollider {
         this.shader.SetFloatUniform('alpha', enabled ? 1.0 : LevelEnd.transparentValue);
     }
 
-    private constructor(private position: vec3, private shader: Shader) {
+    private constructor(private position: vec3, private shader: Shader, private endReachedEffect: SoundEffect) {
         const texture = TexturePool.GetInstance().GetTexture('exit.png');
         this.sprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
         this.batch = new SpriteBatch(this.shader, [this.sprite], texture);
@@ -37,8 +36,9 @@ export class LevelEnd implements ICollider {
 
     public static async Create(position: vec3): Promise<LevelEnd> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Transparent.frag');
-        const levelEnd = new LevelEnd(position, shader);
-        return levelEnd;
+        const endReachedEffect = await SoundEffectPool.GetInstance().GetAudio('audio/ding.wav', false);
+
+        return new LevelEnd(position, shader, endReachedEffect);
     }
 
     // TODO: All these drawable objects need a common interface or a base class with all of the drawing/Update functionality

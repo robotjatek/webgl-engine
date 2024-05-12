@@ -10,6 +10,7 @@ import { Hero } from './Hero';
 import { SoundEffect } from './SoundEffect';
 import { SoundEffectPool } from './SoundEffectPool';
 
+// TODO: levelend is kind-of a "IPickup" itself
 export class LevelEnd implements ICollider {
 
     private sprite: Sprite;

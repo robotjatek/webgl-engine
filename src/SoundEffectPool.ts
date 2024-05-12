@@ -32,6 +32,7 @@ export class SoundEffectPool {
             this.GetAudio('audio/sword.mp3'),
             this.GetAudio('audio/enemy_damage.wav'),
             this.GetAudio('audio/enemy_death.wav'),
+            this.GetAudio('audio/bite.wav'),
             this.GetAudio('audio/bite2.wav'),
             this.GetAudio('audio/jump.wav'),
             this.GetAudio('audio/land.wav', false),

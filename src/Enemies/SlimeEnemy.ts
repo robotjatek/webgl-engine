@@ -205,7 +205,6 @@ export class SlimeEnemy implements IEnemy {
         return this.collider.IsCollidingWidth(nextBoundingBox, true);
     }
 
-    // TODO: make animation here similar to the one in the DragonEnemy
     private Animate(delta: number): void {
         this.currentFrameTime += delta;
         if (this.currentFrameTime > 264) {

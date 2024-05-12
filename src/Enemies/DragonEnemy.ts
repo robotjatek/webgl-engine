@@ -195,14 +195,13 @@ export class DragonEnemy implements IEnemy {
         this.timeSinceLastAttack += delta;
         this.timeSinceLastCharge += delta;
 
-        // TODO: immediatelly change texture offset when changing frameset (like in SlimeEnemy)
         // Face in the direction of the hero
         const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);
         if (dir[0] < 0) {
-            this.currentFrameSet = this.rightFacingAnimationFrames;
+            this.ChangeFrameSet(this.rightFacingAnimationFrames);
             vec3.set(this.lastFacingDirection, -1, 0, 0);
         } else if (dir[0] > 0) {
-            this.currentFrameSet = this.leftFacingAnimationFrames;
+            this.ChangeFrameSet(this.leftFacingAnimationFrames);
             vec3.set(this.lastFacingDirection, 1, 0, 0);
         }
         this.Animate(delta);
@@ -318,6 +317,14 @@ export class DragonEnemy implements IEnemy {
             this.sprite.textureOffset = currentFrame;
             this.currentFrameTime = 0;
         }
+    }
+    
+    /**
+     * Helper function to make frame changes seamless by immediatelly changing the spite offset when a frame change happens
+     */
+    private ChangeFrameSet(frames: vec2[]) {
+        this.currentFrameSet = frames;
+        this.sprite.textureOffset = this.currentFrameSet[this.currentAnimationFrame];
     }
 
     private async HandleRushState(delta: number): Promise<void> {

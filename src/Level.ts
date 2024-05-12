@@ -7,6 +7,7 @@ import { TexturePool } from "./TexturePool";
 import { Tile } from "./Tile";
 import { Environment } from './Environment';
 import { SoundEffectPool } from './SoundEffectPool';
+import { SoundEffect } from './SoundEffect';
 
 // TODO: parallax scrolling
 /*
@@ -31,9 +32,8 @@ Tile materials:
 export class Level {
     private Background: SpriteBatch;
     private BackgroundViewMatrix = mat4.create();
-    private music = SoundEffectPool.GetInstance().GetAudio('audio/level.mp3', false);
 
-    private constructor(private Layers: Layer[], private bgShader: Shader) {
+    private constructor(private Layers: Layer[], private bgShader: Shader, private music: SoundEffect) {
         this.Background = new SpriteBatch(bgShader, [new Background()], TexturePool.GetInstance().GetTexture("bg.jpg"));
     }
 
@@ -71,8 +71,9 @@ export class Level {
 
         const layers = [await Layer.Create(tiles)];
         const bgShader: Shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
+        const music = await SoundEffectPool.GetInstance().GetAudio('audio/level.mp3', false);
 
-        return new Level(layers, bgShader);
+        return new Level(layers, bgShader, music);
 
     }
 

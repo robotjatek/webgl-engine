@@ -5,17 +5,16 @@ export class SoundEffect {
     private source: AudioBufferSourceNode;
     private gainNode: GainNode;
     private loop: boolean = false;
+    
+    private constructor(blob: ArrayBuffer, private allowMultiple: boolean = true) {
+        this.context.decodeAudioData(blob, (data) => {
+            this.buffer = data;
+        });
+    }
 
-    public constructor(path: string, private allowMultiple: boolean = true) {
-        const request = new XMLHttpRequest();
-        request.open('GET', path);
-        request.responseType = "arraybuffer";
-        request.onload = () => {
-            this.context.decodeAudioData(request.response, (data) => {
-                this.buffer = data;
-            });
-        }
-        request.send();
+    public static async Create(path: string, allowMultiple: boolean = true): Promise<SoundEffect> {
+        const blob = await (await fetch(path)).arrayBuffer();
+        return new SoundEffect(blob, allowMultiple)
     }
 
     public Play(playbackRate: number = 1, volume: number = 1, onEndCallback: () => void = null, loop: boolean = false): void {

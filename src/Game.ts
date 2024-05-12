@@ -48,14 +48,14 @@ export class Game {
   private enemyProjectiles: IProjectile[] = [];
   private attack: IProjectile; // This is related to the hero
 
-  private levelEndOpenSoundEffect = SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);
   private levelEndSoundPlayed = false;
 
   private constructor(private keyHandler: KeyHandler,
     private gamepadHandler: ControllerHandler,
     private textbox: Textbox,
     private level: Level,
-    private levelEnd: LevelEnd) {
+    private levelEnd: LevelEnd,
+    private levelEndOpenSoundEffect) {
     this.Width = window.innerWidth;
     this.Height = window.innerHeight;
 
@@ -71,7 +71,6 @@ export class Game {
 
 
     TexturePool.GetInstance().Preload();
-    SoundEffectPool.GetInstance().Preload();
 
     gl.disable(gl.DEPTH_TEST); // TODO: Depth test has value when rendering layers. Shouldn't be disabled completely
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -87,11 +86,13 @@ export class Game {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     WebGLUtils.CreateGLRenderingContext(canvas);
+    await SoundEffectPool.GetInstance().Preload();
 
     const textbox = await Textbox.Create('Consolas');
     const level = await Level.Create();
     const levelend = await LevelEnd.Create(vec3.fromValues(58, Environment.VerticalTiles - 4, 0))
-    return new Game(keyHandler, controllerHandler, textbox, level, levelend);
+    const levelEndSoundEffect = await SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);;
+    return new Game(keyHandler, controllerHandler, textbox, level, levelend, levelEndSoundEffect);
   }
 
   public async Init() {
@@ -153,7 +154,7 @@ export class Game {
       )
     ];
 
-    this.enemies =  [
+    this.enemies = [
       ...slimes,
       ...dragons,
       ...spikes,

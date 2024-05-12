@@ -9,12 +9,10 @@ import { Utils } from '../Utils';
 import { ICollider } from '../ICollider';
 import { SoundEffectPool } from '../SoundEffectPool';
 import { IProjectile } from './IProjectile';
+import { SoundEffect } from 'src/SoundEffect';
 
 export class Fireball implements IProjectile {
     public OnHitListeners: ((sender: IProjectile) => void)[] = [];
-
-    private hitSound = SoundEffectPool.GetInstance().GetAudio('audio/hero_stomp.wav');
-    private spawnSound = SoundEffectPool.GetInstance().GetAudio('audio/fireball_spawn.mp3');
     private spawnSoundPlayed = false;
     private alreadyHit = false;
     private visualScale = vec2.fromValues(3, 3);
@@ -32,7 +30,6 @@ export class Fireball implements IProjectile {
         vec2.fromValues(6 / 8, 0 / 8),
         vec2.fromValues(7 / 8, 0 / 8),
     ];
-
     private rightFacingAnimationFrames = [
         vec2.fromValues(0 / 8, 4 / 8),
         vec2.fromValues(1 / 8, 4 / 8),
@@ -64,7 +61,9 @@ export class Fireball implements IProjectile {
         private moveDirection: vec3,
         private collider: ICollider,
         private shader: Shader,
-        private bbShader: Shader) {
+        private bbShader: Shader,
+        private hitSound: SoundEffect,
+        private spawnSound: SoundEffect) {
         this.shader.SetVec4Uniform('clr', vec4.fromValues(0, 1, 0, 0.4));
         this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
     }
@@ -72,8 +71,9 @@ export class Fireball implements IProjectile {
     public static async Create(centerPosition: vec3, moveDirection: vec3, collider: ICollider): Promise<Fireball> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
-        const fireball = new Fireball(centerPosition, moveDirection, collider, shader, bbShader);
-        return fireball;
+        const hitSound = await SoundEffectPool.GetInstance().GetAudio('audio/hero_stomp.wav');
+        const spawnSound = await SoundEffectPool.GetInstance().GetAudio('audio/fireball_spawn.mp3');
+        return new Fireball(centerPosition, moveDirection, collider, shader, bbShader, hitSound, spawnSound);
     }
 
     public get AlreadyHit(): boolean {

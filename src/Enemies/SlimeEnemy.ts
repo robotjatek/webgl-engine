@@ -11,6 +11,7 @@ import { SoundEffectPool } from '../SoundEffectPool';
 import { Waypoint } from '../Waypoint';
 import { IEnemy } from './IEnemy';
 import { Hero } from '../Hero';
+import { SoundEffect } from 'src/SoundEffect';
 
 /**
  * Slime enemy is a passive enemy, meaning it does not actively attack the player, but it hurts when contacted directly
@@ -50,8 +51,6 @@ export class SlimeEnemy implements IEnemy {
         ));
     private batch: SpriteBatch = new SpriteBatch(this.shader, [this.sprite], this.texture);
     private health = 3;
-    private enemyDamageSound = SoundEffectPool.GetInstance().GetAudio('audio/enemy_damage.wav');
-    private enemyDeathSound = SoundEffectPool.GetInstance().GetAudio('audio/enemy_death.wav');
     private damagedTime = 0;
     private damaged = false;
 
@@ -66,7 +65,9 @@ export class SlimeEnemy implements IEnemy {
         private bbShader: Shader,
         private visualScale: vec2,
         private collider: ICollider,
-        private onDeath: (sender: SlimeEnemy) => void
+        private onDeath: (sender: SlimeEnemy) => void,
+        private enemyDamageSound: SoundEffect,
+        private enemyDeathSound: SoundEffect
     ) {
         this.lastPosition = vec3.create(); // If lastPosition is the same as position at initialization, the entity slowly falls through the floor
 
@@ -85,9 +86,10 @@ export class SlimeEnemy implements IEnemy {
 
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
+        const enemyDamageSound = await SoundEffectPool.GetInstance().GetAudio('audio/enemy_damage.wav');
+        const enemyDeathSound = await SoundEffectPool.GetInstance().GetAudio('audio/enemy_death.wav');
 
-        const slime = new SlimeEnemy(position, shader, bbShader, visualScale, collider, onDeath);
-        return slime;
+        return new SlimeEnemy(position, shader, bbShader, visualScale, collider, onDeath, enemyDamageSound, enemyDeathSound);
     }
 
     public Visit(hero: Hero): void {

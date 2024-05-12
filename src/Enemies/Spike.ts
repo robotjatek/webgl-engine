@@ -32,8 +32,7 @@ export class Spike implements IEnemy {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag')
 
-        const spike = new Spike(position, visualScale, shader, bbShader);
-        return spike;
+        return new Spike(position, visualScale, shader, bbShader);
     }
 
     public Draw(proj: mat4, view: mat4): void {

@@ -15,19 +15,18 @@ import { SoundEffectPool } from '../SoundEffectPool';
 export class CoinObject implements IPickup {
     private batch: SpriteBatch;
     private sprite: Sprite;
-    private texture: Texture;
 
     private constructor(
         private position: vec3,
         private onPickup: (pickup: IPickup) => void,
         shader: Shader,
-        private pickupSound: SoundEffect
+        private pickupSound: SoundEffect,
+        private texture: Texture
     ) {
         this.sprite = new AnimatedSprite(
             Utils.DefaultSpriteVertices, // Im translating to the position on draw, this way a position can be dynamic
             Utils.CreateTextureCoordinates(0, 0, 1.0 / 10, 1.0)); // TODO: this is hardcoded for coin.png
 
-        this.texture = TexturePool.GetInstance().GetTexture('coin.png');
         this.batch = new SpriteBatch(
             shader,
             [this.sprite],
@@ -37,7 +36,8 @@ export class CoinObject implements IPickup {
     public static async Create(position: vec3, onPickup: (pickup: IPickup) => void): Promise<CoinObject> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
         const pickupSound = await SoundEffectPool.GetInstance().GetAudio('audio/collect.mp3');
-        return new CoinObject(position, onPickup, shader, pickupSound);
+        const texture = await TexturePool.GetInstance().GetTexture('textures/coin.png');
+        return new CoinObject(position, onPickup, shader, pickupSound, texture);
     }
     
     public get EndCondition(): boolean {

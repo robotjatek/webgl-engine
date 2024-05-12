@@ -53,7 +53,6 @@ export class DragonEnemy implements IEnemy {
     private currentFrameSet = this.leftFacingAnimationFrames;
 
     // Rendering related
-    private texture: Texture = TexturePool.GetInstance().GetTexture('Monster2.png');
     private sprite: Sprite = new Sprite(
         Utils.DefaultSpriteVertices,
         Utils.CreateTextureCoordinates(0.0 / 12.0, 0.0 / 8.0,
@@ -83,12 +82,13 @@ export class DragonEnemy implements IEnemy {
         private collider: ICollider,
         private hero: Hero,
         private onDeath: (sender: DragonEnemy) => void,
-        private spawnProjectile: (sender: DragonEnemy, projectile: IProjectile,) => void,
+        private spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void,
         private enemyDamageSound: SoundEffect,
         private enemyDeathSound: SoundEffect,
         private biteAttackSound: SoundEffect,
         private rushSound: SoundEffect,
-        private backingStartSound: SoundEffect
+        private backingStartSound: SoundEffect,
+        private texture: Texture
     ) {
         this.sprite.textureOffset = this.leftFacingAnimationFrames[0];
         // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
@@ -108,20 +108,10 @@ export class DragonEnemy implements IEnemy {
         const biteAttackSound = await SoundEffectPool.GetInstance().GetAudio('audio/bite2.wav');
         const rushSound = await SoundEffectPool.GetInstance().GetAudio('audio/dragon_roar.mp3');
         const backingStartSound = await SoundEffectPool.GetInstance().GetAudio('audio/charge_up.mp3');
+        const texture = await TexturePool.GetInstance().GetTexture('textures/Monster2.png');
 
-        return new DragonEnemy(position,
-            shader,
-            bbShader,
-            visualScale,
-            collider,
-            hero,
-            onDeath,
-            spawnProjectile,
-            enemyDamageSound,
-            enemyDeathSound,
-            biteAttackSound,
-            rushSound,
-            backingStartSound);
+        return new DragonEnemy(position, shader, bbShader, visualScale, collider, hero, onDeath, spawnProjectile,
+            enemyDamageSound, enemyDeathSound, biteAttackSound, rushSound, backingStartSound, texture);
     }
 
     public Visit(hero: Hero): void {
@@ -318,7 +308,7 @@ export class DragonEnemy implements IEnemy {
             this.currentFrameTime = 0;
         }
     }
-    
+
     /**
      * Helper function to make frame changes seamless by immediatelly changing the spite offset when a frame change happens
      */

@@ -9,6 +9,7 @@ import { Utils } from './Utils';
 import { Hero } from './Hero';
 import { SoundEffect } from './SoundEffect';
 import { SoundEffectPool } from './SoundEffectPool';
+import { Texture } from './Texture';
 
 // TODO: levelend is kind-of a "IPickup" itself
 export class LevelEnd implements ICollider {
@@ -28,8 +29,8 @@ export class LevelEnd implements ICollider {
         this.shader.SetFloatUniform('alpha', enabled ? 1.0 : LevelEnd.transparentValue);
     }
 
-    private constructor(private position: vec3, private shader: Shader, private endReachedEffect: SoundEffect) {
-        const texture = TexturePool.GetInstance().GetTexture('exit.png');
+    private constructor(private position: vec3, private shader: Shader, private endReachedEffect: SoundEffect, texture: Texture) {
+        
         this.sprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
         this.batch = new SpriteBatch(this.shader, [this.sprite], texture);
         this.shader.SetFloatUniform('alpha', LevelEnd.transparentValue);
@@ -38,8 +39,9 @@ export class LevelEnd implements ICollider {
     public static async Create(position: vec3): Promise<LevelEnd> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Transparent.frag');
         const endReachedEffect = await SoundEffectPool.GetInstance().GetAudio('audio/ding.wav', false);
+        const texture = await TexturePool.GetInstance().GetTexture('textures/exit.png');
 
-        return new LevelEnd(position, shader, endReachedEffect);
+        return new LevelEnd(position, shader, endReachedEffect, texture);
     }
 
     // TODO: All these drawable objects need a common interface or a base class with all of the drawing/Update functionality

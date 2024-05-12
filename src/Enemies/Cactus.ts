@@ -20,7 +20,6 @@ export class Cactus implements IEnemy {
     private damagedTime = 0;
     private damaged = false;
 
-    private texture: Texture = TexturePool.GetInstance().GetTexture('cactus1.png');
     private sprite: Sprite = new Sprite(
         Utils.DefaultSpriteVertices,
         Utils.CreateTextureCoordinates(
@@ -100,6 +99,7 @@ export class Cactus implements IEnemy {
         private onDeath: (sender: IEnemy) => void,
         private shader: Shader,
         private bbShader: Shader,
+        private texture: Texture,
         private enemyDamageSound: SoundEffect,
         private enemyDeathSound: SoundEffect
     ) {
@@ -111,8 +111,9 @@ export class Cactus implements IEnemy {
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
         const damegeSound = await SoundEffectPool.GetInstance().GetAudio('audio/enemy_damage.wav');
         const deathSound = await SoundEffectPool.GetInstance().GetAudio('audio/enemy_death.wav');
+        const texture = await TexturePool.GetInstance().GetTexture('textures/cactus1.png');
 
-        return new Cactus(position, onDeath, shader, bbShader, damegeSound, deathSound);
+        return new Cactus(position, onDeath, shader, bbShader, texture, damegeSound, deathSound);
     }
 
     public Draw(proj: mat4, view: mat4): void {

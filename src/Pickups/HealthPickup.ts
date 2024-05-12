@@ -13,7 +13,6 @@ import { SoundEffect } from 'src/SoundEffect';
 
 export class HealthPickup implements IPickup {
     private visualScale = vec3.fromValues(2, 2, 1);
-    private texture: Texture = TexturePool.GetInstance().GetTexture('potion.png');
     private sprite: Sprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
     private batch: SpriteBatch = new SpriteBatch(this.shader, [this.sprite], this.texture);
     private startPosition: vec3;
@@ -22,7 +21,8 @@ export class HealthPickup implements IPickup {
         private position: vec3,
         private onPickup: (sender: HealthPickup) => void,
         private shader: Shader,
-        private pickupSound: SoundEffect
+        private pickupSound: SoundEffect,
+        private texture: Texture
     ) {
         this.startPosition = vec3.clone(position);
     }
@@ -30,7 +30,9 @@ export class HealthPickup implements IPickup {
     public static async Create(position: vec3, onPickup: (sender: HealthPickup) => void): Promise<HealthPickup> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const pickupSound = await SoundEffectPool.GetInstance().GetAudio('audio/item1.wav', false);
-        return new HealthPickup(position, onPickup, shader, pickupSound);
+        const texture = await TexturePool.GetInstance().GetTexture('textures/potion.png');
+
+        return new HealthPickup(position, onPickup, shader, pickupSound, texture);
     }
 
     get EndCondition(): boolean {

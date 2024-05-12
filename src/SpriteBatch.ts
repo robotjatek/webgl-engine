@@ -5,8 +5,7 @@ import { Sprite } from "./Sprite";
 import { Texture } from "./Texture";
 import { gl } from "./WebGLUtils";
 
-export class SpriteBatch implements IDisposable
-{
+export class SpriteBatch implements IDisposable {
     private BatchShader: Shader;
     private Vertices: number[];
     private TextureCoordinates: number[];
@@ -16,8 +15,7 @@ export class SpriteBatch implements IDisposable
     private spr: Sprite;
     public ModelMatrix = mat4.create();
 
-    public constructor(shader: Shader, sprites: Sprite[], texture: Texture)
-    {
+    public constructor(shader: Shader, sprites: Sprite[], texture: Texture) {
         this.BatchShader = shader;
         this.Texture = texture;
         this.Vertices = [];
@@ -45,8 +43,7 @@ export class SpriteBatch implements IDisposable
         gl.deleteBuffer(this.TextureCoordinateBuffer);
     }
 
-    public Draw(projectionMatrix: mat4, viewMatrix: mat4): void
-    {
+    public Draw(projectionMatrix: mat4, viewMatrix: mat4): void {
         const shaderProgram = this.BatchShader.GetProgram();
 
         this.BatchShader.Use();

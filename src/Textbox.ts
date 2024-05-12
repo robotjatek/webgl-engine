@@ -86,7 +86,7 @@ export class Textbox {
     }
 
     public static async Create(fontname: string): Promise<Textbox> {
-        const fontMap = TexturePool.GetInstance().GetTexture(`Fonts/${fontname}/font.png`);
+        const fontMap = await TexturePool.GetInstance().GetTexture(`textures/Fonts/${fontname}/font.png`);
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Font.frag');
         const fontConfig = await FontConfig.Create(`textures/Fonts/${fontname}/font.json`);
 

@@ -14,7 +14,6 @@ import { BoundingBox } from 'src/BoundingBox';
  * // TODO: maybe not enemy, but game object like Coin
  */
 export class Spike implements IEnemy {
-    private texture: Texture = TexturePool.GetInstance().GetTexture('spike.png');
     private sprite: Sprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
     private batch: SpriteBatch = new SpriteBatch(this.shader, [this.sprite], this.texture);
 
@@ -24,15 +23,16 @@ export class Spike implements IEnemy {
     private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
     private bbBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
 
-    private constructor(private position: vec3, private visualScale: vec2, private shader: Shader, private bbShader: Shader) {
+    private constructor(private position: vec3, private visualScale: vec2, private shader: Shader, private bbShader: Shader, private texture: Texture) {
       //  this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.3));
     }
 
     public static async Create(position: vec3, visualScale: vec2): Promise<Spike> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
-        const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag')
+        const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
+        const texture = await TexturePool.GetInstance().GetTexture('textures/spike.png');
 
-        return new Spike(position, visualScale, shader, bbShader);
+        return new Spike(position, visualScale, shader, bbShader, texture);
     }
 
     public Draw(proj: mat4, view: mat4): void {

@@ -8,6 +8,7 @@ import { Tile } from "./Tile";
 import { Environment } from './Environment';
 import { SoundEffectPool } from './SoundEffectPool';
 import { SoundEffect } from './SoundEffect';
+import { Texture } from './Texture';
 
 // TODO: parallax scrolling
 /*
@@ -33,18 +34,19 @@ export class Level {
     private Background: SpriteBatch;
     private BackgroundViewMatrix = mat4.create();
 
-    private constructor(private Layers: Layer[], private bgShader: Shader, private music: SoundEffect) {
-        this.Background = new SpriteBatch(bgShader, [new Background()], TexturePool.GetInstance().GetTexture("bg.jpg"));
+    private constructor(private Layers: Layer[], bgShader: Shader, bgTexture: Texture, private music: SoundEffect) {
+        this.Background = new SpriteBatch(bgShader, [new Background()], bgTexture);
     }
 
     public static async Create(): Promise<Level> {
         const texturePool = TexturePool.GetInstance();
+        const groundTexture = await texturePool.GetTexture('textures/ground0.png');
 
-        const tile = new Tile(21, 11, texturePool.GetTexture("ground0.png"));
-        const tile2 = new Tile(22, 11, texturePool.GetTexture("ground0.png"));
-        const tile3 = new Tile(23, 11, texturePool.GetTexture("ground0.png"));
-        const tile4 = new Tile(18, 14, texturePool.GetTexture("ground0.png"));
-        const tile5 = new Tile(19, 14, texturePool.GetTexture("ground0.png"));
+        const tile = new Tile(21, 11, groundTexture);
+        const tile2 = new Tile(22, 11, groundTexture);
+        const tile3 = new Tile(23, 11, groundTexture);
+        const tile4 = new Tile(18, 14, groundTexture);
+        const tile5 = new Tile(19, 14, groundTexture);
 
         const tiles = [
             tile, tile2, tile3, tile4, tile5
@@ -52,28 +54,29 @@ export class Level {
 
         // Bottom tiles of the level
         for (let i = 0; i < 11; i++) {
-            tiles.push(new Tile(i, Environment.VerticalTiles - 2, texturePool.GetTexture("ground0.png")))
+            tiles.push(new Tile(i, Environment.VerticalTiles - 2, groundTexture));
         }
         for (let i = 14; i < 52; i++) {
-            tiles.push(new Tile(i, Environment.VerticalTiles - 2, texturePool.GetTexture("ground0.png")))
+            tiles.push(new Tile(i, Environment.VerticalTiles - 2, groundTexture));
         }
         for (let i = 55; i < 64; i++) {
-            tiles.push(new Tile(i, Environment.VerticalTiles - 2, texturePool.GetTexture("ground0.png")))
+            tiles.push(new Tile(i, Environment.VerticalTiles - 2, groundTexture));
         }
 
 
         for (let i = 0; i < 11; i++) {
-            tiles.push(new Tile(i, Environment.VerticalTiles - 1, texturePool.GetTexture("ground0.png")))
+            tiles.push(new Tile(i, Environment.VerticalTiles - 1, groundTexture));
         }
         for (let i = 14; i < 64; i++) {
-            tiles.push(new Tile(i, Environment.VerticalTiles - 1, texturePool.GetTexture("ground0.png")))
+            tiles.push(new Tile(i, Environment.VerticalTiles - 1, groundTexture));
         }
 
         const layers = [await Layer.Create(tiles)];
         const bgShader: Shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
+        const bgTexture = await TexturePool.GetInstance().GetTexture('textures/bg.jpg');
         const music = await SoundEffectPool.GetInstance().GetAudio('audio/level.mp3', false);
 
-        return new Level(layers, bgShader, music);
+        return new Level(layers, bgShader, bgTexture, music);
 
     }
 

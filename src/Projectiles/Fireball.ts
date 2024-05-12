@@ -43,7 +43,6 @@ export class Fireball implements IProjectile {
     private currentFrameSet = this.leftFacingAnimationFrames;
 
     // TODO: somehow I need to detect when an object is destroyed, and call a clean up for WebGL resources
-    private texture: Texture = TexturePool.GetInstance().GetTexture('fireball.png');
     private sprite = new Sprite(
         Utils.DefaultSpriteVertices,
         Utils.CreateTextureCoordinates(0, 0, 1 / 8, 1 / 8));
@@ -63,7 +62,9 @@ export class Fireball implements IProjectile {
         private shader: Shader,
         private bbShader: Shader,
         private hitSound: SoundEffect,
-        private spawnSound: SoundEffect) {
+        private spawnSound: SoundEffect,
+        private texture: Texture
+    ) {
         this.shader.SetVec4Uniform('clr', vec4.fromValues(0, 1, 0, 0.4));
         this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
     }
@@ -73,7 +74,9 @@ export class Fireball implements IProjectile {
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
         const hitSound = await SoundEffectPool.GetInstance().GetAudio('audio/hero_stomp.wav');
         const spawnSound = await SoundEffectPool.GetInstance().GetAudio('audio/fireball_spawn.mp3');
-        return new Fireball(centerPosition, moveDirection, collider, shader, bbShader, hitSound, spawnSound);
+        const texture = await TexturePool.GetInstance().GetTexture('textures/fireball.png');
+        
+        return new Fireball(centerPosition, moveDirection, collider, shader, bbShader, hitSound, spawnSound, texture);
     }
 
     public get AlreadyHit(): boolean {

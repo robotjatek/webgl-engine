@@ -17,7 +17,6 @@ export class MeleeAttack implements IProjectile {
     // TODO: animation also could be a component
     private currentFrameTime: number = 0;
     private currentAnimationFrame: number = 0;
-    private texture: Texture = TexturePool.GetInstance().GetTexture('Sword1.png');
     private spriteVisualScale: vec3 = vec3.fromValues(4, 3, 0);
     private sprite: Sprite = new Sprite(Utils.DefaultSpriteVertices,
         Utils.CreateTextureCoordinates(
@@ -39,7 +38,7 @@ export class MeleeAttack implements IProjectile {
     private animationFinished = false;
 
     private constructor(private position: vec3, private facingDirection: vec3,
-        private shader: Shader, private bbShader: Shader, private attackSound: SoundEffect) {
+        private shader: Shader, private bbShader: Shader, private attackSound: SoundEffect, private texture: Texture) {
         //  this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0, 0, 1, 0.5));
         //  this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.5));
     }
@@ -49,8 +48,9 @@ export class MeleeAttack implements IProjectile {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
         const attackSound = await SoundEffectPool.GetInstance().GetAudio('audio/sword.mp3');
+        const texture = await TexturePool.GetInstance().GetTexture('textures/Sword1.png');
 
-        return new MeleeAttack(position, facingDirection, shader, bbShader, attackSound);
+        return new MeleeAttack(position, facingDirection, shader, bbShader, attackSound, texture);
     }
 
     OnHitListeners: ((sender: IProjectile) => void)[] = [];

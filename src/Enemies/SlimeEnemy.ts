@@ -40,7 +40,6 @@ export class SlimeEnemy implements IEnemy {
 
     private velocity: vec3 = vec3.fromValues(0, 0, 0);
     private lastPosition: vec3;
-    private texture: Texture = TexturePool.GetInstance().GetTexture('monster1.png');
     private sprite: Sprite = new Sprite(
         Utils.DefaultSpriteVertices,
         Utils.CreateTextureCoordinates(
@@ -67,7 +66,8 @@ export class SlimeEnemy implements IEnemy {
         private collider: ICollider,
         private onDeath: (sender: SlimeEnemy) => void,
         private enemyDamageSound: SoundEffect,
-        private enemyDeathSound: SoundEffect
+        private enemyDeathSound: SoundEffect,
+        private texture: Texture
     ) {
         this.lastPosition = vec3.create(); // If lastPosition is the same as position at initialization, the entity slowly falls through the floor
 
@@ -88,8 +88,9 @@ export class SlimeEnemy implements IEnemy {
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
         const enemyDamageSound = await SoundEffectPool.GetInstance().GetAudio('audio/enemy_damage.wav');
         const enemyDeathSound = await SoundEffectPool.GetInstance().GetAudio('audio/enemy_death.wav');
+        const texture = await TexturePool.GetInstance().GetTexture('textures/monster1.png');
 
-        return new SlimeEnemy(position, shader, bbShader, visualScale, collider, onDeath, enemyDamageSound, enemyDeathSound);
+        return new SlimeEnemy(position, shader, bbShader, visualScale, collider, onDeath, enemyDamageSound, enemyDeathSound, texture);
     }
 
     public Visit(hero: Hero): void {

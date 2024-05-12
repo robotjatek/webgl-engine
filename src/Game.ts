@@ -26,6 +26,8 @@ import { HealthPickup } from './Pickups/HealthPickup';
 // TODO: "press start" screen
 // TODO: correctly dispose objects that no longer exist => delete opengl resources, when an object is destroyed
 // TODO: multiple level support
+// TODO: level editor
+
 // TODO: flip sprite
 // TODO: recheck every vector passing. Sometimes vectors need to be cloned
 // TODO: FF8 Starting Up/FF9 Hunter's Chance - for the final BOSS music?
@@ -70,9 +72,6 @@ export class Game {
       1
     );
 
-
-    TexturePool.GetInstance().Preload();
-
     gl.disable(gl.DEPTH_TEST); // TODO: Depth test has value when rendering layers. Shouldn't be disabled completely
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.viewport(0, 0, this.Width, this.Height);
@@ -88,6 +87,7 @@ export class Game {
     canvas.height = window.innerHeight;
     WebGLUtils.CreateGLRenderingContext(canvas);
     await SoundEffectPool.GetInstance().Preload();
+    await TexturePool.GetInstance().Preload();
 
     const textbox = await Textbox.Create('Consolas');
     const scoreTextBox = await Textbox.Create('Consolas');

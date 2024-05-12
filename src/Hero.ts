@@ -34,7 +34,6 @@ export class Hero {
   private state: State = State.IDLE;
   private currentFrameTime = 0;
   private currentAnimationFrame = 0;
-  private texture: Texture = TexturePool.GetInstance().GetTexture('hero1.png');;
   private sprite: Sprite;
   private batch: SpriteBatch;
   private lastPosition: vec3 = vec3.fromValues(0, 0, 1);
@@ -117,7 +116,8 @@ export class Hero {
     private walkSound: SoundEffect,
     private stompSound: SoundEffect,
     private damageSound: SoundEffect,
-    private dieSound: SoundEffect
+    private dieSound: SoundEffect,
+    private texture: Texture
   ) {
     this.sprite = new Sprite(
       Utils.DefaultSpriteVertices,
@@ -149,9 +149,10 @@ export class Hero {
     const stompSound = await SoundEffectPool.GetInstance().GetAudio('audio/hero_stomp.wav', true);
     const damageSound = await SoundEffectPool.GetInstance().GetAudio('audio/hero_damage.wav');
     const dieSound = await SoundEffectPool.GetInstance().GetAudio('audio/hero_die.wav', false);
+    const texture = await TexturePool.GetInstance().GetTexture('textures/hero1.png');
 
     const hero = new Hero(position, visualScale, collider, onDeath, shader, bbShader,
-      jumpSound, landSound, walkSound, stompSound, damageSound, dieSound);
+      jumpSound, landSound, walkSound, stompSound, damageSound, dieSound, texture);
 
     return hero;
   }

@@ -13,10 +13,10 @@ export class TexturePool {
     private static Instance: TexturePool;
     private textures = new Map<string, Texture>();
 
-    public GetTexture(path: string): Texture {
+    public async GetTexture(path: string): Promise<Texture> {
         const texture = this.textures.get(path);
         if (!texture) {
-            const created = new Texture(path);
+            const created = await Texture.Create(path);
             this.textures.set(path, created);
             return created;
         }
@@ -32,20 +32,22 @@ export class TexturePool {
 
     // TODO: preload parameter
     // TODO: file loading itself is case insensitive, but the cache is not -- not entirely true: web server dependent
-    public Preload(): void {
-        this.GetTexture('Sword1.png');
-        this.GetTexture('coin.png');
-        this.GetTexture('monster1.png');
-        this.GetTexture('Monster2.png');
-        this.GetTexture('hero1.png');
-        this.GetTexture('ground0.png');
-        this.GetTexture('exit.png');
-        this.GetTexture('fireball.png');
-        this.GetTexture('fang.png');
-        this.GetTexture('bg.jpg');
-        this.GetTexture('spike.png');
-        this.GetTexture('cactus1.png');
-        this.GetTexture('potion.png');
+    public async Preload(): Promise<void> {
+        await Promise.all([
+            this.GetTexture('textures/Sword1.png'),
+            this.GetTexture('textures/coin.png'),
+            this.GetTexture('textures/monster1.png'),
+            this.GetTexture('textures/Monster2.png'),
+            this.GetTexture('textures/hero1.png'),
+            this.GetTexture('textures/ground0.png'),
+            this.GetTexture('textures/exit.png'),
+            this.GetTexture('textures/fireball.png'),
+            this.GetTexture('textures/fang.png'),
+            this.GetTexture('textures/bg.jpg'),
+            this.GetTexture('textures/spike.png'),
+            this.GetTexture('textures/cactus1.png'),
+            this.GetTexture('textures/potion.png')
+        ]);
     }
 
     /**

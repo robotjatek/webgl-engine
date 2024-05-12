@@ -30,6 +30,7 @@ enum State {
 
 export class Hero {
   private health: number = 100;
+  private collectedCoins: number = 0;
   private state: State = State.IDLE;
   private currentFrameTime = 0;
   private currentAnimationFrame = 0;
@@ -70,6 +71,10 @@ export class Hero {
       const bbPosition = vec3.add(vec3.create(), this.position, vec3.fromValues(0.75, 1.0, 0));
       return new BoundingBox(bbPosition, vec2.fromValues(1.5, 2));
     }
+  }
+
+  public get CollectedCoins(): number {
+    return this.collectedCoins;
   }
 
   public get Health(): number {
@@ -416,7 +421,7 @@ export class Hero {
   }
 
   public CollideWithCoin(coin: CoinObject): void {
-    // TODO: increase score?
+    this.collectedCoins++;
   }
 
   public CollideWithDragon(enemy: DragonEnemy): void {

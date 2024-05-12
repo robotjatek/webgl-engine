@@ -25,9 +25,9 @@ import { HealthPickup } from './Pickups/HealthPickup';
 
 // TODO: "press start" screen
 // TODO: correctly dispose objects that no longer exist => delete opengl resources, when an object is destroyed
+// TODO: multiple level support
 // TODO: flip sprite
 // TODO: recheck every vector passing. Sometimes vectors need to be cloned
-// TODO: multiple level support
 // TODO: FF8 Starting Up/FF9 Hunter's Chance - for the final BOSS music?
 // TODO: update ts version
 // TODO: render bounding boxes in debug mode
@@ -52,7 +52,8 @@ export class Game {
 
   private constructor(private keyHandler: KeyHandler,
     private gamepadHandler: ControllerHandler,
-    private textbox: Textbox,
+    private healthTextbox: Textbox,
+    private scoreTextbox: Textbox,
     private level: Level,
     private levelEnd: LevelEnd,
     private levelEndOpenSoundEffect) {
@@ -89,10 +90,11 @@ export class Game {
     await SoundEffectPool.GetInstance().Preload();
 
     const textbox = await Textbox.Create('Consolas');
+    const scoreTextBox = await Textbox.Create('Consolas');
     const level = await Level.Create();
     const levelend = await LevelEnd.Create(vec3.fromValues(58, Environment.VerticalTiles - 4, 0))
     const levelEndSoundEffect = await SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);;
-    return new Game(keyHandler, controllerHandler, textbox, level, levelend, levelEndSoundEffect);
+    return new Game(keyHandler, controllerHandler, textbox, scoreTextBox, level, levelend, levelEndSoundEffect);
   }
 
   public async Init() {
@@ -250,11 +252,15 @@ export class Game {
         return { hue: 0, saturation: 0, value: 100 / 100 };
       }
     })();
-    this.textbox
+    this.healthTextbox
       .WithText(`Health: ${this.hero.Health}`, vec2.fromValues(10, 0), 0.5)
       .WithHue(textColor.hue)
       .WithSaturation(textColor.saturation)
       .WithValue(textColor.value)
+      .Draw(textProjMat);
+
+    this.scoreTextbox
+      .WithText(`Coins: ${this.hero.CollectedCoins}`, vec2.fromValues(10, this.healthTextbox.Height), 0.5)
       .Draw(textProjMat);
 
     requestAnimationFrame(this.Run.bind(this));

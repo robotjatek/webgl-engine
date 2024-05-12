@@ -78,6 +78,9 @@ class Character {
 
 export class Textbox {
     private text: Character[] = [];
+    private cursorX: number = 0;
+    private maxCharacterHeight = 0;
+    private position: vec2;
 
     private constructor(private fontMap: Texture, private shader: Shader, private fontConfig: FontConfig) {
     }
@@ -93,18 +96,19 @@ export class Textbox {
 
     public WithText(text: string, position: vec2, scale: number = 1.0): Textbox {
         this.text = [];
-        let cursorX = 0;
+        this.cursorX = 0;
+        this.position = position;
 
         const heights = [ ...this.fontConfig.characters.values() ]
             .map(c => c.height);
-        const maxCharaterHeight = Math.max(...heights) * scale;
+        this.maxCharacterHeight = Math.max(...heights) * scale;
 
-        for (const c of text) {
-            const charConfig = this.fontConfig.characters.get(c + '');
-            const charPos: vec2 = vec2.fromValues(position[0] + cursorX, position[1] + maxCharaterHeight);
+        for (const character of text) {
+            const charConfig = this.fontConfig.characters.get(character);
+            const charPos: vec2 = vec2.fromValues(position[0] + this.cursorX, position[1] + this.maxCharacterHeight);
             const renderableChar = new Character(this.shader, this.fontMap, charConfig, charPos, scale)
             this.text.push(renderableChar);
-            cursorX += renderableChar.Advance;
+            this.cursorX += renderableChar.Advance;
         }
 
         return this;
@@ -135,5 +139,13 @@ export class Textbox {
         batch.Dispose();
 
         gl.disable(gl.BLEND);
+    }
+
+    public get Width(): number {
+        return this.cursorX + this.position[0];
+    }
+
+    public get Height(): number {
+        return this.maxCharacterHeight;
     }
 }

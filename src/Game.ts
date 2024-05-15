@@ -22,11 +22,22 @@ import { Spike } from './Enemies/Spike';
 import { Cactus } from './Enemies/Cactus';
 import { Textbox } from './Textbox';
 import { HealthPickup } from './Pickups/HealthPickup';
+import { SoundEffect } from './SoundEffect';
+import { MainScreen } from './MainScreen';
 
-// TODO: "press start" screen
-// TODO: correctly dispose objects that no longer exist => delete opengl resources, when an object is destroyed
+export interface IStartEventListener {
+  Start(): void;
+}
+
+enum State {
+  START_SCREEN = 'start_screen',
+  IN_GAME = 'in_game'
+}
+
+// TODO: pause menu
 // TODO: multiple level support
 // TODO: level editor
+// TODO: correctly dispose objects that no longer exist => delete opengl resources, when an object is destroyed
 
 // TODO: flip sprite
 // TODO: recheck every vector passing. Sometimes vectors need to be cloned
@@ -34,15 +45,17 @@ import { HealthPickup } from './Pickups/HealthPickup';
 // TODO: update ts version
 // TODO: render bounding boxes in debug mode
 // TODO: texture map padding
-export class Game {
+export class Game implements IStartEventListener {
   private Width: number;
   private Height: number;
   private start: number;
   private projectionMatrix = mat4.create();
+  private textProjMat: mat4;
   private camera = new Camera(vec3.create());
 
   private hero: Hero;
   private paused: boolean = false;
+  private state: State = State.START_SCREEN;
 
   // TODO: spawned objects should be in the Level object itself, not in Game.ts
   private enemies: IEnemy[] = [];
@@ -58,7 +71,8 @@ export class Game {
     private scoreTextbox: Textbox,
     private level: Level,
     private levelEnd: LevelEnd,
-    private levelEndOpenSoundEffect) {
+    private levelEndOpenSoundEffect: SoundEffect,
+    private mainScreen: MainScreen) {
     this.Width = window.innerWidth;
     this.Height = window.innerHeight;
 
@@ -72,12 +86,15 @@ export class Game {
       1
     );
 
+    this.textProjMat = mat4.ortho(mat4.create(), 0, this.Width, this.Height, 0, -1, 1);
+
     gl.disable(gl.DEPTH_TEST); // TODO: Depth test has value when rendering layers. Shouldn't be disabled completely
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.viewport(0, 0, this.Width, this.Height);
     gl.clearColor(0, 1, 0, 1);
 
     this.level = level;
+    mainScreen.SubscribeToStartEvent(this);
     this.start = performance.now();
   }
 
@@ -92,9 +109,15 @@ export class Game {
     const textbox = await Textbox.Create('Consolas');
     const scoreTextBox = await Textbox.Create('Consolas');
     const level = await Level.Create();
-    const levelend = await LevelEnd.Create(vec3.fromValues(58, Environment.VerticalTiles - 4, 0))
-    const levelEndSoundEffect = await SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);;
-    return new Game(keyHandler, controllerHandler, textbox, scoreTextBox, level, levelend, levelEndSoundEffect);
+    const levelend = await LevelEnd.Create(vec3.fromValues(58, Environment.VerticalTiles - 4, 0));
+    const levelEndSoundEffect = await SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);
+
+    const mainScreen = await MainScreen.Create(keyHandler, controllerHandler, canvas.width, canvas.height);
+    return new Game(keyHandler, controllerHandler, textbox, scoreTextBox, level, levelend, levelEndSoundEffect, mainScreen);
+  }
+
+  public Start(): void {
+    this.state = State.IN_GAME;
   }
 
   public async Init() {
@@ -229,130 +252,137 @@ export class Game {
 
   private Render(elapsedTime: number): void {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    this.level.Draw(this.projectionMatrix, this.camera.ViewMatrix);
+    if (this.state === State.START_SCREEN) {
+      this.mainScreen.Draw(this.projectionMatrix);
+    } else {
+      this.level.Draw(this.projectionMatrix, this.camera.ViewMatrix);
 
-    this.pickups.forEach(h => h.Draw(this.projectionMatrix, this.camera.ViewMatrix));
+      this.pickups.forEach(h => h.Draw(this.projectionMatrix, this.camera.ViewMatrix));
 
-    this.enemies.forEach(e => e.Draw(this.projectionMatrix, this.camera.ViewMatrix));
-    this.levelEnd.Draw(this.projectionMatrix, this.camera.ViewMatrix);
+      this.enemies.forEach(e => e.Draw(this.projectionMatrix, this.camera.ViewMatrix));
+      this.levelEnd.Draw(this.projectionMatrix, this.camera.ViewMatrix);
 
-    this.attack?.Draw(this.projectionMatrix, this.camera.ViewMatrix);
+      this.attack?.Draw(this.projectionMatrix, this.camera.ViewMatrix);
 
-    this.enemyProjectiles.forEach(p => p.Draw(this.projectionMatrix, this.camera.ViewMatrix));
+      this.enemyProjectiles.forEach(p => p.Draw(this.projectionMatrix, this.camera.ViewMatrix));
 
-    this.hero.Draw(this.projectionMatrix, this.camera.ViewMatrix);
+      this.hero.Draw(this.projectionMatrix, this.camera.ViewMatrix);
 
-    const textProjMat = mat4.ortho(mat4.create(), 0, this.Width, this.Height, 0, -1, 1);
-    const textColor = (() => {
-      if (this.hero.Health < 35) {
-        return { hue: 0, saturation: 100 / 100, value: 100 / 100 };
-      } else if (this.hero.Health > 100) {
-        return { hue: 120 / 360, saturation: 100 / 100, value: 100 / 100 };
-      } else {
-        return { hue: 0, saturation: 0, value: 100 / 100 };
-      }
-    })();
-    this.healthTextbox
-      .WithText(`Health: ${this.hero.Health}`, vec2.fromValues(10, 0), 0.5)
-      .WithHue(textColor.hue)
-      .WithSaturation(textColor.saturation)
-      .WithValue(textColor.value)
-      .Draw(textProjMat);
+      const textColor = (() => {
+        if (this.hero.Health < 35) {
+          return { hue: 0, saturation: 100 / 100, value: 100 / 100 };
+        } else if (this.hero.Health > 100) {
+          return { hue: 120 / 360, saturation: 100 / 100, value: 100 / 100 };
+        } else {
+          return { hue: 0, saturation: 0, value: 100 / 100 };
+        }
+      })();
+      this.healthTextbox
+        .WithText(`Health: ${this.hero.Health}`, vec2.fromValues(10, 0), 0.5)
+        .WithHue(textColor.hue)
+        .WithSaturation(textColor.saturation)
+        .WithValue(textColor.value)
+        .Draw(this.textProjMat);
 
-    this.scoreTextbox
-      .WithText(`Coins: ${this.hero.CollectedCoins}`, vec2.fromValues(10, this.healthTextbox.Height), 0.5)
-      .Draw(textProjMat);
+      this.scoreTextbox
+        .WithText(`Coins: ${this.hero.CollectedCoins}`, vec2.fromValues(10, this.healthTextbox.Height), 0.5)
+        .Draw(this.textProjMat);
+    }
 
     requestAnimationFrame(this.Run.bind(this));
   }
 
   private async Update(elapsedTime: number): Promise<void> {
-    // TODO: this is a hack because audio playback needs one user interaction before it can start. Also loading is async so I can start an audio file before its loaded
-    // The later can be avoided by a press start screen, before starting the game
-    //this.level.PlayMusic(0.5);
+    if (this.state === State.START_SCREEN) {
+      this.mainScreen.Update(elapsedTime);
+    } else if (this.state === State.IN_GAME) {
+      // TODO: this is a hack because audio playback needs one user interaction before it can start. Also loading is async so I can start an audio file before its loaded
+      // The later can be avoided by a press start screen, before starting the game
+      this.level.PlayMusic(0.5);
 
-    this.hero.Update(elapsedTime);
-    if (this.level.MainLayer.IsUnder(this.hero.BoundingBox)) {
-      this.hero.Kill();
-    }
+      this.hero.Update(elapsedTime);
+      if (this.level.MainLayer.IsUnder(this.hero.BoundingBox)) {
+        this.hero.Kill();
+      }
 
-    this.attack?.Update(elapsedTime);
-    if (this.attack && !this.attack.AlreadyHit) {
-      const enemiesCollidingWithProjectile = this.enemies.filter(e => e.IsCollidingWidth(this.attack.BoundingBox, false));
-      // Pushback force does not necessarily mean the amount of pushback. A big enemy can ignore a sword attack for example
-      enemiesCollidingWithProjectile.forEach(e => e.Damage(this.attack.PushbackForce));
+      this.attack?.Update(elapsedTime);
+      if (this.attack && !this.attack.AlreadyHit) {
+        const enemiesCollidingWithProjectile = this.enemies.filter(e => e.IsCollidingWidth(this.attack.BoundingBox, false));
+        // Pushback force does not necessarily mean the amount of pushback. A big enemy can ignore a sword attack for example
+        enemiesCollidingWithProjectile.forEach(e => e.Damage(this.attack.PushbackForce));
 
-      this.attack.OnHit();
-    }
+        this.attack.OnHit();
+      }
 
-    this.CheckForEndCondition();
+      this.CheckForEndCondition();
 
-    // TODO: most keypresses only affect the hero. Maybe these should be moved to there in a component
-    if (this.keyHandler.IsPressed(Keys.A) ||
-      this.gamepadHandler.LeftStick[0] < -0.5 ||
-      this.gamepadHandler.IsPressed(XBoxControllerKeys.LEFT)) {
-      this.hero.MoveLeft(0.01, elapsedTime);
-    } else if (this.keyHandler.IsPressed(Keys.D) ||
-      this.gamepadHandler.LeftStick[0] > 0.5 ||
-      this.gamepadHandler.IsPressed(XBoxControllerKeys.RIGHT)) {
-      this.hero.MoveRight(0.01, elapsedTime);
-    }
+      // TODO: most keypresses only affect the hero. Maybe these should be moved to there in a component
+      if (this.keyHandler.IsPressed(Keys.A) ||
+        this.gamepadHandler.LeftStick[0] < -0.5 ||
+        this.gamepadHandler.IsPressed(XBoxControllerKeys.LEFT)) {
+        this.hero.MoveLeft(0.01, elapsedTime);
+      } else if (this.keyHandler.IsPressed(Keys.D) ||
+        this.gamepadHandler.LeftStick[0] > 0.5 ||
+        this.gamepadHandler.IsPressed(XBoxControllerKeys.RIGHT)) {
+        this.hero.MoveRight(0.01, elapsedTime);
+      }
 
-    if (this.keyHandler.IsPressed(Keys.SPACE) ||
-      this.gamepadHandler.IsPressed(XBoxControllerKeys.A)) {
-      this.hero.Jump();
-    }
+      if (this.keyHandler.IsPressed(Keys.SPACE) ||
+        this.gamepadHandler.IsPressed(XBoxControllerKeys.A)) {
+        this.hero.Jump();
+      }
 
-    if (this.keyHandler.IsPressed(Keys.S) ||
-      this.gamepadHandler.LeftStick[1] > 0.8 ||
-      this.gamepadHandler.IsPressed(XBoxControllerKeys.DOWN)) {
-      this.hero.Stomp();
-    }
+      if (this.keyHandler.IsPressed(Keys.S) ||
+        this.gamepadHandler.LeftStick[1] > 0.8 ||
+        this.gamepadHandler.IsPressed(XBoxControllerKeys.DOWN)) {
+        this.hero.Stomp();
+      }
 
-    if (this.keyHandler.IsPressed(Keys.LEFT_SHIFT) || this.gamepadHandler.IsPressed(XBoxControllerKeys.RB)) {
-      this.hero.Dash();
-    }
+      if (this.keyHandler.IsPressed(Keys.LEFT_SHIFT) || this.gamepadHandler.IsPressed(XBoxControllerKeys.RB)) {
+        this.hero.Dash();
+      }
 
-    if (this.keyHandler.IsPressed(Keys.E) || this.gamepadHandler.IsPressed(XBoxControllerKeys.X)) {
-      const attackPosition = this.hero.FacingDirection[0] > 0 ?
-        vec3.add(vec3.create(), this.hero.Position, vec3.fromValues(1.5, 0, 0)) :
-        vec3.add(vec3.create(), this.hero.Position, vec3.fromValues(-2.5, 0, 0));
-      this.hero.Attack(async () => {
-        // TODO: creating an attack instance on every attack is wasteful.
-        // TODO: I need to dispose resources after attack is done
-        this.attack = await MeleeAttack.Create(attackPosition, this.hero.FacingDirection);
+      if (this.keyHandler.IsPressed(Keys.E) || this.gamepadHandler.IsPressed(XBoxControllerKeys.X)) {
+        const attackPosition = this.hero.FacingDirection[0] > 0 ?
+          vec3.add(vec3.create(), this.hero.Position, vec3.fromValues(1.5, 0, 0)) :
+          vec3.add(vec3.create(), this.hero.Position, vec3.fromValues(-2.5, 0, 0));
+        this.hero.Attack(async () => {
+          // TODO: creating an attack instance on every attack is wasteful.
+          // TODO: I need to dispose resources after attack is done
+          this.attack = await MeleeAttack.Create(attackPosition, this.hero.FacingDirection);
+        });
+      }
+
+      this.enemies.forEach(async (e) => {
+        await e.Update(elapsedTime);
+        if (e.IsCollidingWidth(this.hero.BoundingBox, false)) {
+          this.hero.Collide(e);
+        }
       });
+
+      this.pickups.forEach(async e => {
+        await e.Update(elapsedTime);
+        if (e.IsCollidingWidth(this.hero.BoundingBox, false)) {
+          this.hero.CollideWithPickup(e);
+        }
+      });
+
+      // TODO: should merge these together into handling "game objects" that can collide/interact with the hero
+      this.enemyProjectiles.forEach((p: IProjectile) => {
+        p.Update(elapsedTime);
+        if (p.IsCollidingWith(this.hero.BoundingBox)) {
+          this.hero.InteractWithProjectile(p);
+        }
+
+        // Despawn out-of-bounds projectiles
+        if (this.level.MainLayer.IsOutsideBoundary(p.BoundingBox)) {
+          this.enemyProjectiles = this.enemyProjectiles.filter(item => item !== p);
+          p.Dispose();
+        }
+      });
+
+      this.camera.LookAtPosition(vec3.clone(this.hero.Position), this.level.MainLayer);
     }
-
-    this.enemies.forEach(async (e) => {
-      await e.Update(elapsedTime);
-      if (e.IsCollidingWidth(this.hero.BoundingBox, false)) {
-        this.hero.Collide(e);
-      }
-    });
-
-    this.pickups.forEach(async e => {
-      await e.Update(elapsedTime);
-      if (e.IsCollidingWidth(this.hero.BoundingBox, false)) {
-        this.hero.CollideWithPickup(e);
-      }
-    });
-
-    // TODO: should merge these together into handling "game objects" that can collide/interact with the hero
-    this.enemyProjectiles.forEach((p: IProjectile) => {
-      p.Update(elapsedTime);
-      if (p.IsCollidingWith(this.hero.BoundingBox)) {
-        this.hero.InteractWithProjectile(p);
-      }
-
-      // Despawn out-of-bounds projectiles
-      if (this.level.MainLayer.IsOutsideBoundary(p.BoundingBox)) {
-        this.enemyProjectiles = this.enemyProjectiles.filter(item => item !== p);
-        p.Dispose();
-      }
-    });
-
-    this.camera.LookAtPosition(vec3.clone(this.hero.Position), this.level.MainLayer);
   }
 
   private CheckForEndCondition() {

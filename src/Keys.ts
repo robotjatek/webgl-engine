@@ -7,4 +7,5 @@ export class Keys {
   public static readonly RIGHT_CONTROL = 'ControlRight';
   public static readonly LEFT_CONTROL = 'ControlLeft';
   public static readonly LEFT_SHIFT = 'ShiftLeft';
+  public static readonly ENTER = 'Enter';
 }

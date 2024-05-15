@@ -47,5 +47,5 @@ domready(async () => {
   });
 
   canvas.focus();
-  game.Run();
+  await game.Run();
 });

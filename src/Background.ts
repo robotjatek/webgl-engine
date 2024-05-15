@@ -1,6 +1,9 @@
 import { Environment } from "./Environment";
 import { Sprite } from "./Sprite";
 
+/**
+ * Background is a full screen sprite
+ */
 export class Background extends Sprite
 {
     public constructor()

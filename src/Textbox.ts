@@ -26,7 +26,7 @@ class FontConfig {
         const parsedTopLevel = JSON.parse(jsonString);
         const topLevelEntries = Object.entries<object>(parsedTopLevel);
         const topLevelMap: Map<string, object> = new Map<string, object>(topLevelEntries);
-        
+
         const charJson = JSON.stringify(topLevelMap.get('characters'));
         const e = Object.entries<CharProperties>(JSON.parse(charJson))
         const chars = new Map<string, CharProperties>(e);
@@ -55,24 +55,24 @@ class Character {
         private charConfig: CharProperties,
         private position: vec2,
         private scale: number) {
-            this._advance = charConfig.advance * scale;
+        this._advance = charConfig.advance * scale;
 
-            const height = charConfig.height * scale;
-            const width = charConfig.width * scale;
-            const originX = charConfig.originX * scale;
-            const originY = charConfig.originY * scale;
+        const height = charConfig.height * scale;
+        const width = charConfig.width * scale;
+        const originX = charConfig.originX * scale;
+        const originY = charConfig.originY * scale;
 
-            const originYOffset = height - originY;
-            const bottomY = position[1] + originYOffset;
-            const topY = bottomY - height;
-            const left = position[0] - originX;
+        const originYOffset = height - originY;
+        const bottomY = position[1] + originYOffset;
+        const topY = bottomY - height;
+        const left = position[0] - originX;
 
-            const vertices = Utils.CreateCharacterVertices(vec2.fromValues(left, topY), width, height);
-            const s = charConfig.x / fontMap.Width;
-            const t = charConfig.y / fontMap.Height;
-            const uvs = Utils.CreateTextureCoordinates(s, t, charConfig.width / fontMap.Width, charConfig.height / fontMap.Height);
+        const vertices = Utils.CreateCharacterVertices(vec2.fromValues(left, topY), width, height);
+        const s = charConfig.x / fontMap.Width;
+        const t = charConfig.y / fontMap.Height;
+        const uvs = Utils.CreateTextureCoordinates(s, t, charConfig.width / fontMap.Width, charConfig.height / fontMap.Height);
 
-            this.sprite = new Sprite(vertices, uvs);
+        this.sprite = new Sprite(vertices, uvs);
     }
 }
 
@@ -86,8 +86,8 @@ export class Textbox {
     }
 
     public static async Create(fontname: string): Promise<Textbox> {
-        const fontMap = await TexturePool.GetInstance().GetTexture(`textures/Fonts/${fontname}/font.png`);
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Font.frag');
+        const fontMap = await TexturePool.GetInstance().GetTexture(`textures/Fonts/${fontname}/font.png`);
         const fontConfig = await FontConfig.Create(`textures/Fonts/${fontname}/font.json`);
 
         return new Textbox(fontMap, shader, fontConfig)
@@ -99,7 +99,7 @@ export class Textbox {
         this.cursorX = 0;
         this.position = position;
 
-        const heights = [ ...this.fontConfig.characters.values() ]
+        const heights = [...this.fontConfig.characters.values()]
             .map(c => c.height);
         this.maxCharacterHeight = Math.max(...heights) * scale;
 
@@ -147,5 +147,26 @@ export class Textbox {
 
     public get Height(): number {
         return this.maxCharacterHeight;
+    }
+
+    /**
+     * Helper function to predetermine the size of a textbox without creating and rendering one
+     * @param text The text to 'prerender'
+     * @param font The font that the text will be rendered in
+     * @returns An object containing the width and height of the rendered textbox
+     */
+    public static async PrecalculateDimensions(font: string, text: string, scale: number): Promise<{ width: number, height: number }> {
+        const fontConfig = await FontConfig.Create(`textures/Fonts/${font}/font.json`);
+        let cursorX = 0;
+        const heights = [...fontConfig.characters.values()]
+            .map(c => c.height);
+        const maxCharacterHeight = Math.max(...heights) * scale;
+
+        for (const character of text) {
+            const charConfig = fontConfig.characters.get(character);
+            cursorX += charConfig.advance * scale;
+        }
+
+        return { width: cursorX, height: maxCharacterHeight };
     }
 }

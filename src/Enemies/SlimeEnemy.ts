@@ -56,7 +56,7 @@ export class SlimeEnemy implements IEnemy {
     private bbOffset = vec3.fromValues(1.2, 1.8, 0);
     private bbSize = vec2.fromValues(0.8, 1.0);
     private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
-    private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
+    private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], null);
 
     private constructor(
         private position: vec3,

@@ -41,7 +41,7 @@ export class BiteProjectile implements IProjectile {
     private batch: SpriteBatch = new SpriteBatch(this.shader, [this.sprite], this.texture);
 
     private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
-    private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
+    private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], null);
 
     private constructor(
         private centerPosition: vec3,

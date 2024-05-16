@@ -21,7 +21,7 @@ export class Spike implements IEnemy {
     private bbOffset: vec3 = vec3.fromValues(0, 0, 0);
 
     private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
-    private bbBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
+    private bbBatch = new SpriteBatch(this.bbShader, [this.bbSprite], null);
 
     private constructor(private position: vec3, private visualScale: vec2, private shader: Shader, private bbShader: Shader, private texture: Texture) {
       //  this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.3));

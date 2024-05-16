@@ -33,7 +33,7 @@ export class MeleeAttack implements IProjectile {
         this.spriteVisualScale[1] / 2 - this.bbSize[1] / 2,
         0);
     private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
-    private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
+    private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], null);
     private alreadyHit = false;
     private animationFinished = false;
 

@@ -53,7 +53,7 @@ export class Fireball implements IProjectile {
     private bbOffset = vec3.fromValues(0, 0, 0);
     private bbSize = vec2.fromValues(2.0, 1.0);
     private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
-    private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
+    private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], null);
 
     private constructor(
         private centerPosition: vec3,

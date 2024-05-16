@@ -43,7 +43,10 @@ export class SoundEffectPool {
             this.GetAudio('audio/collect.mp3'),
             this.GetAudio('audio/dragon_roar.mp3'),
             this.GetAudio('audio/charge_up.mp3'),
-            this.GetAudio('audio/item1.wav', false)
+            this.GetAudio('audio/item1.wav', false),
+            this.GetAudio('audio/ui2.mp3', false),
+            this.GetAudio('audio/pause.mp3'),
+            this.GetAudio('audio/cursor1.wav')
         ]);
     }
 }

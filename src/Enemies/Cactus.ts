@@ -92,7 +92,7 @@ export class Cactus implements IEnemy {
     private bbSize: vec2 = vec2.fromValues(2.3, 2.5);
 
     private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
-    private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
+    private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], null);
 
     private constructor(
         private position: vec3,

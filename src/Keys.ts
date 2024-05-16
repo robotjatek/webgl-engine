@@ -1,4 +1,5 @@
 export class Keys {
+  public static readonly W = 'KeyW';
   public static readonly A = 'KeyA';
   public static readonly S = 'KeyS';
   public static readonly D  = 'KeyD';

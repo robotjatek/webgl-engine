@@ -17,7 +17,7 @@ export class MainScreen {
     private textProjMat: mat4;
     private currentTime = 0;
 
-    private constructor(private batch: SpriteBatch, 
+    private constructor(private batch: SpriteBatch,
         private gamepadHandler: ControllerHandler,
         private keyHandler: KeyHandler,
         private sound: SoundEffect,
@@ -47,18 +47,19 @@ export class MainScreen {
         this.pressStartTextbox.Draw(this.textProjMat);
     }
 
-    public Update(delta: number): void {
+    public async Update(delta: number): Promise<void> {
         this.currentTime += delta;
+
         const frequency = 0.15;
         const amplitude = 0.35;
         const valueOffset = amplitude * Math.sin(2 * Math.PI * frequency * (this.currentTime / 1000));
         const value = 0.65 + Math.abs(valueOffset);
         this.pressStartTextbox.WithValue(value);
 
-        if (this.gamepadHandler.IsPressed(XBoxControllerKeys.START) || this.keyHandler.IsPressed(Keys.ENTER)) {
-            this.sound.Play(1, 1, () => {
-                this.startEventListeners.forEach(l => l.Start());
-            }, false);
+        if ((this.gamepadHandler.IsPressed(XBoxControllerKeys.START) || this.keyHandler.IsPressed(Keys.ENTER)) && this.currentTime > 500) {
+            this.sound.Play();
+            this.currentTime = 0;
+            this.startEventListeners.forEach(async l => await l.Start());
         }
     }
 

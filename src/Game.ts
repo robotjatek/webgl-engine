@@ -24,14 +24,27 @@ import { Textbox } from './Textbox';
 import { HealthPickup } from './Pickups/HealthPickup';
 import { SoundEffect } from './SoundEffect';
 import { MainScreen } from './MainScreen';
+import { PauseScreen } from './PauseScreen';
 
 export interface IStartEventListener {
-  Start(): void;
+  Start(): Promise<void>;
 }
 
+export interface IResumeEventListener {
+  Resume(): void;
+}
+
+export interface IQuitEventListener {
+  Quit(): void;
+}
+
+// TODO: time to implement a proper state machine at least for the game object
+// TODO: check for key presses and elapsed time since state change
+// TODO: sometimes key release check is also neccessary for a state change
 enum State {
   START_SCREEN = 'start_screen',
-  IN_GAME = 'in_game'
+  IN_GAME = 'in_game',
+  PAUSED = 'paused'
 }
 
 // TODO: pause menu
@@ -39,13 +52,14 @@ enum State {
 // TODO: level editor
 // TODO: correctly dispose objects that no longer exist => delete opengl resources, when an object is destroyed
 
+// TODO: ui builder framework
 // TODO: flip sprite
 // TODO: recheck every vector passing. Sometimes vectors need to be cloned
 // TODO: FF8 Starting Up/FF9 Hunter's Chance - for the final BOSS music?
 // TODO: update ts version
 // TODO: render bounding boxes in debug mode
 // TODO: texture map padding
-export class Game implements IStartEventListener {
+export class Game implements IStartEventListener, IResumeEventListener, IQuitEventListener {
   private Width: number;
   private Height: number;
   private start: number;
@@ -54,7 +68,7 @@ export class Game implements IStartEventListener {
   private camera = new Camera(vec3.create());
 
   private hero: Hero;
-  private paused: boolean = false;
+  private canUpdate: boolean = false;
   private state: State = State.START_SCREEN;
 
   // TODO: spawned objects should be in the Level object itself, not in Game.ts
@@ -64,6 +78,8 @@ export class Game implements IStartEventListener {
   private attack: IProjectile; // This is related to the hero
 
   private levelEndSoundPlayed = false;
+  private keyWasReleased = true;
+  private elapsedTimeSinceStateChange = 0;
 
   private constructor(private keyHandler: KeyHandler,
     private gamepadHandler: ControllerHandler,
@@ -72,7 +88,9 @@ export class Game implements IStartEventListener {
     private level: Level,
     private levelEnd: LevelEnd,
     private levelEndOpenSoundEffect: SoundEffect,
-    private mainScreen: MainScreen) {
+    private mainScreen: MainScreen,
+    private pauseScreen: PauseScreen,
+    private pauseSoundEffect: SoundEffect) {
     this.Width = window.innerWidth;
     this.Height = window.innerHeight;
 
@@ -95,6 +113,9 @@ export class Game implements IStartEventListener {
 
     this.level = level;
     mainScreen.SubscribeToStartEvent(this);
+    pauseScreen.SubscribeToResumeEvent(this);
+    pauseScreen.SubscribeToQuitEvent(this);
+
     this.start = performance.now();
   }
 
@@ -112,16 +133,24 @@ export class Game implements IStartEventListener {
     const levelend = await LevelEnd.Create(vec3.fromValues(58, Environment.VerticalTiles - 4, 0));
     const levelEndSoundEffect = await SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);
 
+    const pauseSoundEffect = await SoundEffectPool.GetInstance().GetAudio('audio/pause.mp3');
     const mainScreen = await MainScreen.Create(keyHandler, controllerHandler, canvas.width, canvas.height);
-    return new Game(keyHandler, controllerHandler, textbox, scoreTextBox, level, levelend, levelEndSoundEffect, mainScreen);
+    const pauseScreen = await PauseScreen.Create(canvas.width, canvas.height, keyHandler, controllerHandler);
+    return new Game(keyHandler, controllerHandler, textbox, scoreTextBox, level, levelend, levelEndSoundEffect, mainScreen, pauseScreen, pauseSoundEffect);
   }
 
-  public Start(): void {
-    this.state = State.IN_GAME;
+  public async Start(): Promise<void> {
+    if (this.state === State.START_SCREEN) {
+      await this.RestartLevel();
+      this.state = State.IN_GAME;
+      this.elapsedTimeSinceStateChange = 0;
+      this.level.PlayMusic(0.4);
+    }
   }
 
-  public async Init() {
-    await this.RestartLevel();
+  public Quit(): void {
+    this.level.StopMusic();
+    this.state = State.START_SCREEN;
   }
 
   private async CreateEnemies() {
@@ -205,6 +234,7 @@ export class Game implements IStartEventListener {
       0, Environment.VerticalTiles - 5, 1),
       vec2.fromValues(3, 3),
       this.level.MainLayer,
+      // BUG: if a hero dies then the pause button is pressed the level will restart in a paused state. The level should not restart until unpaused 
       async () => await this.RestartLevel());
   }
 
@@ -237,20 +267,25 @@ export class Game implements IStartEventListener {
     const elapsed = Math.min(end - this.start, 32);
     this.start = end;
     this.Render(elapsed);
-    if (!this.paused) {
+    if (!this.canUpdate) {
       await this.Update(elapsed);
     }
   }
 
   public Pause(): void {
-    this.paused = true;
+    // TODO: state machine: Only can go to paused from ingame
+    if (this.state === State.IN_GAME) {
+      this.state = State.PAUSED;
+      this.elapsedTimeSinceStateChange = 0;
+    }
   }
 
   public Play(): void {
-    this.paused = false;
+    this.state = State.IN_GAME;
+    this.elapsedTimeSinceStateChange = 0;
   }
 
-  private Render(elapsedTime: number): void {
+  private async Render(elapsedTime: number): Promise<void> {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     if (this.state === State.START_SCREEN) {
       this.mainScreen.Draw(this.projectionMatrix);
@@ -287,19 +322,21 @@ export class Game implements IStartEventListener {
       this.scoreTextbox
         .WithText(`Coins: ${this.hero.CollectedCoins}`, vec2.fromValues(10, this.healthTextbox.Height), 0.5)
         .Draw(this.textProjMat);
+
+      if (this.state === State.PAUSED) {
+        this.pauseScreen.Draw(this.projectionMatrix);
+      }
     }
 
     requestAnimationFrame(this.Run.bind(this));
   }
 
   private async Update(elapsedTime: number): Promise<void> {
-    if (this.state === State.START_SCREEN) {
-      this.mainScreen.Update(elapsedTime);
-    } else if (this.state === State.IN_GAME) {
-      // TODO: this is a hack because audio playback needs one user interaction before it can start. Also loading is async so I can start an audio file before its loaded
-      // The later can be avoided by a press start screen, before starting the game
-      this.level.PlayMusic(0.5);
+    this.elapsedTimeSinceStateChange += elapsedTime;
 
+    if (this.state === State.START_SCREEN) {
+      await this.mainScreen.Update(elapsedTime);
+    } else if (this.state === State.IN_GAME && this.elapsedTimeSinceStateChange > 150) {
       this.hero.Update(elapsedTime);
       if (this.level.MainLayer.IsUnder(this.hero.BoundingBox)) {
         this.hero.Kill();
@@ -381,8 +418,31 @@ export class Game implements IStartEventListener {
         }
       });
 
+      if (!this.keyHandler.IsPressed(Keys.ENTER) && !this.gamepadHandler.IsPressed(XBoxControllerKeys.START)
+        && !this.keyWasReleased && this.elapsedTimeSinceStateChange > 100) {
+        this.keyWasReleased = true;
+      }
+
+      if ((this.keyHandler.IsPressed(Keys.ENTER) || this.gamepadHandler.IsPressed(XBoxControllerKeys.START))
+        && this.keyWasReleased && this.elapsedTimeSinceStateChange > 100) {
+        this.state = State.PAUSED;
+        this.pauseSoundEffect.Play();
+        this.elapsedTimeSinceStateChange = 0;
+        this.keyWasReleased = false;
+      }
+
       this.camera.LookAtPosition(vec3.clone(this.hero.Position), this.level.MainLayer);
+    } else if (this.state === State.PAUSED) {
+      this.level.SetMusicVolume(0.15);
+      this.pauseScreen.Update(elapsedTime);
     }
+  }
+
+  public Resume(): void {
+    // TODO: statemachine move state
+    this.state = State.IN_GAME;
+    this.elapsedTimeSinceStateChange = 0;
+    this.level.SetMusicVolume(0.4);
   }
 
   private CheckForEndCondition() {
@@ -395,7 +455,7 @@ export class Game implements IStartEventListener {
 
     if (this.levelEnd.IsCollidingWidth(this.hero.BoundingBox)) {
       if (this.levelEnd.IsEnabled) {
-        this.paused = true;
+        this.canUpdate = true;
         this.level.SetMusicVolume(0.25);
       }
 
@@ -420,7 +480,7 @@ export class Game implements IStartEventListener {
     this.pickups = [];
     await this.InitPickups();
 
-    this.paused = false;
+    this.canUpdate = false;
     this.levelEndSoundPlayed = false;
     this.enemyProjectiles = [];
   }

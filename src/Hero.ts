@@ -18,6 +18,11 @@ import { HealthPickup } from './Pickups/HealthPickup';
 import { CoinObject } from './Pickups/CoinObject';
 import { IPickup } from './Pickups/IPickup';
 import { SoundEffect } from './SoundEffect';
+import { KeyHandler } from './KeyHandler';
+import { ControllerHandler } from './ControllerHandler';
+import { XBoxControllerKeys } from './XBoxControllerKeys';
+import { Keys } from './Keys';
+import { MeleeAttack } from './Projectiles/MeleeAttack';
 
 enum State {
   IDLE = 'idle',
@@ -109,6 +114,7 @@ export class Hero {
     private visualScale: vec2,
     private collider: ICollider,
     private onDeath: () => void,
+    private spawnProjectile: (sender: Hero, projectile: IProjectile) => void,
     private shader: Shader,
     private bbShader: Shader,
     private jumpSound: SoundEffect,
@@ -117,7 +123,9 @@ export class Hero {
     private stompSound: SoundEffect,
     private damageSound: SoundEffect,
     private dieSound: SoundEffect,
-    private texture: Texture
+    private texture: Texture,
+    private keyHandler: KeyHandler,
+    private gamepadHandler: ControllerHandler
   ) {
     this.sprite = new Sprite(
       Utils.DefaultSpriteVertices,
@@ -139,7 +147,11 @@ export class Hero {
     // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 1));
   }
 
-  public static async Create(position: vec3, visualScale: vec2, collider: ICollider, onDeath: () => void): Promise<Hero> {
+  public static async Create(
+    position: vec3, visualScale: vec2, collider: ICollider, onDeath: () => void,
+    spawnProjectile: (sender: Hero, projectile: IProjectile) => void,
+    keyHandler: KeyHandler, gamepadHandler: ControllerHandler): Promise<Hero> {
+
     const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
     const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
 
@@ -151,8 +163,9 @@ export class Hero {
     const dieSound = await SoundEffectPool.GetInstance().GetAudio('audio/hero_die.wav', false);
     const texture = await TexturePool.GetInstance().GetTexture('textures/hero1.png');
 
-    const hero = new Hero(position, visualScale, collider, onDeath, shader, bbShader,
-      jumpSound, landSound, walkSound, stompSound, damageSound, dieSound, texture);
+    const hero = new Hero(position, visualScale, collider, onDeath, spawnProjectile, shader,
+      bbShader, jumpSound, landSound, walkSound, stompSound, damageSound, dieSound, texture,
+      keyHandler, gamepadHandler);
 
     return hero;
   }
@@ -234,9 +247,48 @@ export class Hero {
     this.ReduceHorizontalVelocityWhenDashing();
     this.ApplyVelocityToPosition(delta);
     this.HandleCollisionWithCollider();
+    this.HandleInput(delta);
   }
 
-  private HandleDeath() {
+  private HandleInput(delta: number): void {
+    if (this.keyHandler.IsPressed(Keys.A) ||
+      this.gamepadHandler.LeftStick[0] < -0.5 ||
+      this.gamepadHandler.IsPressed(XBoxControllerKeys.LEFT)) {
+      this.MoveLeft(0.01, delta);
+    } else if (this.keyHandler.IsPressed(Keys.D) ||
+      this.gamepadHandler.LeftStick[0] > 0.5 ||
+      this.gamepadHandler.IsPressed(XBoxControllerKeys.RIGHT)) {
+      this.MoveRight(0.01, delta);
+    }
+
+    if (this.keyHandler.IsPressed(Keys.SPACE) ||
+      this.gamepadHandler.IsPressed(XBoxControllerKeys.A)) {
+      this.Jump();
+    }
+
+    if (this.keyHandler.IsPressed(Keys.S) ||
+      this.gamepadHandler.LeftStick[1] > 0.8 ||
+      this.gamepadHandler.IsPressed(XBoxControllerKeys.DOWN)) {
+      this.Stomp();
+    }
+
+    if (this.keyHandler.IsPressed(Keys.LEFT_SHIFT) || this.gamepadHandler.IsPressed(XBoxControllerKeys.RB)) {
+      this.Dash();
+    }
+
+    if (this.keyHandler.IsPressed(Keys.E) || this.gamepadHandler.IsPressed(XBoxControllerKeys.X)) {
+      const attackPosition = this.FacingDirection[0] > 0 ?
+        vec3.add(vec3.create(), this.Position, vec3.fromValues(1.5, 0, 0)) :
+        vec3.add(vec3.create(), this.Position, vec3.fromValues(-2.5, 0, 0));
+      this.Attack(async () => {
+        // TODO: creating an attack instance on every attack is wasteful.
+        // TODO: I need to dispose resources after attack is done
+        this.spawnProjectile(this, await MeleeAttack.Create(attackPosition, this.FacingDirection));
+      });
+    }
+  }
+
+  private HandleDeath(): void {
     if (this.Health <= 0) {
       this.state = State.DEAD;
       this.dieSound.Play();
@@ -253,7 +305,7 @@ export class Hero {
     }
   }
 
-  private DisableInvincibleStateAfter(delta: number, numberOfFrames: number) {
+  private DisableInvincibleStateAfter(delta: number, numberOfFrames: number): void {
     if (this.invincibleTime > 1.0 / 60 * 1000 * numberOfFrames) {
       this.invincible = false;
       this.invincibleTime = 0;
@@ -262,7 +314,7 @@ export class Hero {
     this.invincible ? this.invincibleTime += delta : this.invincibleTime = 0;
   }
 
-  private HandleCollisionWithCollider() {
+  private HandleCollisionWithCollider(): void {
     const colliding = this.collider.IsCollidingWidth(this.BoundingBox, true);
     if (colliding) {
       vec3.copy(this.position, this.lastPosition);
@@ -273,7 +325,7 @@ export class Hero {
     }
   }
 
-  private ApplyVelocityToPosition(delta: number) {
+  private ApplyVelocityToPosition(delta: number): void {
     const moveValue = vec3.create();
     vec3.scale(moveValue, this.velocity, delta);
     vec3.add(this.position, this.position, moveValue);
@@ -286,7 +338,7 @@ export class Hero {
     }
   }
 
-  private ReduceHorizontalVelocityWhenDashing() {
+  private ReduceHorizontalVelocityWhenDashing(): void {
     if (!this.dashAvailable)
       this.velocity[0] *= 0.75;
   }
@@ -336,7 +388,7 @@ export class Hero {
   }
 
   // TODO: move left, and move right should a change the velocity not the position itself
-  public MoveRight(amount: number, delta: number): void {
+  private MoveRight(amount: number, delta: number): void {
     if (this.state !== State.DEAD && this.state !== State.STOMP && this.state !== State.DASH) {
       this.state = State.WALK;
       if (!this.invincible) {
@@ -348,7 +400,7 @@ export class Hero {
     }
   }
 
-  public MoveLeft(amount: number, delta: number): void {
+  private MoveLeft(amount: number, delta: number): void {
     if (this.state !== State.DEAD && this.state !== State.STOMP && this.state !== State.DASH) {
       this.state = State.WALK;
 
@@ -361,7 +413,7 @@ export class Hero {
     }
   }
 
-  public Jump(): void {
+  private Jump(): void {
     // TODO: all these dead checks are getting ridiculous. Something really needs to be done...
     if (!this.jumping && this.onGround && this.state !== State.DEAD) {
       this.velocity[1] = -0.02;
@@ -371,7 +423,7 @@ export class Hero {
     }
   }
 
-  public Stomp(): void {
+  private Stomp(): void {
     if (this.jumping && !this.onGround && this.state !== State.DEAD && this.state !== State.STOMP && this.timeSinceLastStomp > 350) {
       this.state = State.STOMP;
       this.velocity[1] = 0.04;
@@ -381,7 +433,7 @@ export class Hero {
     }
   }
 
-  public Dash(): void {
+  private Dash(): void {
     if (this.state !== State.DEAD
       && this.state !== State.IDLE
       && this.timeSinceLastDash > 300
@@ -398,7 +450,7 @@ export class Hero {
     }
   }
 
-  public Attack(afterAttack: () => void): void {
+  private Attack(afterAttack: () => void): void {
     // TODO: yet another magic number
     if (this.state !== State.DEAD && this.timeSinceLastMeleeAttack > 350) {
       this.timeSinceLastMeleeAttack = 0;
@@ -477,7 +529,7 @@ export class Hero {
     }
   }
 
-  public Damage(pushbackForce: vec3): void {
+  private Damage(pushbackForce: vec3): void {
     // TODO: This is almost a 1:1 copy from the Collide method
 
     // Damage method should not consider the invincible flag because I dont want to cancel damage with projectiles when stomping

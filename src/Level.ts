@@ -1,4 +1,4 @@
-import { mat4 } from "gl-matrix";
+import { mat4, vec2, vec3 } from "gl-matrix";
 import { Background } from "./Background";
 import { Layer } from "./Layer";
 import { Shader } from "./Shader";
@@ -9,6 +9,20 @@ import { Environment } from './Environment';
 import { SoundEffectPool } from './SoundEffectPool';
 import { SoundEffect } from './SoundEffect';
 import { Texture } from './Texture';
+import { Hero } from './Hero';
+import { KeyHandler } from './KeyHandler';
+import { ControllerHandler } from './ControllerHandler';
+import { IEnemy } from './Enemies/IEnemy';
+import { IPickup } from './Pickups/IPickup';
+import { IProjectile } from './Projectiles/IProjectile';
+import { LevelEnd } from './LevelEnd';
+import { DragonEnemy } from './Enemies/DragonEnemy';
+import { SlimeEnemy } from './Enemies/SlimeEnemy';
+import { Spike } from './Enemies/Spike';
+import { Cactus } from './Enemies/Cactus';
+import { CoinObject } from './Pickups/CoinObject';
+import { HealthPickup } from './Pickups/HealthPickup';
+import { IRestartListener } from './Game';
 
 // TODO: parallax scrolling
 /*
@@ -34,11 +48,23 @@ export class Level {
     private Background: SpriteBatch;
     private BackgroundViewMatrix = mat4.create();
 
-    private constructor(private Layers: Layer[], bgShader: Shader, bgTexture: Texture, private music: SoundEffect) {
+    private enemies: IEnemy[] = [];
+    private pickups: IPickup[] = [];
+    private enemyProjectiles: IProjectile[] = [];
+    private attack: IProjectile;
+    private hero: Hero;
+
+    private levelEndSoundPlayed: boolean = false;
+    private canUpdate: boolean = false;
+    private restartEventListeners: IRestartListener[] = [];
+
+    private constructor(private Layers: Layer[], bgShader: Shader, bgTexture: Texture, private music: SoundEffect,
+        private levelEnd: LevelEnd, private levelEndOpenSoundEffect: SoundEffect, private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler
+    ) {
         this.Background = new SpriteBatch(bgShader, [new Background()], bgTexture);
     }
 
-    public static async Create(): Promise<Level> {
+    public static async Create(keyHandler: KeyHandler, gamepadHandler: ControllerHandler): Promise<Level> {
         const texturePool = TexturePool.GetInstance();
         const groundTexture = await texturePool.GetTexture('textures/ground0.png');
 
@@ -76,8 +102,15 @@ export class Level {
         const bgTexture = await TexturePool.GetInstance().GetTexture('textures/bg.jpg');
         const music = await SoundEffectPool.GetInstance().GetAudio('audio/level.mp3', false);
 
-        return new Level(layers, bgShader, bgTexture, music);
+        const levelEnd = await LevelEnd.Create(vec3.fromValues(58, Environment.VerticalTiles - 4, 0));
+        const levelEndOpenSoundEffect = await SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);
 
+        return new Level(layers, bgShader, bgTexture, music, levelEnd, levelEndOpenSoundEffect, keyHandler, gamepadHandler);
+
+    }
+
+    public get Hero(): Hero {
+        return this.hero;
     }
 
     public Draw(projectionMatrix: mat4, viewMatrix: mat4): void {
@@ -85,6 +118,62 @@ export class Level {
         this.Layers.forEach((layer) => {
             layer.Draw(projectionMatrix, viewMatrix);
         });
+
+        this.pickups.forEach(h => h.Draw(projectionMatrix, viewMatrix));
+        this.enemies.forEach(e => e.Draw(projectionMatrix, viewMatrix));
+        this.levelEnd.Draw(projectionMatrix, viewMatrix);
+        this.attack?.Draw(projectionMatrix, viewMatrix);
+        this.enemyProjectiles.forEach(p => p.Draw(projectionMatrix, viewMatrix));
+        this.hero.Draw(projectionMatrix, viewMatrix);
+    }
+
+    public Update(delta: number): void {
+        if (!this.canUpdate) {
+            this.hero.Update(delta);
+
+            // Kill the hero if fallen into a pit
+            if (this.MainLayer.IsUnder(this.hero.BoundingBox)) {
+                this.hero.Kill();
+            }
+
+            this.attack?.Update(delta);
+            if (this.attack && !this.attack.AlreadyHit) {
+                const enemiesCollidingWithProjectile = this.enemies.filter(e => e.IsCollidingWidth(this.attack.BoundingBox, false));
+                // Pushback force does not necessarily mean the amount of pushback. A big enemy can ignore a sword attack for example
+                enemiesCollidingWithProjectile.forEach(e => e.Damage(this.attack.PushbackForce));
+                this.attack.OnHit();
+            }
+
+            this.enemies.forEach(async (e) => {
+                await e.Update(delta);
+                if (e.IsCollidingWidth(this.hero.BoundingBox, false)) {
+                    this.hero.Collide(e);
+                }
+            });
+
+            this.pickups.forEach(async e => {
+                await e.Update(delta);
+                if (e.IsCollidingWidth(this.hero.BoundingBox, false)) {
+                    this.hero.CollideWithPickup(e);
+                }
+            });
+
+            // TODO: should merge these together into handling "game objects" that can collide/interact with the hero
+            this.enemyProjectiles.forEach((p: IProjectile) => {
+                p.Update(delta);
+                if (p.IsCollidingWith(this.hero.BoundingBox)) {
+                    this.hero.InteractWithProjectile(p);
+                }
+
+                // Despawn out-of-bounds projectiles
+                if (this.MainLayer.IsOutsideBoundary(p.BoundingBox)) {
+                    this.enemyProjectiles = this.enemyProjectiles.filter(item => item !== p);
+                    p.Dispose();
+                }
+            });
+
+            this.CheckForEndCondition();
+        }
     }
 
     public get MainLayer(): Layer {
@@ -101,5 +190,164 @@ export class Level {
 
     public SetMusicVolume(volume: number): void {
         this.music.SetVolume(volume);
+    }
+
+    private CheckForEndCondition() {
+        const numberOfEndConditions = this.pickups.filter(p => p.EndCondition).length;
+        this.levelEnd.IsEnabled = numberOfEndConditions === 0;
+        if (this.levelEnd.IsEnabled && !this.levelEndSoundPlayed) {
+            this.levelEndOpenSoundEffect.Play();
+            this.levelEndSoundPlayed = true;
+        }
+
+        if (this.levelEnd.IsCollidingWidth(this.hero.BoundingBox)) {
+            if (this.levelEnd.IsEnabled) {
+                this.canUpdate = true;
+                this.SetMusicVolume(0.25);
+            }
+
+            this.levelEnd.Interact(this.hero, async () => {
+                await this.InitLevel(); // TODO: this will be move to next level or something like that when multilevel support is implemented
+            });
+        }
+    }
+
+    public async InitLevel() {
+        this.restartEventListeners.forEach(l => l.OnRestartEvent());
+        this.SetMusicVolume(0.4);
+
+        // TODO: dispose all disposables
+        this.enemyProjectiles.forEach(p => p.Dispose());
+        this.enemyProjectiles = [];
+        //this.enemies.forEach(e => e.Dispose());
+        this.enemies = [];
+
+        await this.InitHero();
+        await this.CreateEnemies();
+
+        // TODO: dispose pickups
+        //this.pickups.forEach(p => p.Dispose());
+        this.pickups = [];
+        await this.InitPickups();
+
+        this.canUpdate = false;
+        this.levelEndSoundPlayed = false;
+        this.enemyProjectiles = [];
+    }
+
+    public SubscribeToRestartEvent(listener: IRestartListener): void {
+        this.restartEventListeners.push(listener);   
+    }
+
+    private async InitHero(): Promise<void> {
+        this.hero = await Hero.Create(
+            vec3.fromValues(0, Environment.VerticalTiles - 5, 1),
+            vec2.fromValues(3, 3),
+            this.MainLayer,
+            // BUG: if a hero dies then the pause button is pressed the level will restart in a paused state. The level should not restart until unpaused
+            async () => await this.InitLevel(),
+            (sender: Hero, projectile: IProjectile) => this.attack = projectile,
+            this.keyHandler,
+            this.gamepadHandler
+        );
+    }
+
+    private async CreateEnemies() {
+        const dragons = [
+            await DragonEnemy.Create(
+                vec3.fromValues(55, Environment.VerticalTiles - 7, 1),
+                vec2.fromValues(5, 5),
+                this.MainLayer,
+                this.hero, // To track where the hero is, i want to move as much of the game logic from the update loop as possible
+                (sender: DragonEnemy) => { this.RemoveEnemy(sender) }, // onDeath
+
+                // Spawn projectile
+                (sender: DragonEnemy, projectile: IProjectile) => {
+                    this.enemyProjectiles.push(projectile);
+                    // Despawn projectile that hit
+                    // TODO: instead of accessing a public array, projectiles should have a subscribe method
+                    projectile.OnHitListeners.push(s => this.RemoveProjectile(s));
+                }
+            )
+        ];
+
+        const slimes = [
+            await SlimeEnemy.Create(
+                vec3.fromValues(25, Environment.VerticalTiles - 5, 1),
+                vec2.fromValues(3, 3),
+                this.MainLayer,
+                (e) => this.RemoveEnemy(e)),
+
+            await SlimeEnemy.Create(
+                vec3.fromValues(34, Environment.VerticalTiles - 5, 1),
+                vec2.fromValues(3, 3),
+                this.MainLayer,
+                (e) => this.RemoveEnemy(e))
+        ];
+
+        const spikes = [
+            await Spike.Create(
+                vec3.fromValues(52, Environment.VerticalTiles - 2, 0),
+                vec2.fromValues(1, 1)),
+
+            await Spike.Create(
+                vec3.fromValues(53, Environment.VerticalTiles - 2, 0),
+                vec2.fromValues(1, 1)),
+
+            await Spike.Create(
+                vec3.fromValues(54, Environment.VerticalTiles - 2, 0),
+                vec2.fromValues(1, 1)),
+        ];
+
+        const cacti: IEnemy[] = [
+            await Cactus.Create(
+                vec3.fromValues(45, Environment.VerticalTiles - 5, 0),
+                (sender: IEnemy) => this.RemoveEnemy(sender)
+            )
+        ];
+
+        this.enemies = [
+            ...slimes,
+            ...dragons,
+            ...spikes,
+            ...cacti
+        ];
+    }
+
+    private RemoveEnemy(toRemove: IEnemy): void {
+        this.enemies = this.enemies.filter(e => e !== toRemove);
+    }
+
+    private RemoveProjectile(projectile: IProjectile): void {
+        this.enemyProjectiles = this.enemyProjectiles.filter(p => p !== projectile);
+        projectile.Dispose();
+    }
+
+    private async InitPickups() {
+        const coins = [
+            await CoinObject.Create(vec3.fromValues(21, 10, 0), c => this.RemovePickup(c)),
+            await CoinObject.Create(vec3.fromValues(23, 10, 0), c => this.RemovePickup(c)),
+            await CoinObject.Create(vec3.fromValues(14, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+            await CoinObject.Create(vec3.fromValues(15, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+            await CoinObject.Create(vec3.fromValues(16, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+            await CoinObject.Create(vec3.fromValues(30, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+            await CoinObject.Create(vec3.fromValues(31, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+            await CoinObject.Create(vec3.fromValues(32, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+            await CoinObject.Create(vec3.fromValues(50, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+            await CoinObject.Create(vec3.fromValues(51, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+            await CoinObject.Create(vec3.fromValues(52, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+        ];
+
+        const healthPickups = [
+            await HealthPickup.Create(
+                vec3.fromValues(28, Environment.VerticalTiles - 4, 0),
+                (sender: HealthPickup) => this.RemovePickup(sender))
+        ];
+
+        this.pickups = [...coins, ...healthPickups]
+    }
+
+    private RemovePickup(toRemove: IPickup): void {
+        this.pickups = this.pickups.filter(e => e !== toRemove);
     }
 }

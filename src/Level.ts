@@ -95,6 +95,10 @@ export class Level {
         this.music.Play(1, volume, null, true);
     }
 
+    public StopMusic(): void {
+        this.music.Stop();
+    }
+
     public SetMusicVolume(volume: number): void {
         this.music.SetVolume(volume);
     }

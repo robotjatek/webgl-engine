@@ -60,7 +60,7 @@ export class Hero {
   private timeInOverHeal = 0;
 
   private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
-  private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], this.texture);
+  private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], null);
 
   public get BoundingBox(): BoundingBox {
     if (this.state !== State.STOMP) {

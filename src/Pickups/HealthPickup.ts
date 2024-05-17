@@ -65,7 +65,7 @@ export class HealthPickup implements IPickup {
         this.position[1] = this.startPosition[1] + yOffset;
     }
 
-    public IsCollidingWidth(boundingBox: BoundingBox, collideWithUndefined: boolean): boolean {
+    public IsCollidingWith(boundingBox: BoundingBox, collideWithUndefined: boolean): boolean {
         return this.BoundingBox.IsCollidingWith(boundingBox);
     }
 
@@ -73,5 +73,10 @@ export class HealthPickup implements IPickup {
         this.pickupSound.Play();
         hero.CollideWithHealth(this);
         this.onPickup(this); // Despawning is handled by the Game object, so we need no notify it that it can now despawn the object
+    }
+
+    public Dispose(): void {
+        // TODO: dispose
+        console.error('Dispose health pickup');
     }
 }

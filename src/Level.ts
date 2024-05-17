@@ -13,7 +13,7 @@ import { Hero } from './Hero';
 import { KeyHandler } from './KeyHandler';
 import { ControllerHandler } from './ControllerHandler';
 import { IEnemy } from './Enemies/IEnemy';
-import { IPickup } from './Pickups/IPickup';
+import { IGameobject } from './Pickups/IPickup';
 import { IProjectile } from './Projectiles/IProjectile';
 import { LevelEnd } from './LevelEnd';
 import { DragonEnemy } from './Enemies/DragonEnemy';
@@ -49,8 +49,7 @@ export class Level {
     private BackgroundViewMatrix = mat4.create();
 
     private enemies: IEnemy[] = [];
-    private pickups: IPickup[] = [];
-    private enemyProjectiles: IProjectile[] = [];
+    private gameObjects: IGameobject[] = [];
     private attack: IProjectile;
     private hero: Hero;
 
@@ -119,15 +118,14 @@ export class Level {
             layer.Draw(projectionMatrix, viewMatrix);
         });
 
-        this.pickups.forEach(h => h.Draw(projectionMatrix, viewMatrix));
+        this.gameObjects.forEach(h => h.Draw(projectionMatrix, viewMatrix));
         this.enemies.forEach(e => e.Draw(projectionMatrix, viewMatrix));
         this.levelEnd.Draw(projectionMatrix, viewMatrix);
         this.attack?.Draw(projectionMatrix, viewMatrix);
-        this.enemyProjectiles.forEach(p => p.Draw(projectionMatrix, viewMatrix));
         this.hero.Draw(projectionMatrix, viewMatrix);
     }
 
-    public Update(delta: number): void {
+    public async Update(delta: number): Promise<void> {
         if (!this.canUpdate) {
             this.hero.Update(delta);
 
@@ -136,9 +134,9 @@ export class Level {
                 this.hero.Kill();
             }
 
-            this.attack?.Update(delta);
+            await this.attack?.Update(delta);
             if (this.attack && !this.attack.AlreadyHit) {
-                const enemiesCollidingWithProjectile = this.enemies.filter(e => e.IsCollidingWidth(this.attack.BoundingBox, false));
+                const enemiesCollidingWithProjectile = this.enemies.filter(e => e.IsCollidingWith(this.attack.BoundingBox, false));
                 // Pushback force does not necessarily mean the amount of pushback. A big enemy can ignore a sword attack for example
                 enemiesCollidingWithProjectile.forEach(e => e.Damage(this.attack.PushbackForce));
                 this.attack.OnHit();
@@ -146,29 +144,21 @@ export class Level {
 
             this.enemies.forEach(async (e) => {
                 await e.Update(delta);
-                if (e.IsCollidingWidth(this.hero.BoundingBox, false)) {
+                if (e.IsCollidingWith(this.hero.BoundingBox, false)) {
                     this.hero.Collide(e);
                 }
             });
 
-            this.pickups.forEach(async e => {
+            this.gameObjects.forEach(async (e:IGameobject) => {
                 await e.Update(delta);
-                if (e.IsCollidingWidth(this.hero.BoundingBox, false)) {
-                    this.hero.CollideWithPickup(e);
-                }
-            });
-
-            // TODO: should merge these together into handling "game objects" that can collide/interact with the hero
-            this.enemyProjectiles.forEach((p: IProjectile) => {
-                p.Update(delta);
-                if (p.IsCollidingWith(this.hero.BoundingBox)) {
-                    this.hero.InteractWithProjectile(p);
+                if (e.IsCollidingWith(this.hero.BoundingBox, false)) {
+                    this.hero.CollideWithGameObject(e);
                 }
 
-                // Despawn out-of-bounds projectiles
-                if (this.MainLayer.IsOutsideBoundary(p.BoundingBox)) {
-                    this.enemyProjectiles = this.enemyProjectiles.filter(item => item !== p);
-                    p.Dispose();
+                // Despawn out-of-bounds gameobjects. These will be projectiles most of the time.
+                if (this.MainLayer.IsOutsideBoundary(e.BoundingBox)) {
+                    this.gameObjects = this.gameObjects.filter(item => item !== e);
+                    e.Dispose();
                 }
             });
 
@@ -193,14 +183,14 @@ export class Level {
     }
 
     private CheckForEndCondition() {
-        const numberOfEndConditions = this.pickups.filter(p => p.EndCondition).length;
+        const numberOfEndConditions = this.gameObjects.filter(p => p.EndCondition).length;
         this.levelEnd.IsEnabled = numberOfEndConditions === 0;
         if (this.levelEnd.IsEnabled && !this.levelEndSoundPlayed) {
             this.levelEndOpenSoundEffect.Play();
             this.levelEndSoundPlayed = true;
         }
 
-        if (this.levelEnd.IsCollidingWidth(this.hero.BoundingBox)) {
+        if (this.levelEnd.IsCollidingWith(this.hero.BoundingBox)) {
             if (this.levelEnd.IsEnabled) {
                 this.canUpdate = true;
                 this.SetMusicVolume(0.25);
@@ -217,22 +207,18 @@ export class Level {
         this.SetMusicVolume(0.4);
 
         // TODO: dispose all disposables
-        this.enemyProjectiles.forEach(p => p.Dispose());
-        this.enemyProjectiles = [];
+       // this.gameObjects.forEach(p => p.Dispose());
+        this.gameObjects = [];
         //this.enemies.forEach(e => e.Dispose());
         this.enemies = [];
 
         await this.InitHero();
         await this.CreateEnemies();
 
-        // TODO: dispose pickups
-        //this.pickups.forEach(p => p.Dispose());
-        this.pickups = [];
         await this.InitPickups();
 
         this.canUpdate = false;
         this.levelEndSoundPlayed = false;
-        this.enemyProjectiles = [];
     }
 
     public SubscribeToRestartEvent(listener: IRestartListener): void {
@@ -263,10 +249,10 @@ export class Level {
 
                 // Spawn projectile
                 (sender: DragonEnemy, projectile: IProjectile) => {
-                    this.enemyProjectiles.push(projectile);
+                    this.gameObjects.push(projectile);
                     // Despawn projectile that hit
                     // TODO: instead of accessing a public array, projectiles should have a subscribe method
-                    projectile.OnHitListeners.push(s => this.RemoveProjectile(s));
+                    projectile.OnHitListeners.push(s => this.RemoveGameObject(s));
                 }
             )
         ];
@@ -318,36 +304,32 @@ export class Level {
         this.enemies = this.enemies.filter(e => e !== toRemove);
     }
 
-    private RemoveProjectile(projectile: IProjectile): void {
-        this.enemyProjectiles = this.enemyProjectiles.filter(p => p !== projectile);
-        projectile.Dispose();
+    private RemoveGameObject(toRemove: IGameobject): void {
+        this.gameObjects = this.gameObjects.filter(e => e !== toRemove);
+        toRemove.Dispose();
     }
 
     private async InitPickups() {
         const coins = [
-            await CoinObject.Create(vec3.fromValues(21, 10, 0), c => this.RemovePickup(c)),
-            await CoinObject.Create(vec3.fromValues(23, 10, 0), c => this.RemovePickup(c)),
-            await CoinObject.Create(vec3.fromValues(14, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
-            await CoinObject.Create(vec3.fromValues(15, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
-            await CoinObject.Create(vec3.fromValues(16, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
-            await CoinObject.Create(vec3.fromValues(30, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
-            await CoinObject.Create(vec3.fromValues(31, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
-            await CoinObject.Create(vec3.fromValues(32, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
-            await CoinObject.Create(vec3.fromValues(50, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
-            await CoinObject.Create(vec3.fromValues(51, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
-            await CoinObject.Create(vec3.fromValues(52, Environment.VerticalTiles - 3, 0), c => this.RemovePickup(c)),
+            await CoinObject.Create(vec3.fromValues(21, 10, 0), c => this.RemoveGameObject(c)),
+            await CoinObject.Create(vec3.fromValues(23, 10, 0), c => this.RemoveGameObject(c)),
+            await CoinObject.Create(vec3.fromValues(14, Environment.VerticalTiles - 3, 0), c => this.RemoveGameObject(c)),
+            await CoinObject.Create(vec3.fromValues(15, Environment.VerticalTiles - 3, 0), c => this.RemoveGameObject(c)),
+            await CoinObject.Create(vec3.fromValues(16, Environment.VerticalTiles - 3, 0), c => this.RemoveGameObject(c)),
+            await CoinObject.Create(vec3.fromValues(30, Environment.VerticalTiles - 3, 0), c => this.RemoveGameObject(c)),
+            await CoinObject.Create(vec3.fromValues(31, Environment.VerticalTiles - 3, 0), c => this.RemoveGameObject(c)),
+            await CoinObject.Create(vec3.fromValues(32, Environment.VerticalTiles - 3, 0), c => this.RemoveGameObject(c)),
+            await CoinObject.Create(vec3.fromValues(50, Environment.VerticalTiles - 3, 0), c => this.RemoveGameObject(c)),
+            await CoinObject.Create(vec3.fromValues(51, Environment.VerticalTiles - 3, 0), c => this.RemoveGameObject(c)),
+            await CoinObject.Create(vec3.fromValues(52, Environment.VerticalTiles - 3, 0), c => this.RemoveGameObject(c)),
         ];
 
         const healthPickups = [
             await HealthPickup.Create(
                 vec3.fromValues(28, Environment.VerticalTiles - 4, 0),
-                (sender: HealthPickup) => this.RemovePickup(sender))
+                (sender: HealthPickup) => this.RemoveGameObject(sender))
         ];
 
-        this.pickups = [...coins, ...healthPickups]
-    }
-
-    private RemovePickup(toRemove: IPickup): void {
-        this.pickups = this.pickups.filter(e => e !== toRemove);
+        this.gameObjects = [...coins, ...healthPickups]
     }
 }

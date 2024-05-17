@@ -22,7 +22,11 @@ export class Layer implements ICollider {
         return layer;
     }
 
-    public IsCollidingWidth(boundingBox: BoundingBox, collideWithUndefined: boolean): boolean {
+    public get BoundingBox(): BoundingBox {
+        throw new Error('Method not implemented. Use IsColliding with instead');
+    }
+
+    public IsCollidingWith(boundingBox: BoundingBox, collideWithUndefined: boolean): boolean {
         // Outside of the boundaries are considered as collisions when collideWithUndefined is true.
         // This way a hero cant fall of the edge of the world.
         if (this.IsOutsideBoundary(boundingBox) && collideWithUndefined) {

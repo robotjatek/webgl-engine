@@ -9,6 +9,7 @@ import { SoundEffectPool } from '../SoundEffectPool';
 import { IProjectile } from './IProjectile';
 import { SoundEffect } from 'src/SoundEffect';
 import { Texture } from 'src/Texture';
+import { Hero } from 'src/Hero';
 
 /**
  * A stationary projectile that attacks the player
@@ -65,6 +66,10 @@ export class BiteProjectile implements IProjectile {
         return new BiteProjectile(centerPosition, facingDirection, shader, bbShader, biteDamageSound, texture);
     }
 
+    public get EndCondition(): boolean {
+        return false;
+    }
+
     public get AlreadyHit(): boolean {
         return this.alreadyHit;
     }
@@ -86,6 +91,10 @@ export class BiteProjectile implements IProjectile {
         return damagePushback;
     }
 
+    public Visit(hero: Hero): void {
+        hero.InteractWithProjectile(this);
+    }
+
     public Draw(proj: mat4, view: mat4): void {
         if (!this.animationFinished) {
             const topLeftCorner = vec3.sub(vec3.create(), this.centerPosition, vec3.fromValues(this.spriteVisualScale[0] / 2, this.spriteVisualScale[1] / 2, 0));
@@ -105,7 +114,7 @@ export class BiteProjectile implements IProjectile {
         this.bbBatch.Draw(proj, view);
     }
 
-    public Update(delta: number): void {
+    public async Update(delta: number): Promise<void> {
         this.Animate(delta);
         if (this.animationFinished) {
             this.OnHitListeners.forEach(x => x(this));
@@ -120,6 +129,7 @@ export class BiteProjectile implements IProjectile {
     public OnHitListeners: ((sender: IProjectile) => void)[] = [];
 
     public Dispose(): void {
+        // TODO: dispose
         console.error('Hey, dispose BiteProjectile');
     }
 

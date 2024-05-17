@@ -181,7 +181,7 @@ export class Cactus implements IEnemy {
         hero.CollideWithCactus(this);
     }
 
-    public IsCollidingWidth(boundingBox: BoundingBox, _: boolean): boolean {
+    public IsCollidingWith(boundingBox: BoundingBox, _: boolean): boolean {
         return boundingBox.IsCollidingWith(this.BoundingBox);
     }
 

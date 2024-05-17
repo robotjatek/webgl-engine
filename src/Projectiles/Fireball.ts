@@ -10,6 +10,7 @@ import { ICollider } from '../ICollider';
 import { SoundEffectPool } from '../SoundEffectPool';
 import { IProjectile } from './IProjectile';
 import { SoundEffect } from 'src/SoundEffect';
+import { Hero } from 'src/Hero';
 
 export class Fireball implements IProjectile {
     public OnHitListeners: ((sender: IProjectile) => void)[] = [];
@@ -75,8 +76,12 @@ export class Fireball implements IProjectile {
         const hitSound = await SoundEffectPool.GetInstance().GetAudio('audio/hero_stomp.wav');
         const spawnSound = await SoundEffectPool.GetInstance().GetAudio('audio/fireball_spawn.mp3');
         const texture = await TexturePool.GetInstance().GetTexture('textures/fireball.png');
-        
+
         return new Fireball(centerPosition, moveDirection, collider, shader, bbShader, hitSound, spawnSound, texture);
+    }
+
+    public get EndCondition(): boolean {
+        return false;
     }
 
     public get AlreadyHit(): boolean {
@@ -99,9 +104,8 @@ export class Fireball implements IProjectile {
         return vec3.create();
     }
 
-    public Dispose(): void {
-        // TODO: Dispose all disposables
-        console.error('Hey, you really should dispose this!');
+    public Visit(hero: Hero): void {
+        hero.InteractWithProjectile(this);
     }
 
     public Draw(proj: mat4, view: mat4): void {
@@ -123,7 +127,12 @@ export class Fireball implements IProjectile {
         // this.bbBatch.Draw(proj, view);
     }
 
-    public Update(delta: number): void {
+    public Dispose(): void {
+        // TODO: Dispose all disposables
+        console.error('Hey, you really should dispose this!');
+    }
+
+    public async Update(delta: number): Promise<void> {
         this.currentFrameSet = this.moveDirection[0] < 0 ?
             this.rightFacingAnimationFrames :
             this.leftFacingAnimationFrames;
@@ -167,7 +176,7 @@ export class Fireball implements IProjectile {
         const topleft = vec3.sub(vec3.create(), nextPosition, vec3.fromValues(this.bbSize[0] / 2, this.bbSize[1] / 2, 0));
         const bbPos = vec3.add(vec3.create(), topleft, this.bbOffset);
         const nextBoundingBox = new BoundingBox(bbPos, this.bbSize);
-        const colliding = this.collider.IsCollidingWidth(nextBoundingBox, false);
+        const colliding = this.collider.IsCollidingWith(nextBoundingBox, false);
 
         return colliding;
     }

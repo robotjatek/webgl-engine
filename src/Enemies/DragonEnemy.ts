@@ -137,7 +137,7 @@ export class DragonEnemy implements IEnemy {
         return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize);
     }
 
-    public IsCollidingWidth(boundingBox: BoundingBox): boolean {
+    public IsCollidingWith(boundingBox: BoundingBox): boolean {
         return boundingBox.IsCollidingWith(this.BoundingBox);
     }
 
@@ -290,7 +290,7 @@ export class DragonEnemy implements IEnemy {
     private CheckCollisionWithCollider(nextPosition: vec3): boolean {
         const nextBbPos = vec3.add(vec3.create(), nextPosition, this.bbOffset);
         const nextBoundingBox = new BoundingBox(nextBbPos, this.bbSize);
-        const colliding = this.collider.IsCollidingWidth(nextBoundingBox, true);
+        const colliding = this.collider.IsCollidingWith(nextBoundingBox, true);
 
         return colliding;
     }

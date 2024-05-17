@@ -106,7 +106,7 @@ export class SlimeEnemy implements IEnemy {
     }
 
     // TODO: this is also duplicated in the code
-    public IsCollidingWidth(boundingBox: BoundingBox): boolean {
+    public IsCollidingWith(boundingBox: BoundingBox): boolean {
         return this.BoundingBox.IsCollidingWith(boundingBox);
     }
 
@@ -203,7 +203,7 @@ export class SlimeEnemy implements IEnemy {
     private checkCollision(nextPosition: vec3): boolean {
         const nextBbPos = vec3.add(vec3.create(), nextPosition, this.bbOffset);
         const nextBoundingBox = new BoundingBox(nextBbPos, this.bbSize);
-        return this.collider.IsCollidingWidth(nextBoundingBox, true);
+        return this.collider.IsCollidingWith(nextBoundingBox, true);
     }
 
     private Animate(delta: number): void {
@@ -237,7 +237,7 @@ export class SlimeEnemy implements IEnemy {
 
     // TODO: how to make this a component?
     private HandleCollisionWithCollider() {
-        const colliding = this.collider.IsCollidingWidth(this.BoundingBox, false);
+        const colliding = this.collider.IsCollidingWith(this.BoundingBox, false);
         if (colliding) {
             vec3.copy(this.position, this.lastPosition);
             this.velocity = vec3.create();

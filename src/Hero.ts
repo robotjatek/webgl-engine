@@ -16,7 +16,7 @@ import { Spike } from './Enemies/Spike';
 import { Cactus } from './Enemies/Cactus';
 import { HealthPickup } from './Pickups/HealthPickup';
 import { CoinObject } from './Pickups/CoinObject';
-import { IPickup } from './Pickups/IPickup';
+import { IGameobject, IPickup } from './Pickups/IPickup';
 import { SoundEffect } from './SoundEffect';
 import { KeyHandler } from './KeyHandler';
 import { ControllerHandler } from './ControllerHandler';
@@ -315,7 +315,7 @@ export class Hero {
   }
 
   private HandleCollisionWithCollider(): void {
-    const colliding = this.collider.IsCollidingWidth(this.BoundingBox, true);
+    const colliding = this.collider.IsCollidingWith(this.BoundingBox, true);
     if (colliding) {
       vec3.copy(this.position, this.lastPosition);
       this.velocity = vec3.create();
@@ -465,8 +465,20 @@ export class Hero {
     enemy.Visit(this);
   }
 
+  public CollideWithGameObject(object: IGameobject): void {
+    object.Visit(this);
+  }
+
   public CollideWithPickup(pickup: IPickup): void {
     pickup.Visit(this);
+  }
+
+  public InteractWithProjectile(projectile: IProjectile): void {
+    if (!projectile.AlreadyHit && this.state !== State.DEAD) {
+      const pushbackForce = projectile.PushbackForce;
+      this.Damage(pushbackForce);
+      projectile.OnHit();
+    }
   }
 
   public CollideWithHealth(healthPickup: HealthPickup): void {
@@ -549,17 +561,9 @@ export class Hero {
     }
   }
 
-  public InteractWithProjectile(projectile: IProjectile): void {
-    if (!projectile.AlreadyHit && this.state !== State.DEAD) {
-      const pushbackForce = projectile.PushbackForce;
-      this.Damage(pushbackForce);
-      projectile.OnHit();
-    }
-  }
-
   private checkCollision(nextPosition: vec3): boolean {
     const nextBoundingBox = new BoundingBox(vec3.add(vec3.create(), nextPosition, this.bbOffset), this.bbSize);
-    return this.collider.IsCollidingWidth(nextBoundingBox, true);
+    return this.collider.IsCollidingWith(nextBoundingBox, true);
   }
 
   private calculateTextureOffset(direction: vec2): vec2 {

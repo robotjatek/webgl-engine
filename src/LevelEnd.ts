@@ -36,6 +36,10 @@ export class LevelEnd implements ICollider {
         this.shader.SetFloatUniform('alpha', LevelEnd.transparentValue);
     }
 
+    public get BoundingBox(): BoundingBox {
+        return new BoundingBox(this.position, vec2.fromValues(this.size[0], this.size[1]));
+    }
+
     public static async Create(position: vec3): Promise<LevelEnd> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Transparent.frag');
         const endReachedEffect = await SoundEffectPool.GetInstance().GetAudio('audio/ding.wav', false);
@@ -51,9 +55,8 @@ export class LevelEnd implements ICollider {
         mat4.scale(this.batch.ModelMatrix, this.batch.ModelMatrix, this.size)
     }
 
-    public IsCollidingWidth(boundingBox: BoundingBox): boolean {
-        const bb = new BoundingBox(this.position, vec2.fromValues(this.size[0], this.size[1]))
-        return boundingBox.IsCollidingWith(bb);
+    public IsCollidingWith(boundingBox: BoundingBox): boolean {
+        return boundingBox.IsCollidingWith(this.BoundingBox);
     }
 
     // TODO: Interface for interactable objects / Component system for interactable objects

@@ -39,7 +39,11 @@ export class CoinObject implements IPickup {
         const texture = await TexturePool.GetInstance().GetTexture('textures/coin.png');
         return new CoinObject(position, onPickup, shader, pickupSound, texture);
     }
-    
+
+    public get BoundingBox(): BoundingBox {
+        return new BoundingBox(this.position, vec2.fromValues(1, 1));
+    }
+
     public get EndCondition(): boolean {
         return true;
     }
@@ -50,9 +54,8 @@ export class CoinObject implements IPickup {
         this.onPickup(this);
     }
 
-    public IsCollidingWidth(boundingBox: BoundingBox): boolean {
-        const bb = new BoundingBox(this.position, vec2.fromValues(1, 1));
-        return boundingBox.IsCollidingWith(bb);
+    public IsCollidingWith(boundingBox: BoundingBox): boolean {
+        return boundingBox.IsCollidingWith(this.BoundingBox);
     }
 
     public async Update(elapsedTime: number): Promise<void> {
@@ -62,5 +65,10 @@ export class CoinObject implements IPickup {
     public Draw(proj: mat4, view: mat4): void {
         this.batch.Draw(proj, view);
         mat4.translate(this.batch.ModelMatrix, mat4.create(), this.position);
+    }
+
+    public Dispose(): void {
+        // TODO: dispose
+        console.log('Dispose coinobject')
     }
 }

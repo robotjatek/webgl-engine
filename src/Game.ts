@@ -200,7 +200,7 @@ export class Game implements IStartEventListener, IResumeEventListener, IQuitEve
     if (this.state === State.START_SCREEN) {
       await this.mainScreen.Update(elapsedTime);
     } else if (this.state === State.IN_GAME && this.elapsedTimeSinceStateChange > 150) {
-      this.level.Update(elapsedTime);
+      await this.level.Update(elapsedTime);
 
       if (!this.keyHandler.IsPressed(Keys.ENTER) && !this.gamepadHandler.IsPressed(XBoxControllerKeys.START)
         && !this.keyWasReleased && this.elapsedTimeSinceStateChange > 100) {

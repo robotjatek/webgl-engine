@@ -9,6 +9,7 @@ import { Utils } from '../Utils';
 import { SoundEffectPool } from '../SoundEffectPool';
 import { IProjectile } from './IProjectile';
 import { SoundEffect } from 'src/SoundEffect';
+import { Hero } from 'src/Hero';
 
 // MeleeAttack is considered as a stationary projectile
 export class MeleeAttack implements IProjectile {
@@ -55,13 +56,12 @@ export class MeleeAttack implements IProjectile {
 
     OnHitListeners: ((sender: IProjectile) => void)[] = [];
 
-    public Dispose(): void {
-        // TODO: dispose
-        throw new Error('Method not implemented.');
-    }
-
     public IsCollidingWith(boundingBox: BoundingBox): boolean {
         return boundingBox.IsCollidingWith(this.BoundingBox)
+    }
+
+    get EndCondition(): boolean {
+        return false;
     }
 
     // TODO: sphere instead of a box?
@@ -83,6 +83,11 @@ export class MeleeAttack implements IProjectile {
         // no hit sound here for the moment as it can differ on every enemy type
     }
 
+    public Visit(hero: Hero): void {
+        // this shouldnt happen as melee attack is an attack by the hero. In the future enemies could use it too...
+        throw new Error('Method not implemented.');
+    }
+
     // TODO: drawing logic for entities should be an ECS
     public Draw(proj: mat4, view: mat4): void {
         if (!this.animationFinished) {
@@ -101,7 +106,12 @@ export class MeleeAttack implements IProjectile {
         this.bbBatch.Draw(proj, view);
     }
 
-    public Update(delta: number): void {
+    public Dispose(): void {
+        // TODO: dispose
+        console.error('Dispose melee attack');
+    }
+
+    public async Update(delta: number): Promise<void> {
         if (!this.attackSoundPlayed) {
             this.attackSound.Play();
             this.attackSoundPlayed = true;

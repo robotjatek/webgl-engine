@@ -70,7 +70,7 @@ export class Spike implements IEnemy {
         hero.CollideWithSpike(this);
     }
 
-    public IsCollidingWidth(boundingBox: BoundingBox): boolean {
+    public IsCollidingWith(boundingBox: BoundingBox): boolean {
         return boundingBox.IsCollidingWith(this.BoundingBox);
     }
 

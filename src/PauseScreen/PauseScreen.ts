@@ -1,35 +1,52 @@
-import { Background } from './Background';
+import { Background } from '../Background';
 import { mat4, vec2, vec4 } from 'gl-matrix';
-import { Textbox } from './Textbox';
-import { SpriteBatch } from './SpriteBatch';
-import { Shader } from './Shader';
-import { KeyHandler } from './KeyHandler';
-import { ControllerHandler } from './ControllerHandler';
-import { Keys } from './Keys';
-import { SoundEffectPool } from './SoundEffectPool';
-import { SoundEffect } from './SoundEffect';
-import { IQuitEventListener, IResumeEventListener } from './Game';
-import { XBoxControllerKeys } from './XBoxControllerKeys';
+import { Textbox } from '../Textbox';
+import { SpriteBatch } from '../SpriteBatch';
+import { Shader } from '../Shader';
+import { KeyHandler } from '../KeyHandler';
+import { ControllerHandler } from '../ControllerHandler';
+import { SoundEffectPool } from '../SoundEffectPool';
+import { SoundEffect } from '../SoundEffect';
+import { IQuitEventListener, IResumeEventListener } from '../Game';
+import { IState } from './IState';
+import { MainSelectionState } from './MainSelectionState';
+import { QuitMenuState } from './QuitMenuState';
+import { SharedVariables } from './SharedVariables';
 
-enum State {
-    MAIN_SELECTION = 'main_selection',
-    QUIT_MENU = 'quit_menu'
-}
-
-// TODO: implement state machine for pause screen
 export class PauseScreen {
-    private state: State = State.MAIN_SELECTION;
+    private resumeEventListeners: IResumeEventListener[] = [];
+    private quitEventListeners: IQuitEventListener[] = [];
+
+    private mainSelectionState: MainSelectionState;
+    public get MainSelectionState(): IState {
+        return this.mainSelectionState;
+    }
+
+    private quitSelectionState: QuitMenuState;
+    public get QuitSelectionState(): IState {
+        return this.quitSelectionState;
+    }
+
+    private state: IState;
 
     private textProjMat: mat4;
     private selectedIndex: number = 0;
+    public set SelectedIndex(value: number) {
+        this.selectedIndex = value;
+    }
+
     private selection: Textbox[];
     private subselectionIndex: number = 0;
-    private subSelection: Textbox[];
-    private elapsedTimeSinceLastKeypress = 0;
-    private keyWasReleased = false;
+    public set SubSelectionIndex(value: number) {
+        this.subselectionIndex = value;
+    }
 
-    private resumeEventListener: IResumeEventListener;
-    private quitEventListener: IQuitEventListener;
+    private subSelection: Textbox[];
+
+    private sharedVariables: SharedVariables = {
+        elapsedTimeSinceKeypress: 0,
+        keyWasReleased: false
+    };
 
     private constructor(
         private width: number,
@@ -49,6 +66,7 @@ export class PauseScreen {
         this.textProjMat = mat4.ortho(mat4.create(), 0, width, height, 0, -1, 1);
         this.selection = [resumeTextbox, quitTextbox];
         this.subSelection = [yesTextbox, noTextbox];
+        this.ResetStates();
     }
 
     public static async Create(width: number, height: number, keyHandler: KeyHandler, gamepadHandler: ControllerHandler): Promise<PauseScreen> {
@@ -112,7 +130,7 @@ export class PauseScreen {
         this.resumeTextbox.Draw(this.textProjMat);
         this.quitTextbox.Draw(this.textProjMat);
 
-        if (this.state === State.QUIT_MENU) {
+        if (this.state === this.quitSelectionState) {
             this.subSelection.forEach(s => s.WithSaturation(0).WithValue(0.3));
             this.subSelection[this.subselectionIndex].WithHue(1).WithSaturation(0).WithValue(1);
 
@@ -123,89 +141,29 @@ export class PauseScreen {
     }
 
     public Update(elapsed: number): void {
-        this.elapsedTimeSinceLastKeypress += elapsed;
-
-        if (!this.keyHandler.IsPressed(Keys.ENTER) && !this.gamepadHandler.IsPressed(XBoxControllerKeys.START)
-            && !this.keyWasReleased && this.elapsedTimeSinceLastKeypress > 200) {
-            this.keyWasReleased = true;
-        }
-
-        if (this.state === State.MAIN_SELECTION) {
-            if ((this.keyHandler.IsPressed(Keys.S) || this.gamepadHandler.IsPressed(XBoxControllerKeys.DOWN))
-                && this.elapsedTimeSinceLastKeypress > 200) {
-                this.menuSound.Play(1, 0.5);
-                this.elapsedTimeSinceLastKeypress = 0;
-                this.selectedIndex++;
-                if (this.selectedIndex >= this.selection.length) {
-                    this.selectedIndex = 0;
-                }
-            } else if ((this.keyHandler.IsPressed(Keys.W) || this.gamepadHandler.IsPressed(XBoxControllerKeys.UP))
-                && this.elapsedTimeSinceLastKeypress > 200) {
-                this.menuSound.Play(1, 0.5);
-                this.elapsedTimeSinceLastKeypress = 0;
-                this.selectedIndex--;
-                if (this.selectedIndex < 0) {
-                    this.selectedIndex = this.selection.length - 1;
-                }
-            } else if ((this.keyHandler.IsPressed(Keys.ENTER) ||
-                this.gamepadHandler.IsPressed(XBoxControllerKeys.START) ||
-                this.gamepadHandler.IsPressed(XBoxControllerKeys.A)) &&
-                this.keyWasReleased && this.elapsedTimeSinceLastKeypress > 200) {
-
-                this.selectSound.Play();
-                this.elapsedTimeSinceLastKeypress = 0;
-                if (this.selectedIndex === 0) { // resume
-                    this.keyWasReleased = false;
-                    this.resumeEventListener.Resume();
-                } else if (this.selectedIndex === 1) { // quit
-                    this.state = State.QUIT_MENU;
-                }
-            }
-        } else if (this.state === State.QUIT_MENU) {
-            if ((this.keyHandler.IsPressed(Keys.D) || this.gamepadHandler.IsPressed(XBoxControllerKeys.RIGHT))
-                && this.elapsedTimeSinceLastKeypress > 200) {
-                this.elapsedTimeSinceLastKeypress = 0;
-
-                this.menuSound.Play();
-                this.subselectionIndex++;
-                if (this.subselectionIndex >= this.subSelection.length) {
-                    this.subselectionIndex = 0;
-                }
-            } else if ((this.keyHandler.IsPressed(Keys.A) || this.gamepadHandler.IsPressed(XBoxControllerKeys.LEFT))
-                && this.elapsedTimeSinceLastKeypress > 200) {
-                this.elapsedTimeSinceLastKeypress = 0;
-
-                this.menuSound.Play();
-                this.subselectionIndex--;
-                if (this.subselectionIndex < 0) {
-                    this.subselectionIndex = this.subSelection.length - 1;
-                }
-            } else if ((this.keyHandler.IsPressed(Keys.ENTER)
-                || this.gamepadHandler.IsPressed(XBoxControllerKeys.A)
-                || this.gamepadHandler.IsPressed(XBoxControllerKeys.START))
-                && this.keyWasReleased && this.elapsedTimeSinceLastKeypress > 200) {
-                this.selectSound.Play();
-                this.elapsedTimeSinceLastKeypress = 0;
-                if (this.subselectionIndex === 0) {
-                    this.keyWasReleased = false;
-                    this.subselectionIndex = 0;
-                    this.selectedIndex = 0;
-                    this.state = State.MAIN_SELECTION;
-                    this.quitEventListener.Quit();
-                } else { // No
-                    this.keyWasReleased = false;
-                    this.subselectionIndex = 0;
-                    this.state = State.MAIN_SELECTION;
-                }
-            }
-        }
+        this.state.Update(elapsed, this.sharedVariables);
     }
 
     public SubscribeToResumeEvent(listener: IResumeEventListener) {
-        this.resumeEventListener = listener;
+        this.resumeEventListeners.push(listener);
     }
 
     public SubscribeToQuitEvent(listener: IQuitEventListener) {
-        this.quitEventListener = listener;
+        this.quitEventListeners.push(listener);
+    }
+
+    public ChangeState(state: IState) {
+        this.state.Exit();
+        this.state = state;
+        this.state.Enter();
+    }
+
+    public ResetStates(): void {
+        this.mainSelectionState = new MainSelectionState(
+            this, this.keyHandler, this.gamepadHandler, this.resumeEventListeners, this.menuSound, this.selectSound);
+        this.quitSelectionState = new QuitMenuState(
+            this, this.keyHandler, this.gamepadHandler, this.quitEventListeners, this.menuSound, this.selectSound);
+
+        this.state = this.mainSelectionState;
     }
 }

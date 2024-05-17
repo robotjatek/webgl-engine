@@ -24,7 +24,7 @@ import { Textbox } from './Textbox';
 import { HealthPickup } from './Pickups/HealthPickup';
 import { SoundEffect } from './SoundEffect';
 import { MainScreen } from './MainScreen';
-import { PauseScreen } from './PauseScreen';
+import { PauseScreen } from './PauseScreen/PauseScreen';
 
 export interface IStartEventListener {
   Start(): Promise<void>;
@@ -47,7 +47,6 @@ enum State {
   PAUSED = 'paused'
 }
 
-// TODO: pause menu
 // TODO: multiple level support
 // TODO: level editor
 // TODO: correctly dispose objects that no longer exist => delete opengl resources, when an object is destroyed
@@ -466,6 +465,8 @@ export class Game implements IStartEventListener, IResumeEventListener, IQuitEve
   }
 
   private async RestartLevel() {
+    this.pauseScreen.ResetStates();
+    this.level.SetMusicVolume(0.4);
     // TODO: dispose all disposables
     this.enemyProjectiles.forEach(p => p.Dispose());
     this.enemyProjectiles = [];

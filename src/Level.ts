@@ -23,29 +23,42 @@ import { Cactus } from './Enemies/Cactus';
 import { CoinObject } from './Pickups/CoinObject';
 import { HealthPickup } from './Pickups/HealthPickup';
 import { IRestartListener } from './Game';
-import { MeleeAttack } from './Projectiles/MeleeAttack';
 import { IDisposable } from './IDisposable';
 
-// TODO: parallax scrolling
-/*
-TODO:
-Level file format
-Binary
-----------------------------
-Header:
-0-2: "LVL"
-3-4: Width (unsigned int)
-5-6: Height (unsigned int)
-7-8: Number of layers
-----------------------------
-Tile data 9-[Width*Height*Number_of_layers * 2]:
-2 bytes of tile data. Indexes tile dictionary
-----------------------------
-Tile materials:
-[Width*Height*Number_of_layers * 2 + 1]-End of file
-{'texture path', opacity}
-*/
+type TileEntity = {
+    xPos: number,
+    yPos: number,
+    texture: "string"
+}
 
+type LayerEntity = {
+    tiles: TileEntity[]
+}
+
+type GameObjectEntity = {
+}
+
+type LevelEndEntity = {
+    xPos: number,
+    yPos: number
+}
+
+type StartEntity = {
+    xPos: number,
+    yPos: number
+}
+
+type LevelEntity = {
+    background: string,
+    music: string,
+    layers: LayerEntity[],
+    gameObjects: GameObjectEntity[],
+    levelEnd: LevelEndEntity,
+    start: StartEntity
+}
+
+
+// TODO: parallax scrolling
 export class Level implements IDisposable {
     private Background: SpriteBatch;
     private BackgroundViewMatrix = mat4.create();
@@ -65,46 +78,26 @@ export class Level implements IDisposable {
 
     public static async Create(keyHandler: KeyHandler, gamepadHandler: ControllerHandler): Promise<Level> {
         const texturePool = TexturePool.GetInstance();
-        const groundTexture = await texturePool.GetTexture('textures/ground0.png');
+        const levelJsonString = await (await fetch('levels/level1.json')).text();
+        const level = JSON.parse(levelJsonString) as LevelEntity;
 
-        const tile = new Tile(21, 11, groundTexture);
-        const tile2 = new Tile(22, 11, groundTexture);
-        const tile3 = new Tile(23, 11, groundTexture);
-        const tile4 = new Tile(18, 14, groundTexture);
-        const tile5 = new Tile(19, 14, groundTexture);
-
-        const tiles = [
-            tile, tile2, tile3, tile4, tile5
-        ];
-
-        // Bottom tiles of the level
-        for (let i = 0; i < 11; i++) {
-            tiles.push(new Tile(i, Environment.VerticalTiles - 2, groundTexture));
-        }
-        for (let i = 14; i < 52; i++) {
-            tiles.push(new Tile(i, Environment.VerticalTiles - 2, groundTexture));
-        }
-        for (let i = 55; i < 64; i++) {
-            tiles.push(new Tile(i, Environment.VerticalTiles - 2, groundTexture));
-        }
-
-
-        for (let i = 0; i < 11; i++) {
-            tiles.push(new Tile(i, Environment.VerticalTiles - 1, groundTexture));
-        }
-        for (let i = 14; i < 64; i++) {
-            tiles.push(new Tile(i, Environment.VerticalTiles - 1, groundTexture));
-        }
-
-        const layers = [await Layer.Create(tiles)];
+        const loadedLayers = await Promise.all(level.layers.map(async layer => {
+            const loadedTiles = await Promise.all(layer.tiles.map(async tile => {
+                const texure = await texturePool.GetTexture('textures/' + tile.texture);
+                return new Tile(tile.xPos, tile.yPos, texure)
+            }));
+            
+            return await Layer.Create(loadedTiles);
+        }));
+    
         const bgShader: Shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
-        const bgTexture = await TexturePool.GetInstance().GetTexture('textures/bg.jpg');
-        const music = await SoundEffectPool.GetInstance().GetAudio('audio/level.mp3', false);
+        const bgTexture = await TexturePool.GetInstance().GetTexture(level.background);
+        const music = await SoundEffectPool.GetInstance().GetAudio(level.music, false);
 
-        const levelEnd = await LevelEnd.Create(vec3.fromValues(58, Environment.VerticalTiles - 4, 0));
+        const levelEnd = await LevelEnd.Create(vec3.fromValues(level.levelEnd.xPos, level.levelEnd.yPos, 0));
         const levelEndOpenSoundEffect = await SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);
 
-        return new Level(layers, bgShader, bgTexture, music, levelEnd, levelEndOpenSoundEffect, keyHandler, gamepadHandler);
+        return new Level(loadedLayers, bgShader, bgTexture, music, levelEnd, levelEndOpenSoundEffect, keyHandler, gamepadHandler);
 
     }
 

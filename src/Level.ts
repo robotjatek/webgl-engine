@@ -36,6 +36,9 @@ type LayerEntity = {
 }
 
 type GameObjectEntity = {
+    type: string,
+    xPos: number,
+    yPos: number,
 }
 
 type LevelEndEntity = {
@@ -65,12 +68,11 @@ export class Level implements IDisposable {
     private gameObjects: IGameobject[] = [];
     private attack: IProjectile;
     private hero: Hero;
-
     private levelEndSoundPlayed: boolean = false;
     private canUpdate: boolean = false;
     private restartEventListeners: IRestartListener[] = [];
 
-    private constructor(private layers: Layer[], bgShader: Shader, bgTexture: Texture, private music: SoundEffect,
+    private constructor(private layers: Layer[], bgShader: Shader, bgTexture: Texture, private music: SoundEffect, private level: LevelEntity,
         private levelEnd: LevelEnd, private levelEndOpenSoundEffect: SoundEffect, private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler
     ) {
         this.Background = new SpriteBatch(bgShader, [new Background()], bgTexture);
@@ -78,18 +80,18 @@ export class Level implements IDisposable {
 
     public static async Create(keyHandler: KeyHandler, gamepadHandler: ControllerHandler): Promise<Level> {
         const texturePool = TexturePool.GetInstance();
+
         const levelJsonString = await (await fetch('levels/level1.json')).text();
         const level = JSON.parse(levelJsonString) as LevelEntity;
-
         const loadedLayers = await Promise.all(level.layers.map(async layer => {
             const loadedTiles = await Promise.all(layer.tiles.map(async tile => {
-                const texure = await texturePool.GetTexture('textures/' + tile.texture);
+                const texure = await texturePool.GetTexture(tile.texture);
                 return new Tile(tile.xPos, tile.yPos, texure)
             }));
-            
+
             return await Layer.Create(loadedTiles);
         }));
-    
+
         const bgShader: Shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
         const bgTexture = await TexturePool.GetInstance().GetTexture(level.background);
         const music = await SoundEffectPool.GetInstance().GetAudio(level.music, false);
@@ -97,7 +99,15 @@ export class Level implements IDisposable {
         const levelEnd = await LevelEnd.Create(vec3.fromValues(level.levelEnd.xPos, level.levelEnd.yPos, 0));
         const levelEndOpenSoundEffect = await SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);
 
-        return new Level(loadedLayers, bgShader, bgTexture, music, levelEnd, levelEndOpenSoundEffect, keyHandler, gamepadHandler);
+        return new Level(loadedLayers,
+            bgShader,
+            bgTexture,
+            music,
+            level,
+            levelEnd,
+            levelEndOpenSoundEffect,
+            keyHandler,
+            gamepadHandler);
 
     }
 
@@ -193,8 +203,9 @@ export class Level implements IDisposable {
         this.SetMusicVolume(0.4);
 
         // TODO: should I dispose entities in the init method
-        // TODO: Create on Next level call
-        // TODO: Dispose on level end
+
+        // TODO: Create onNext level call
+        // TODO: Dispose onlevelend
         this.gameObjects.forEach(p => p.Dispose());
         this.gameObjects = [];
 
@@ -207,8 +218,7 @@ export class Level implements IDisposable {
         this.levelEnd = await LevelEnd.Create(vec3.fromValues(58, Environment.VerticalTiles - 4, 0));
 
         await this.InitHero();
-        await this.CreateEnemies();
-        await this.InitPickups();
+        await this.InitGameObjects();
 
         this.canUpdate = false;
         this.levelEndSoundPlayed = false;
@@ -220,7 +230,7 @@ export class Level implements IDisposable {
 
     private async InitHero(): Promise<void> {
         this.hero = await Hero.Create(
-            vec3.fromValues(0, Environment.VerticalTiles - 5, 1),
+            vec3.fromValues(this.level.start.xPos, this.level.start.yPos, 1),
             vec2.fromValues(3, 3),
             this.MainLayer,
             // BUG: if a hero dies then the pause button is pressed the level will restart in a paused state. The level should not restart until unpaused
@@ -232,65 +242,42 @@ export class Level implements IDisposable {
         );
     }
 
-    private async CreateEnemies(): Promise<void> {
-        const dragons = [
-            await DragonEnemy.Create(
-                vec3.fromValues(55, Environment.VerticalTiles - 7, 1),
-                vec2.fromValues(5, 5),
-                this.MainLayer,
-                this.hero, // To track where the hero is, i want to move as much of the game logic from the update loop as possible
-                (sender: DragonEnemy) => { this.RemoveGameObject(sender) }, // onDeath
-
-                // Spawn projectile
-                (sender: DragonEnemy, projectile: IProjectile) => {
-                    this.gameObjects.push(projectile);
-                    // Despawn projectile that hit
-                    // TODO: instead of accessing a public array, projectiles should have a subscribe method
-                    projectile.OnHitListeners.push(s => this.RemoveGameObject(s)); // TODO: despawning hero attack should be like this
-                }
-            )
-        ];
-
-        const slimes = [
-            await SlimeEnemy.Create(
-                vec3.fromValues(25, Environment.VerticalTiles - 5, 1),
-                vec2.fromValues(3, 3),
-                this.MainLayer,
-                (e) => this.RemoveGameObject(e)),
-
-            await SlimeEnemy.Create(
-                vec3.fromValues(34, Environment.VerticalTiles - 5, 1),
-                vec2.fromValues(3, 3),
-                this.MainLayer,
-                (e: IGameobject) => this.RemoveGameObject(e))
-        ];
-
-        const spikes = [
-            await Spike.Create(
-                vec3.fromValues(52, Environment.VerticalTiles - 2, 0),
-                vec2.fromValues(1, 1)),
-
-            await Spike.Create(
-                vec3.fromValues(53, Environment.VerticalTiles - 2, 0),
-                vec2.fromValues(1, 1)),
-
-            await Spike.Create(
-                vec3.fromValues(54, Environment.VerticalTiles - 2, 0),
-                vec2.fromValues(1, 1)),
-        ];
-
-        const cacti: IEnemy[] = [
-            await Cactus.Create(
-                vec3.fromValues(45, Environment.VerticalTiles - 5, 0),
-                (sender: IGameobject) => this.RemoveGameObject(sender)
-            )
-        ];
-
-        this.gameObjects.push(
-            ...slimes,
-            ...dragons,
-            ...spikes,
-            ...cacti);
+    private async CreateGameObject(descriptor: GameObjectEntity): Promise<IGameobject> {
+        switch (descriptor.type) {
+            case 'coin':
+                return await CoinObject.Create(
+                    vec3.fromValues(descriptor.xPos, descriptor.yPos, 0), (c) => this.RemoveGameObject(c));
+            case 'health':
+                return await HealthPickup.Create(
+                    vec3.fromValues(descriptor.xPos, descriptor.yPos, 0), (c) => this.RemoveGameObject(c));
+            case 'spike':
+                return await Spike.Create(
+                    vec3.fromValues(descriptor.xPos, descriptor.yPos, 0), vec2.fromValues(1, 1));
+            case 'cactus':
+                return await Cactus.Create(
+                    vec3.fromValues(descriptor.xPos, descriptor.yPos, 0), (c) => this.RemoveGameObject(c));
+            case 'slime':
+                return await SlimeEnemy.Create(
+                    vec3.fromValues(descriptor.xPos, descriptor.yPos, 0), vec2.fromValues(3, 3), this.MainLayer,
+                    (c) => this.RemoveGameObject(c));
+            case 'dragon':
+                return await DragonEnemy.Create(
+                    vec3.fromValues(descriptor.xPos, descriptor.yPos, 0),
+                    vec2.fromValues(5, 5),
+                    this.MainLayer,
+                    this.hero, // To track where the hero is, i want to move as much of the game logic from the update loop as possible
+                    (sender: DragonEnemy) => { this.RemoveGameObject(sender) }, // onDeath
+                    // Spawn projectile
+                    (sender: DragonEnemy, projectile: IProjectile) => {
+                        this.gameObjects.push(projectile);
+                        // Despawn projectile that hit
+                        // TODO: instead of accessing a public array, projectiles should have a subscribe method
+                        projectile.OnHitListeners.push(s => this.RemoveGameObject(s)); // TODO: despawning hero attack should be like this
+                    }
+                );
+            default:
+                throw new Error('Unknown object type');
+        }
     }
 
     private RemoveGameObject(toRemove: IGameobject): void {
@@ -304,28 +291,10 @@ export class Level implements IDisposable {
         this.attack = null;
     }
 
-    private async InitPickups() {
-        const coins = [
-            await CoinObject.Create(vec3.fromValues(21, 10, 0), c => this.RemoveGameObject(c)),
-            await CoinObject.Create(vec3.fromValues(23, 10, 0), c => this.RemoveGameObject(c)),
-            await CoinObject.Create(vec3.fromValues(14, Environment.VerticalTiles - 3, 0), c => this.RemoveGameObject(c)),
-            await CoinObject.Create(vec3.fromValues(15, Environment.VerticalTiles - 3, 0), c => this.RemoveGameObject(c)),
-            await CoinObject.Create(vec3.fromValues(16, Environment.VerticalTiles - 3, 0), c => this.RemoveGameObject(c)),
-            await CoinObject.Create(vec3.fromValues(30, Environment.VerticalTiles - 3, 0), c => this.RemoveGameObject(c)),
-            await CoinObject.Create(vec3.fromValues(31, Environment.VerticalTiles - 3, 0), c => this.RemoveGameObject(c)),
-            await CoinObject.Create(vec3.fromValues(32, Environment.VerticalTiles - 3, 0), c => this.RemoveGameObject(c)),
-            await CoinObject.Create(vec3.fromValues(50, Environment.VerticalTiles - 3, 0), c => this.RemoveGameObject(c)),
-            await CoinObject.Create(vec3.fromValues(51, Environment.VerticalTiles - 3, 0), c => this.RemoveGameObject(c)),
-            await CoinObject.Create(vec3.fromValues(52, Environment.VerticalTiles - 3, 0), c => this.RemoveGameObject(c)),
-        ];
-
-        const healthPickups = [
-            await HealthPickup.Create(
-                vec3.fromValues(28, Environment.VerticalTiles - 4, 0),
-                (sender: HealthPickup) => this.RemoveGameObject(sender))
-        ];
-
-        this.gameObjects.unshift(...coins, ...healthPickups);
+    // TODO: merge into init gameobjects
+    private async InitGameObjects(): Promise<void> {
+        const objects = await Promise.all(this.level.gameObjects.map(async (o) => await this.CreateGameObject(o)));
+        this.gameObjects.unshift(...objects);
     }
 
     // TODO: call level dispose when multilevel is implemented

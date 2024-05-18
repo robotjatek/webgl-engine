@@ -8,6 +8,7 @@ import { Utils } from 'src/Utils';
 import { SpriteBatch } from 'src/SpriteBatch';
 import { Shader } from 'src/Shader';
 import { BoundingBox } from 'src/BoundingBox';
+import { IProjectile } from 'src/Projectiles/IProjectile';
 
 /**
  * Stationary enemy. Cannot be damaged. Can damage the hero
@@ -25,6 +26,10 @@ export class Spike implements IEnemy {
 
     private constructor(private position: vec3, private visualScale: vec2, private shader: Shader, private bbShader: Shader, private texture: Texture) {
       //  this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.3));
+    }
+
+    public CollideWithAttack(attack: IProjectile): void {
+        this.Damage(attack.PushbackForce); // No op at the moment. See: Damage()
     }
 
     public static async Create(position: vec3, visualScale: vec2): Promise<Spike> {
@@ -64,6 +69,10 @@ export class Spike implements IEnemy {
 
     public get BoundingBox(): BoundingBox {
         return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize)
+    }
+
+    public get EndCondition(): boolean {
+        return false;
     }
 
     public Visit(hero: Hero): void {

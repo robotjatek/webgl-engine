@@ -10,6 +10,7 @@ import { Hero } from '../Hero';
 import { IPickup } from './IPickup';
 import { SoundEffectPool } from '../SoundEffectPool';
 import { SoundEffect } from 'src/SoundEffect';
+import { IProjectile } from 'src/Projectiles/IProjectile';
 
 export class HealthPickup implements IPickup {
     private visualScale = vec3.fromValues(2, 2, 1);
@@ -67,6 +68,10 @@ export class HealthPickup implements IPickup {
 
     public IsCollidingWith(boundingBox: BoundingBox, collideWithUndefined: boolean): boolean {
         return this.BoundingBox.IsCollidingWith(boundingBox);
+    }
+
+    public CollideWithAttack(attack: IProjectile): void {
+        // No-op
     }
 
     public Visit(hero: Hero): void {

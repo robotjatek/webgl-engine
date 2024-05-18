@@ -12,6 +12,7 @@ import { Waypoint } from '../Waypoint';
 import { IEnemy } from './IEnemy';
 import { Hero } from '../Hero';
 import { SoundEffect } from 'src/SoundEffect';
+import { IProjectile } from 'src/Projectiles/IProjectile';
 
 /**
  * Slime enemy is a passive enemy, meaning it does not actively attack the player, but it hurts when contacted directly
@@ -97,12 +98,20 @@ export class SlimeEnemy implements IEnemy {
         hero.CollideWithSlime(this);
     }
 
+    public CollideWithAttack(attack: IProjectile): void {
+        this.Damage(attack.PushbackForce);
+    }
+
     public get Position(): vec3 {
         return this.position;
     }
 
     public get BoundingBox(): BoundingBox {
         return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize);
+    }
+
+    public get EndCondition(): boolean {
+        return false;
     }
 
     // TODO: this is also duplicated in the code

@@ -56,6 +56,9 @@ export class BiteProjectile implements IProjectile {
         // this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0, 0, 0, 1));
         // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
     }
+    public CollideWithAttack(attack: IProjectile): void {
+        // no-op
+    }
 
     public static async Create(centerPosition: vec3, facingDirection: vec3): Promise<BiteProjectile> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');

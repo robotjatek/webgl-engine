@@ -118,6 +118,10 @@ export class DragonEnemy implements IEnemy {
         hero.CollideWithDragon(this); // This call is not needad at all as hero does nothing with this interaction
     }
 
+    public CollideWithAttack(attack: IProjectile): void {
+        this.Damage(attack.PushbackForce);
+    }
+
     public get Position(): vec3 {
         return this.position;
     }
@@ -135,6 +139,10 @@ export class DragonEnemy implements IEnemy {
 
     public get BoundingBox(): BoundingBox {
         return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize);
+    }
+
+    public get EndCondition(): boolean {
+        return false;
     }
 
     public IsCollidingWith(boundingBox: BoundingBox): boolean {

@@ -49,8 +49,6 @@ Tile materials:
 export class Level implements IDisposable {
     private Background: SpriteBatch;
     private BackgroundViewMatrix = mat4.create();
-
-    private enemies: IEnemy[] = [];
     private gameObjects: IGameobject[] = [];
     private attack: IProjectile;
     private hero: Hero;
@@ -121,7 +119,6 @@ export class Level implements IDisposable {
         });
 
         this.gameObjects.forEach(h => h.Draw(projectionMatrix, viewMatrix));
-        this.enemies.forEach(e => e.Draw(projectionMatrix, viewMatrix));
         this.levelEnd.Draw(projectionMatrix, viewMatrix);
         this.attack?.Draw(projectionMatrix, viewMatrix);
         this.hero.Draw(projectionMatrix, viewMatrix);
@@ -138,18 +135,11 @@ export class Level implements IDisposable {
 
             await this.attack?.Update(delta);
             if (this.attack && !this.attack.AlreadyHit) {
-                const enemiesCollidingWithProjectile = this.enemies.filter(e => e.IsCollidingWith(this.attack.BoundingBox, false));
+                const enemiesCollidingWithProjectile = this.gameObjects.filter(e => e.IsCollidingWith(this.attack.BoundingBox, false));
                 // Pushback force does not necessarily mean the amount of pushback. A big enemy can ignore a sword attack for example
-                enemiesCollidingWithProjectile.forEach(e => e.Damage(this.attack.PushbackForce));
+                enemiesCollidingWithProjectile.forEach(e => e.CollideWithAttack(this.attack));
                 this.attack.OnHit();
             }
-
-            this.enemies.forEach(async (e) => {
-                await e.Update(delta);
-                if (e.IsCollidingWith(this.hero.BoundingBox, false)) {
-                    this.hero.Collide(e);
-                }
-            });
 
             this.gameObjects.forEach(async (e: IGameobject) => {
                 await e.Update(delta);
@@ -213,8 +203,6 @@ export class Level implements IDisposable {
         // TODO: Dispose on level end
         this.gameObjects.forEach(p => p.Dispose());
         this.gameObjects = [];
-        this.enemies.forEach(e => e.Dispose());
-        this.enemies = [];
 
         if (this.hero) {
             this.hero.Dispose();
@@ -250,21 +238,21 @@ export class Level implements IDisposable {
         );
     }
 
-    private async CreateEnemies() {
+    private async CreateEnemies(): Promise<void> {
         const dragons = [
             await DragonEnemy.Create(
                 vec3.fromValues(55, Environment.VerticalTiles - 7, 1),
                 vec2.fromValues(5, 5),
                 this.MainLayer,
                 this.hero, // To track where the hero is, i want to move as much of the game logic from the update loop as possible
-                (sender: DragonEnemy) => { this.RemoveEnemy(sender) }, // onDeath
+                (sender: DragonEnemy) => { this.RemoveGameObject(sender) }, // onDeath
 
                 // Spawn projectile
                 (sender: DragonEnemy, projectile: IProjectile) => {
                     this.gameObjects.push(projectile);
                     // Despawn projectile that hit
                     // TODO: instead of accessing a public array, projectiles should have a subscribe method
-                    projectile.OnHitListeners.push(s => this.RemoveGameObject(s));
+                    projectile.OnHitListeners.push(s => this.RemoveGameObject(s)); // TODO: despawning hero attack should be like this
                 }
             )
         ];
@@ -274,13 +262,13 @@ export class Level implements IDisposable {
                 vec3.fromValues(25, Environment.VerticalTiles - 5, 1),
                 vec2.fromValues(3, 3),
                 this.MainLayer,
-                (e) => this.RemoveEnemy(e)),
+                (e) => this.RemoveGameObject(e)),
 
             await SlimeEnemy.Create(
                 vec3.fromValues(34, Environment.VerticalTiles - 5, 1),
                 vec2.fromValues(3, 3),
                 this.MainLayer,
-                (e) => this.RemoveEnemy(e))
+                (e: IGameobject) => this.RemoveGameObject(e))
         ];
 
         const spikes = [
@@ -300,22 +288,15 @@ export class Level implements IDisposable {
         const cacti: IEnemy[] = [
             await Cactus.Create(
                 vec3.fromValues(45, Environment.VerticalTiles - 5, 0),
-                (sender: IEnemy) => this.RemoveEnemy(sender)
+                (sender: IGameobject) => this.RemoveGameObject(sender)
             )
         ];
 
-        this.enemies = [
+        this.gameObjects.push(
             ...slimes,
             ...dragons,
             ...spikes,
-            ...cacti
-        ];
-    }
-
-    // TODO: merge enemy & gameobject
-    private RemoveEnemy(toRemove: IEnemy): void {
-        this.enemies = this.enemies.filter(e => e !== toRemove);
-        toRemove.Dispose();
+            ...cacti);
     }
 
     private RemoveGameObject(toRemove: IGameobject): void {
@@ -350,7 +331,7 @@ export class Level implements IDisposable {
                 (sender: HealthPickup) => this.RemoveGameObject(sender))
         ];
 
-        this.gameObjects = [...coins, ...healthPickups]
+        this.gameObjects.unshift(...coins, ...healthPickups);
     }
 
     // TODO: call level dispose when multilevel is implemented
@@ -361,6 +342,6 @@ export class Level implements IDisposable {
         this.Hero.Dispose();
         this.attack?.Dispose();
         this.levelEnd.Dispose();
-        this.enemies.forEach(e => e.Dispose());
+        this.gameObjects.forEach(e => e.Dispose());
     }
 }

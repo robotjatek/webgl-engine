@@ -10,6 +10,7 @@ import { Utils } from 'src/Utils';
 import { SpriteBatch } from 'src/SpriteBatch';
 import { SoundEffectPool } from 'src/SoundEffectPool';
 import { SoundEffect } from 'src/SoundEffect';
+import { IProjectile } from 'src/Projectiles/IProjectile';
 
 /**
  * Stationary enemy that cannot be stomped on (like spikes), but it can be damaged with a sword attack
@@ -116,6 +117,10 @@ export class Cactus implements IEnemy {
         return new Cactus(position, onDeath, shader, bbShader, texture, damegeSound, deathSound);
     }
 
+    public CollideWithAttack(attack: IProjectile): void {
+        this.Damage(attack.PushbackForce);
+    }
+
     public Draw(proj: mat4, view: mat4): void {
         this.batch.Draw(proj, view);
         this.batch.ModelMatrix = mat4.create();
@@ -175,6 +180,10 @@ export class Cactus implements IEnemy {
 
     public get BoundingBox(): BoundingBox {
         return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize);
+    }
+
+    public get EndCondition(): boolean {
+        return false;
     }
 
     public Visit(hero: Hero): void {

@@ -11,6 +11,7 @@ import { Hero } from '../Hero';
 import { IPickup } from './IPickup';
 import { SoundEffect } from '../SoundEffect';
 import { SoundEffectPool } from '../SoundEffectPool';
+import { IProjectile } from 'src/Projectiles/IProjectile';
 
 export class CoinObject implements IPickup {
     private batch: SpriteBatch;
@@ -46,6 +47,10 @@ export class CoinObject implements IPickup {
 
     public get EndCondition(): boolean {
         return true;
+    }
+
+    public CollideWithAttack(attack: IProjectile): void {
+        // No-op
     }
 
     public Visit(hero: Hero): void {

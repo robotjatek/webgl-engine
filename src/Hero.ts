@@ -25,7 +25,6 @@ import { XBoxControllerKeys } from './XBoxControllerKeys';
 import { Keys } from './Keys';
 import { MeleeAttack } from './Projectiles/MeleeAttack';
 import { IDisposable } from './IDisposable';
-import { LevelEnd } from './LevelEnd';
 
 enum State {
   IDLE = 'idle',
@@ -465,17 +464,8 @@ export class Hero implements IDisposable {
     }
   }
 
-  // TODO: handle collision with other object types?
-  public Collide(enemy: IEnemy): void {
-    enemy.Visit(this);
-  }
-
   public CollideWithGameObject(object: IGameobject): void {
     object.Visit(this);
-  }
-
-  public CollideWithPickup(pickup: IPickup): void {
-    pickup.Visit(this);
   }
 
   public InteractWithProjectile(projectile: IProjectile): void {

@@ -45,6 +45,10 @@ export class MeleeAttack implements IProjectile {
         //  this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.5));
     }
 
+    public CollideWithAttack(attack: IProjectile): void {
+        // No-op as hero attacks shouldn't interact with each other
+    }
+
     public static async Create(position: vec3, facingDirection: vec3, despawnProjectile: (projectile: IProjectile) => void): Promise<MeleeAttack> {
         // TODO: i really should rename the fragment shader from Hero.frag as everything seems to use it...
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');

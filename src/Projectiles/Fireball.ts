@@ -43,7 +43,6 @@ export class Fireball implements IProjectile {
     ];
     private currentFrameSet = this.leftFacingAnimationFrames;
 
-    // TODO: somehow I need to detect when an object is destroyed, and call a clean up for WebGL resources
     private sprite = new Sprite(
         Utils.DefaultSpriteVertices,
         Utils.CreateTextureCoordinates(0, 0, 1 / 8, 1 / 8));
@@ -128,8 +127,10 @@ export class Fireball implements IProjectile {
     }
 
     public Dispose(): void {
-        // TODO: Dispose all disposables
-        console.error('Hey, you really should dispose this!');
+        this.batch.Dispose();
+        this.bbBatch.Dispose();
+        this.shader.Delete();
+        this.bbShader.Delete();
     }
 
     public async Update(delta: number): Promise<void> {

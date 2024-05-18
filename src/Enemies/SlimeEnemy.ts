@@ -243,4 +243,11 @@ export class SlimeEnemy implements IEnemy {
             this.velocity = vec3.create();
         }
     }
+
+    public Dispose(): void {
+        this.batch.Dispose();
+        this.shader.Delete();
+        this.bbBatch.Dispose();
+        this.bbShader.Delete();
+    }
 }

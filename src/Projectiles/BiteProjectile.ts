@@ -129,8 +129,10 @@ export class BiteProjectile implements IProjectile {
     public OnHitListeners: ((sender: IProjectile) => void)[] = [];
 
     public Dispose(): void {
-        // TODO: dispose
-        console.error('Hey, dispose BiteProjectile');
+        this.batch.Dispose();
+        this.bbBatch.Dispose();
+        this.shader.Delete();
+        this.bbShader.Delete();
     }
 
     private Animate(delta: number): void {

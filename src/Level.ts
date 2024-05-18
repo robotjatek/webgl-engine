@@ -13,7 +13,7 @@ import { Hero } from './Hero';
 import { KeyHandler } from './KeyHandler';
 import { ControllerHandler } from './ControllerHandler';
 import { IEnemy } from './Enemies/IEnemy';
-import { IGameobject } from './Pickups/IPickup';
+import { IGameobject } from './IGameobject';
 import { IProjectile } from './Projectiles/IProjectile';
 import { LevelEnd } from './LevelEnd';
 import { DragonEnemy } from './Enemies/DragonEnemy';
@@ -23,6 +23,8 @@ import { Cactus } from './Enemies/Cactus';
 import { CoinObject } from './Pickups/CoinObject';
 import { HealthPickup } from './Pickups/HealthPickup';
 import { IRestartListener } from './Game';
+import { MeleeAttack } from './Projectiles/MeleeAttack';
+import { IDisposable } from './IDisposable';
 
 // TODO: parallax scrolling
 /*
@@ -44,7 +46,7 @@ Tile materials:
 {'texture path', opacity}
 */
 
-export class Level {
+export class Level implements IDisposable {
     private Background: SpriteBatch;
     private BackgroundViewMatrix = mat4.create();
 
@@ -57,7 +59,7 @@ export class Level {
     private canUpdate: boolean = false;
     private restartEventListeners: IRestartListener[] = [];
 
-    private constructor(private Layers: Layer[], bgShader: Shader, bgTexture: Texture, private music: SoundEffect,
+    private constructor(private layers: Layer[], bgShader: Shader, bgTexture: Texture, private music: SoundEffect,
         private levelEnd: LevelEnd, private levelEndOpenSoundEffect: SoundEffect, private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler
     ) {
         this.Background = new SpriteBatch(bgShader, [new Background()], bgTexture);
@@ -114,7 +116,7 @@ export class Level {
 
     public Draw(projectionMatrix: mat4, viewMatrix: mat4): void {
         this.Background.Draw(projectionMatrix, this.BackgroundViewMatrix);
-        this.Layers.forEach((layer) => {
+        this.layers.forEach((layer) => {
             layer.Draw(projectionMatrix, viewMatrix);
         });
 
@@ -149,7 +151,7 @@ export class Level {
                 }
             });
 
-            this.gameObjects.forEach(async (e:IGameobject) => {
+            this.gameObjects.forEach(async (e: IGameobject) => {
                 await e.Update(delta);
                 if (e.IsCollidingWith(this.hero.BoundingBox, false)) {
                     this.hero.CollideWithGameObject(e);
@@ -167,7 +169,7 @@ export class Level {
     }
 
     public get MainLayer(): Layer {
-        return this.Layers[0];
+        return this.layers[0];
     }
 
     public PlayMusic(volume: number): void {
@@ -206,15 +208,24 @@ export class Level {
         this.restartEventListeners.forEach(l => l.OnRestartEvent());
         this.SetMusicVolume(0.4);
 
-        // TODO: dispose all disposables
-       // this.gameObjects.forEach(p => p.Dispose());
+        // TODO: should I dispose entities in the init method
+        // TODO: Create on Next level call
+        // TODO: Dispose on level end
+        this.gameObjects.forEach(p => p.Dispose());
         this.gameObjects = [];
-        //this.enemies.forEach(e => e.Dispose());
+        this.enemies.forEach(e => e.Dispose());
         this.enemies = [];
+
+        if (this.hero) {
+            this.hero.Dispose();
+            this.hero = null;
+        }
+
+        this.levelEnd.Dispose();
+        this.levelEnd = await LevelEnd.Create(vec3.fromValues(58, Environment.VerticalTiles - 4, 0));
 
         await this.InitHero();
         await this.CreateEnemies();
-
         await this.InitPickups();
 
         this.canUpdate = false;
@@ -222,7 +233,7 @@ export class Level {
     }
 
     public SubscribeToRestartEvent(listener: IRestartListener): void {
-        this.restartEventListeners.push(listener);   
+        this.restartEventListeners.push(listener);
     }
 
     private async InitHero(): Promise<void> {
@@ -233,6 +244,7 @@ export class Level {
             // BUG: if a hero dies then the pause button is pressed the level will restart in a paused state. The level should not restart until unpaused
             async () => await this.InitLevel(),
             (sender: Hero, projectile: IProjectile) => this.attack = projectile,
+            (attack: IProjectile) => this.DespawnAttack(attack),
             this.keyHandler,
             this.gamepadHandler
         );
@@ -300,13 +312,21 @@ export class Level {
         ];
     }
 
+    // TODO: merge enemy & gameobject
     private RemoveEnemy(toRemove: IEnemy): void {
         this.enemies = this.enemies.filter(e => e !== toRemove);
+        toRemove.Dispose();
     }
 
     private RemoveGameObject(toRemove: IGameobject): void {
         this.gameObjects = this.gameObjects.filter(e => e !== toRemove);
         toRemove.Dispose();
+    }
+
+    private DespawnAttack(attack: IProjectile) {
+        // TODO: Attack as a gameobject?
+        attack?.Dispose();
+        this.attack = null;
     }
 
     private async InitPickups() {
@@ -331,5 +351,16 @@ export class Level {
         ];
 
         this.gameObjects = [...coins, ...healthPickups]
+    }
+
+    // TODO: call level dispose when multilevel is implemented
+    public Dispose(): void {
+        this.layers.forEach(l => l.Dispose());
+        this.layers = [];
+        this.Background.Dispose();
+        this.Hero.Dispose();
+        this.attack?.Dispose();
+        this.levelEnd.Dispose();
+        this.enemies.forEach(e => e.Dispose());
     }
 }

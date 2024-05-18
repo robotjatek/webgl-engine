@@ -11,13 +11,15 @@ import { KeyHandler } from './KeyHandler';
 import { Keys } from './Keys';
 import { IStartEventListener } from './Game';
 import { Textbox } from './Textbox';
+import { IDisposable } from './IDisposable';
 
-export class MainScreen {
+export class MainScreen implements IDisposable {
     private startEventListeners: IStartEventListener[] = [];
     private textProjMat: mat4;
     private currentTime = 0;
 
     private constructor(private batch: SpriteBatch,
+        private shader: Shader,
         private gamepadHandler: ControllerHandler,
         private keyHandler: KeyHandler,
         private sound: SoundEffect,
@@ -39,7 +41,7 @@ export class MainScreen {
         const dimensions = await Textbox.PrecalculateDimensions('Consolas', 'Press start or Enter to begin', 1);
         const pressStartText = (await Textbox.Create('Consolas')).WithText('Press start or Enter to begin', vec2.fromValues(width / 2 - dimensions.width / 2, height - 120), 1);
 
-        return new MainScreen(batch, gamepadHandler, keyboardHandler, sound, pressStartText, width, height);
+        return new MainScreen(batch, shader, gamepadHandler, keyboardHandler, sound, pressStartText, width, height);
     }
 
     public Draw(proj: mat4): void {
@@ -65,5 +67,11 @@ export class MainScreen {
 
     public SubscribeToStartEvent(listener: IStartEventListener) {
         this.startEventListeners.push(listener);
+    }
+
+    public Dispose(): void {
+        this.pressStartTextbox.Dispose();
+        this.batch.Dispose();
+        this.shader.Delete();
     }
 }

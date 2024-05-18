@@ -6,6 +6,7 @@ import { Utils } from './Utils';
 import { Sprite } from './Sprite';
 import { SpriteBatch } from './SpriteBatch';
 import { gl } from './WebGLUtils';
+import { IDisposable } from './IDisposable';
 
 class CharProperties {
     public x: number;
@@ -76,7 +77,7 @@ class Character {
     }
 }
 
-export class Textbox {
+export class Textbox implements IDisposable {
     private text: Character[] = [];
     private cursorX: number = 0;
     private maxCharacterHeight = 0;
@@ -88,7 +89,7 @@ export class Textbox {
     public static async Create(fontname: string): Promise<Textbox> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Font.frag');
         const fontMap = await TexturePool.GetInstance().GetTexture(`textures/Fonts/${fontname}/font.png`);
-        const fontConfig = await FontConfig.Create(`textures/Fonts/${fontname}/font.json`);
+        const fontConfig = await FontConfig.Create(`textures/Fonts/${fontname}/font.json`); // TODO: fontconfig pool
 
         return new Textbox(fontMap, shader, fontConfig)
             .WithHue(1).WithSaturation(0).WithValue(1);
@@ -168,5 +169,9 @@ export class Textbox {
         }
 
         return { width: cursorX, height: maxCharacterHeight };
+    }
+
+    public Dispose(): void {
+        this.shader.Delete();
     }
 }

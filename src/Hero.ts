@@ -16,13 +16,16 @@ import { Spike } from './Enemies/Spike';
 import { Cactus } from './Enemies/Cactus';
 import { HealthPickup } from './Pickups/HealthPickup';
 import { CoinObject } from './Pickups/CoinObject';
-import { IGameobject, IPickup } from './Pickups/IPickup';
+import { IPickup } from './Pickups/IPickup';
+import { IGameobject } from './IGameobject';
 import { SoundEffect } from './SoundEffect';
 import { KeyHandler } from './KeyHandler';
 import { ControllerHandler } from './ControllerHandler';
 import { XBoxControllerKeys } from './XBoxControllerKeys';
 import { Keys } from './Keys';
 import { MeleeAttack } from './Projectiles/MeleeAttack';
+import { IDisposable } from './IDisposable';
+import { LevelEnd } from './LevelEnd';
 
 enum State {
   IDLE = 'idle',
@@ -33,7 +36,7 @@ enum State {
   DASH = 'dash'
 }
 
-export class Hero {
+export class Hero implements IDisposable {
   private health: number = 100;
   private collectedCoins: number = 0;
   private state: State = State.IDLE;
@@ -44,7 +47,7 @@ export class Hero {
   private lastPosition: vec3 = vec3.fromValues(0, 0, 1);
   private velocity: vec3 = vec3.fromValues(0, 0, 0);
 
-  // TODO: BUG: Hero sometimes spawns its attack projectile in the wrong direction
+  // BUG: Hero sometimes spawns its attack projectile in the wrong direction
   // TODO: longer range but much slower attack
   // TODO: make bb variables parametrizable
   // TODO: double jump
@@ -115,6 +118,7 @@ export class Hero {
     private collider: ICollider,
     private onDeath: () => void,
     private spawnProjectile: (sender: Hero, projectile: IProjectile) => void,
+    private despawnProjectile: (projectile: IProjectile) => void,
     private shader: Shader,
     private bbShader: Shader,
     private jumpSound: SoundEffect,
@@ -150,6 +154,7 @@ export class Hero {
   public static async Create(
     position: vec3, visualScale: vec2, collider: ICollider, onDeath: () => void,
     spawnProjectile: (sender: Hero, projectile: IProjectile) => void,
+    despawnProjectile: (projectile: IProjectile) => void,
     keyHandler: KeyHandler, gamepadHandler: ControllerHandler): Promise<Hero> {
 
     const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
@@ -163,8 +168,8 @@ export class Hero {
     const dieSound = await SoundEffectPool.GetInstance().GetAudio('audio/hero_die.wav', false);
     const texture = await TexturePool.GetInstance().GetTexture('textures/hero1.png');
 
-    const hero = new Hero(position, visualScale, collider, onDeath, spawnProjectile, shader,
-      bbShader, jumpSound, landSound, walkSound, stompSound, damageSound, dieSound, texture,
+    const hero = new Hero(position, visualScale, collider, onDeath, spawnProjectile, despawnProjectile,
+      shader, bbShader, jumpSound, landSound, walkSound, stompSound, damageSound, dieSound, texture,
       keyHandler, gamepadHandler);
 
     return hero;
@@ -280,10 +285,10 @@ export class Hero {
       const attackPosition = this.FacingDirection[0] > 0 ?
         vec3.add(vec3.create(), this.Position, vec3.fromValues(1.5, 0, 0)) :
         vec3.add(vec3.create(), this.Position, vec3.fromValues(-2.5, 0, 0));
+
       this.Attack(async () => {
         // TODO: creating an attack instance on every attack is wasteful.
-        // TODO: I need to dispose resources after attack is done
-        this.spawnProjectile(this, await MeleeAttack.Create(attackPosition, this.FacingDirection));
+        this.spawnProjectile(this, await MeleeAttack.Create(attackPosition, this.FacingDirection, this.despawnProjectile));
       });
     }
   }
@@ -585,5 +590,12 @@ export class Hero {
 
     // Remain in the current animation frame if a correct frame could not be determined
     return this.sprite.textureOffset;
+  }
+
+  public Dispose(): void {
+    this.batch.Dispose();
+    this.bbBatch.Dispose();
+    this.shader.Delete();
+    this.bbShader.Delete();
   }
 }

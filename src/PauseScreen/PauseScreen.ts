@@ -12,8 +12,9 @@ import { IState } from './IState';
 import { MainSelectionState } from './MainSelectionState';
 import { QuitMenuState } from './QuitMenuState';
 import { SharedVariables } from './SharedVariables';
+import { IDisposable } from 'src/IDisposable';
 
-export class PauseScreen {
+export class PauseScreen implements IDisposable {
     private resumeEventListeners: IResumeEventListener[] = [];
     private quitEventListeners: IQuitEventListener[] = [];
 
@@ -52,6 +53,7 @@ export class PauseScreen {
         private width: number,
         private height: number,
         private batch: SpriteBatch,
+        private shader: Shader,
         private pausedTextbox: Textbox,
         private resumeTextbox: Textbox,
         private quitTextbox: Textbox,
@@ -115,7 +117,7 @@ export class PauseScreen {
         const background = new Background();
         const batch = new SpriteBatch(shader, [background], null);
 
-        return new PauseScreen(width, height, batch, pausedTextBox, resumeTextBox,
+        return new PauseScreen(width, height, batch, shader, pausedTextBox, resumeTextBox,
             quitTextBox, areYouSureTextBox, yesTextBox, noTextBox,
             keyHandler, gamepadHandler, menuSound, selectSound);
     }
@@ -165,5 +167,16 @@ export class PauseScreen {
             this, this.keyHandler, this.gamepadHandler, this.quitEventListeners, this.menuSound, this.selectSound);
 
         this.state = this.mainSelectionState;
+    }
+
+    public Dispose(): void {
+        this.areYouSureTextbox.Dispose();
+        this.noTextbox.Dispose();
+        this.pausedTextbox.Dispose();
+        this.yesTextbox.Dispose();
+        this.batch.Dispose();
+        this.shader.Delete();
+        this.quitTextbox.Dispose();
+        this.resumeTextbox.Dispose();
     }
 }

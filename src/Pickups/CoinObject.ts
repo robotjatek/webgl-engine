@@ -19,7 +19,7 @@ export class CoinObject implements IPickup {
     private constructor(
         private position: vec3,
         private onPickup: (pickup: IPickup) => void,
-        shader: Shader,
+        private shader: Shader,
         private pickupSound: SoundEffect,
         private texture: Texture
     ) {
@@ -68,7 +68,7 @@ export class CoinObject implements IPickup {
     }
 
     public Dispose(): void {
-        // TODO: dispose
-        console.log('Dispose coinobject')
+        this.batch.Dispose();
+        this.shader.Delete();
     }
 }

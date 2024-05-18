@@ -13,6 +13,7 @@ import { Textbox } from './Textbox';
 import { SoundEffect } from './SoundEffect';
 import { MainScreen } from './MainScreen';
 import { PauseScreen } from './PauseScreen/PauseScreen';
+import { IDisposable } from './IDisposable';
 
 export interface IStartEventListener {
   Start(): Promise<void>;
@@ -41,7 +42,6 @@ enum State {
 
 // TODO: multiple level support
 // TODO: level editor
-// TODO: correctly dispose objects that no longer exist => delete opengl resources, when an object is destroyed
 
 // TODO: ui builder framework
 // TODO: flip sprite
@@ -50,7 +50,7 @@ enum State {
 // TODO: update ts version
 // TODO: render bounding boxes in debug mode
 // TODO: texture map padding
-export class Game implements IStartEventListener, IResumeEventListener, IQuitEventListener, IRestartListener {
+export class Game implements IStartEventListener, IResumeEventListener, IQuitEventListener, IRestartListener, IDisposable {
   private Width: number;
   private Height: number;
   private start: number;
@@ -98,6 +98,12 @@ export class Game implements IStartEventListener, IResumeEventListener, IQuitEve
     pauseScreen.SubscribeToQuitEvent(this);
 
     this.start = performance.now();
+  }
+  public Dispose(): void {
+    this.mainScreen.Dispose();
+    this.healthTextbox.Dispose();
+    this.scoreTextbox.Dispose();
+    this.pauseScreen.Dispose();
   }
 
   public OnRestartEvent(): void {

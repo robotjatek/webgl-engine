@@ -10,9 +10,11 @@ import { Hero } from './Hero';
 import { SoundEffect } from './SoundEffect';
 import { SoundEffectPool } from './SoundEffectPool';
 import { Texture } from './Texture';
+import { IDisposable } from './IDisposable';
 
 // TODO: levelend is kind-of a "IPickup" itself
-export class LevelEnd implements ICollider {
+// TODO: Make levelend an IGameObject
+export class LevelEnd implements ICollider, IDisposable {
 
     private sprite: Sprite;
     private batch: SpriteBatch;
@@ -64,6 +66,11 @@ export class LevelEnd implements ICollider {
         if (this.enabled) {
             this.endReachedEffect.Play(1, 1, () => callback());
         }
+    }
+
+    public Dispose(): void {
+        this.batch.Dispose();
+        this.shader.Delete();
     }
 
 }

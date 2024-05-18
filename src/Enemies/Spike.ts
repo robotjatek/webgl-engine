@@ -74,4 +74,11 @@ export class Spike implements IEnemy {
         return boundingBox.IsCollidingWith(this.BoundingBox);
     }
 
+    public Dispose(): void {
+        this.batch.Dispose();
+        this.shader.Delete();
+        this.bbBatch.Dispose();
+        this.bbShader.Delete();
+    }
+
 }

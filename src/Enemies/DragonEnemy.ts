@@ -380,4 +380,11 @@ export class DragonEnemy implements IEnemy {
         }
     }
 
+    public Dispose(): void {
+        this.batch.Dispose();
+        this.bbBatch.Dispose();
+        this.shader.Delete();
+        this.bbShader.Delete();
+    }
+
 }

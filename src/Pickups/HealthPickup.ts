@@ -76,7 +76,7 @@ export class HealthPickup implements IPickup {
     }
 
     public Dispose(): void {
-        // TODO: dispose
-        console.error('Dispose health pickup');
+        this.batch.Dispose();
+        this.shader.Delete();
     }
 }

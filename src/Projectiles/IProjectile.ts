@@ -1,5 +1,5 @@
 import { vec3 } from 'gl-matrix';
-import { IGameobject } from 'src/Pickups/IPickup';
+import { IGameobject } from 'src/IGameobject';
 
 export interface IProjectile extends IGameobject {
     get AlreadyHit(): boolean;

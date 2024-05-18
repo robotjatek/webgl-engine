@@ -11,7 +11,6 @@ export class Shader {
         this.valid = true;
     }
 
-    // TODO: for every create call there should exist a Destroy/Dispose call
     public static async Create(vertexPath: string, fragmentPath: string): Promise<Shader> {
         const vertexShader = await Shader.LoadShader(vertexPath, gl.VERTEX_SHADER);
         const fragmentShader = await Shader.LoadShader(fragmentPath, gl.FRAGMENT_SHADER);

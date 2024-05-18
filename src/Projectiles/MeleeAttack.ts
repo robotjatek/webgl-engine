@@ -39,19 +39,20 @@ export class MeleeAttack implements IProjectile {
     private animationFinished = false;
 
     private constructor(private position: vec3, private facingDirection: vec3,
-        private shader: Shader, private bbShader: Shader, private attackSound: SoundEffect, private texture: Texture) {
+        private shader: Shader, private bbShader: Shader, private attackSound: SoundEffect, private texture: Texture,
+        private despawnProjectile: (projectile: IProjectile) => void) {
         //  this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0, 0, 1, 0.5));
         //  this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.5));
     }
 
-    public static async Create(position: vec3, facingDirection: vec3): Promise<MeleeAttack> {
+    public static async Create(position: vec3, facingDirection: vec3, despawnProjectile: (projectile: IProjectile) => void): Promise<MeleeAttack> {
         // TODO: i really should rename the fragment shader from Hero.frag as everything seems to use it...
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
         const attackSound = await SoundEffectPool.GetInstance().GetAudio('audio/sword.mp3');
         const texture = await TexturePool.GetInstance().GetTexture('textures/Sword1.png');
 
-        return new MeleeAttack(position, facingDirection, shader, bbShader, attackSound, texture);
+        return new MeleeAttack(position, facingDirection, shader, bbShader, attackSound, texture, despawnProjectile);
     }
 
     OnHitListeners: ((sender: IProjectile) => void)[] = [];
@@ -64,7 +65,6 @@ export class MeleeAttack implements IProjectile {
         return false;
     }
 
-    // TODO: sphere instead of a box?
     public get BoundingBox(): BoundingBox {
         return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize);
     }
@@ -106,17 +106,16 @@ export class MeleeAttack implements IProjectile {
         this.bbBatch.Draw(proj, view);
     }
 
-    public Dispose(): void {
-        // TODO: dispose
-        console.error('Dispose melee attack');
-    }
-
     public async Update(delta: number): Promise<void> {
         if (!this.attackSoundPlayed) {
             this.attackSound.Play();
             this.attackSoundPlayed = true;
         }
         this.Animate(delta);
+
+        if (this.animationFinished) {
+            this.despawnProjectile(this);
+        }
     }
 
     // TODO: animation feels like an ECS too
@@ -134,6 +133,13 @@ export class MeleeAttack implements IProjectile {
             this.sprite.textureOffset = vec2.fromValues(this.currentAnimationFrame / 5.0, 0 / 2.0);
             this.currentFrameTime = 0;
         }
+    }
+
+    public Dispose(): void {
+        this.batch.Dispose();
+        this.bbBatch.Dispose();
+        this.shader.Delete();
+        this.bbShader.Delete();
     }
 
 }

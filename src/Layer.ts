@@ -8,8 +8,9 @@ import { Texture } from "./Texture";
 import { Tile } from "./Tile";
 import { Utils } from "./Utils";
 import { Environment } from './Environment';
+import { IDisposable } from './IDisposable';
 
-export class Layer implements ICollider {
+export class Layer implements ICollider, IDisposable {
 
     private constructor(private SpriteBatches: SpriteBatch[],
         private Tiles: Tile[]
@@ -105,5 +106,9 @@ export class Layer implements ICollider {
         });
 
         return batches;
+    }
+
+    public Dispose(): void {
+        this.SpriteBatches.forEach(s => s.Dispose());
     }
 }

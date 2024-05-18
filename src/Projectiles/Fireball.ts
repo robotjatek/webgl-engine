@@ -69,8 +69,7 @@ export class Fireball implements IProjectile {
         this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
     }
     public CollideWithAttack(attack: IProjectile): void {
-        // No-op
-        // XXX: Maybe the hero could "kill" fireball with an attack
+        this.OnHit();
     }
 
     public static async Create(centerPosition: vec3, moveDirection: vec3, collider: ICollider): Promise<Fireball> {

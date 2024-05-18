@@ -133,6 +133,7 @@ export class Level implements IDisposable {
                 this.hero.Kill();
             }
 
+            // Handle collisions between hero projectile(s) and game objects.
             await this.attack?.Update(delta);
             if (this.attack && !this.attack.AlreadyHit) {
                 const enemiesCollidingWithProjectile = this.gameObjects.filter(e => e.IsCollidingWith(this.attack.BoundingBox, false));

@@ -44,9 +44,6 @@ enum State {
   PAUSED = 'paused'
 }
 
-// BUG: hero animation fails after damaged!
-
-
 // TODO: level editor
 
 // TODO: resource tracker: keep track of 'alive' opengl and other resurces resources the number shouldnt go up

@@ -505,7 +505,7 @@ export class Hero implements IDisposable {
         const damagePushback = vec3.scale(vec3.create(), dir, 0.01);
         // TODO: this is a hack to make sure that the hero is not detected as colliding with the ground, so a pushback can happen
         damagePushback[1] -= 0.01;
-        vec3.set(this.velocity, damagePushback[0], damagePushback[1], damagePushback[2]);
+        vec3.set(this.velocity, damagePushback[0], damagePushback[1], 0);
       }
     } else if (this.state === State.STOMP) {
       vec3.set(this.velocity, 0, -0.025, 0);

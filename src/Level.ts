@@ -168,7 +168,7 @@ export class Level implements IDisposable {
     }
 
     public PlayMusic(volume: number): void {
-        //  this.music.Play(1, volume, null, true);
+        this.music.Play(1, volume, null, true);
     }
 
     public StopMusic(): void {
@@ -243,23 +243,23 @@ export class Level implements IDisposable {
         switch (descriptor.type) {
             case 'coin':
                 return await CoinObject.Create(
-                    vec3.fromValues(descriptor.xPos, descriptor.yPos, 0), (c) => this.RemoveGameObject(c));
+                    vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), (c) => this.RemoveGameObject(c));
             case 'health':
                 return await HealthPickup.Create(
-                    vec3.fromValues(descriptor.xPos, descriptor.yPos, 0), (c) => this.RemoveGameObject(c));
+                    vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), (c) => this.RemoveGameObject(c));
             case 'spike':
                 return await Spike.Create(
-                    vec3.fromValues(descriptor.xPos, descriptor.yPos, 0), vec2.fromValues(1, 1));
+                    vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), vec2.fromValues(1, 1));
             case 'cactus':
                 return await Cactus.Create(
-                    vec3.fromValues(descriptor.xPos, descriptor.yPos, 0), (c) => this.RemoveGameObject(c));
+                    vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), (c) => this.RemoveGameObject(c));
             case 'slime':
                 return await SlimeEnemy.Create(
-                    vec3.fromValues(descriptor.xPos, descriptor.yPos, 0), vec2.fromValues(3, 3), this.MainLayer,
+                    vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), vec2.fromValues(3, 3), this.MainLayer,
                     (c) => this.RemoveGameObject(c));
             case 'dragon':
                 return await DragonEnemy.Create(
-                    vec3.fromValues(descriptor.xPos, descriptor.yPos, 0),
+                    vec3.fromValues(descriptor.xPos, descriptor.yPos, 1),
                     vec2.fromValues(5, 5),
                     this.MainLayer,
                     this.hero, // To track where the hero is, i want to move as much of the game logic from the update loop as possible

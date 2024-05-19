@@ -6,31 +6,6 @@
         {
             "tiles": [
                 {
-                    "xPos": 21,
-                    "yPos": 11,
-                    "texture": "textures/ground0.png"
-                },
-                {
-                    "xPos": 22,
-                    "yPos": 11,
-                    "texture": "textures/ground0.png"
-                },
-                {
-                    "xPos": 23,
-                    "yPos": 11,
-                    "texture": "textures/ground0.png"
-                },
-                {
-                    "xPos": 18,
-                    "yPos": 14,
-                    "texture": "textures/ground0.png"
-                },
-                {
-                    "xPos": 19,
-                    "yPos": 14,
-                    "texture": "textures/ground0.png"
-                },
-                {
                     "xPos": 0,
                     "yPos": 16,
                     "texture": "textures/ground0.png"
@@ -629,108 +604,14 @@
         }
     ],
     "gameObjects": [
-        {
-            "type": "coin",
-            "xPos": 21,
-            "yPos": 10
-        },
-        {
-            "type": "coin",
-            "xPos": 23,
-            "yPos": 10
-        },
-        {
-            "type": "coin",
-            "xPos": 14,
-            "yPos": 15
-        },
-        {
-            "type": "coin",
-            "xPos": 15,
-            "yPos": 15
-        },
-        {
-            "type": "coin",
-            "xPos": 16,
-            "yPos": 15
-        },
-        {
-            "type": "coin",
-            "xPos": 30,
-            "yPos": 15
-        },
-        {
-            "type": "coin",
-            "xPos": 31,
-            "yPos": 15
-        },
-        {
-            "type": "coin",
-            "xPos": 32,
-            "yPos": 15
-        },
-        {
-            "type": "coin",
-            "xPos": 50,
-            "yPos": 15
-        },
-        {
-            "type": "coin",
-            "xPos": 51,
-            "yPos": 15
-        },
-        {
-            "type": "coin",
-            "xPos": 52,
-            "yPos": 15
-        },
-        {
-            "type": "health",
-            "xPos": 28,
-            "yPos": 14
-        },
-        {
-            "type": "spike",
-            "xPos": 52,
-            "yPos": 16
-        },
-        {
-            "type": "spike",
-            "xPos": 53,
-            "yPos": 16
-        },
-        {
-            "type": "spike",
-            "xPos": 54,
-            "yPos": 16
-        },
-        {
-            "type": "cactus",
-            "xPos": 45,
-            "yPos": 13
-        },
-        {
-            "type": "slime",
-            "xPos": 25,
-            "yPos": 13
-        },
-        {
-            "type": "slime",
-            "xPos": 34,
-            "yPos": 13
-        },
-        {
-            "type": "dragon",
-            "xPos": 55,
-            "yPos": 11
-        }
+      
     ],
     "levelEnd": {
         "xPos": 58,
         "yPos": 14
     },
     "start": {
-        "xPos": 0,
+        "xPos": 13,
         "yPos": 13
     }
 }

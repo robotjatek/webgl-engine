@@ -12,7 +12,6 @@ import { Texture } from './Texture';
 import { Hero } from './Hero';
 import { KeyHandler } from './KeyHandler';
 import { ControllerHandler } from './ControllerHandler';
-import { IEnemy } from './Enemies/IEnemy';
 import { IGameobject } from './IGameobject';
 import { IProjectile } from './Projectiles/IProjectile';
 import { LevelEnd } from './LevelEnd';
@@ -22,7 +21,7 @@ import { Spike } from './Enemies/Spike';
 import { Cactus } from './Enemies/Cactus';
 import { CoinObject } from './Pickups/CoinObject';
 import { HealthPickup } from './Pickups/HealthPickup';
-import { IRestartListener } from './Game';
+import { INextLevelEvent, IRestartListener } from './Game';
 import { IDisposable } from './IDisposable';
 
 type TileEntity = {
@@ -57,9 +56,9 @@ type LevelEntity = {
     layers: LayerEntity[],
     gameObjects: GameObjectEntity[],
     levelEnd: LevelEndEntity,
-    start: StartEntity
+    start: StartEntity,
+    nextLevel: string
 }
-
 
 // TODO: parallax scrolling
 export class Level implements IDisposable {
@@ -68,22 +67,25 @@ export class Level implements IDisposable {
     private gameObjects: IGameobject[] = [];
     private attack: IProjectile;
     private hero: Hero;
+    private levelEnd: LevelEnd;
     private levelEndSoundPlayed: boolean = false;
+    // Makes the game "pause" for some time when the level end was reached
     private canUpdate: boolean = false;
     private restartEventListeners: IRestartListener[] = [];
+    private nextLevelEventListeners: INextLevelEvent[] = [];
 
     private constructor(private layers: Layer[], bgShader: Shader, bgTexture: Texture, private music: SoundEffect, private level: LevelEntity,
-        private levelEnd: LevelEnd, private levelEndOpenSoundEffect: SoundEffect, private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler
+        private levelEndOpenSoundEffect: SoundEffect, private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler
     ) {
         this.Background = new SpriteBatch(bgShader, [new Background()], bgTexture);
     }
 
-    public static async Create(keyHandler: KeyHandler, gamepadHandler: ControllerHandler): Promise<Level> {
+    public static async Create(levelName: string, keyHandler: KeyHandler, gamepadHandler: ControllerHandler): Promise<Level> {
         const texturePool = TexturePool.GetInstance();
 
-        const levelJsonString = await (await fetch('levels/level1.json')).text();
-        const level = JSON.parse(levelJsonString) as LevelEntity;
-        const loadedLayers = await Promise.all(level.layers.map(async layer => {
+        const levelJsonString = await (await fetch(levelName)).text();
+        const levelDescriptor = JSON.parse(levelJsonString) as LevelEntity;
+        const loadedLayers = await Promise.all(levelDescriptor.layers.map(async layer => {
             const loadedTiles = await Promise.all(layer.tiles.map(async tile => {
                 const texure = await texturePool.GetTexture(tile.texture);
                 return new Tile(tile.xPos, tile.yPos, texure)
@@ -93,18 +95,16 @@ export class Level implements IDisposable {
         }));
 
         const bgShader: Shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
-        const bgTexture = await TexturePool.GetInstance().GetTexture(level.background);
-        const music = await SoundEffectPool.GetInstance().GetAudio(level.music, false);
+        const bgTexture = await TexturePool.GetInstance().GetTexture(levelDescriptor.background);
+        const music = await SoundEffectPool.GetInstance().GetAudio(levelDescriptor.music, false);
 
-        const levelEnd = await LevelEnd.Create(vec3.fromValues(level.levelEnd.xPos, level.levelEnd.yPos, 0));
         const levelEndOpenSoundEffect = await SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);
 
         return new Level(loadedLayers,
             bgShader,
             bgTexture,
             music,
-            level,
-            levelEnd,
+            levelDescriptor,
             levelEndOpenSoundEffect,
             keyHandler,
             gamepadHandler);
@@ -160,6 +160,7 @@ export class Level implements IDisposable {
 
             this.CheckForEndCondition();
         }
+        this.levelEnd.Update(delta);
     }
 
     public get MainLayer(): Layer {
@@ -167,7 +168,7 @@ export class Level implements IDisposable {
     }
 
     public PlayMusic(volume: number): void {
-        this.music.Play(1, volume, null, true);
+        //  this.music.Play(1, volume, null, true);
     }
 
     public StopMusic(): void {
@@ -192,34 +193,27 @@ export class Level implements IDisposable {
                 this.SetMusicVolume(0.25);
             }
 
-            this.levelEnd.Interact(this.hero, async () => {
-                await this.InitLevel(); // TODO: this will be move to next level or something like that when multilevel support is implemented
-            });
+            this.levelEnd.Interact(this.hero);
         }
+    }
+
+    private async RestartLevel(): Promise<void> {
+        this.hero.Dispose();
+        await this.InitHero();
+
+        this.gameObjects.forEach(o => o.Dispose());
+        this.gameObjects = [];
+        await this.InitGameObjects();
     }
 
     public async InitLevel() {
         this.restartEventListeners.forEach(l => l.OnRestartEvent());
         this.SetMusicVolume(0.4);
-
-        // TODO: should I dispose entities in the init method
-
-        // TODO: Create onNext level call
-        // TODO: Dispose onlevelend
-        this.gameObjects.forEach(p => p.Dispose());
-        this.gameObjects = [];
-
-        if (this.hero) {
-            this.hero.Dispose();
-            this.hero = null;
-        }
-
-        this.levelEnd.Dispose();
-        this.levelEnd = await LevelEnd.Create(vec3.fromValues(58, Environment.VerticalTiles - 4, 0));
-
+        this.levelEnd = await LevelEnd.Create(vec3.fromValues(58, Environment.VerticalTiles - 4, 0),
+            async () => { this.nextLevelEventListeners.forEach(l => l.OnNextLevelEvent(this.level.nextLevel)) }
+        );
         await this.InitHero();
         await this.InitGameObjects();
-
         this.canUpdate = false;
         this.levelEndSoundPlayed = false;
     }
@@ -228,13 +222,16 @@ export class Level implements IDisposable {
         this.restartEventListeners.push(listener);
     }
 
+    public SubscribeToNextLevelEvent(listener: INextLevelEvent): void {
+        this.nextLevelEventListeners.push(listener);
+    }
+
     private async InitHero(): Promise<void> {
         this.hero = await Hero.Create(
             vec3.fromValues(this.level.start.xPos, this.level.start.yPos, 1),
             vec2.fromValues(3, 3),
             this.MainLayer,
-            // BUG: if a hero dies then the pause button is pressed the level will restart in a paused state. The level should not restart until unpaused
-            async () => await this.InitLevel(),
+            async () => await this.RestartLevel(),
             (sender: Hero, projectile: IProjectile) => this.attack = projectile,
             (attack: IProjectile) => this.DespawnAttack(attack),
             this.keyHandler,
@@ -291,13 +288,11 @@ export class Level implements IDisposable {
         this.attack = null;
     }
 
-    // TODO: merge into init gameobjects
     private async InitGameObjects(): Promise<void> {
         const objects = await Promise.all(this.level.gameObjects.map(async (o) => await this.CreateGameObject(o)));
-        this.gameObjects.unshift(...objects);
+        this.gameObjects.push(...objects);
     }
 
-    // TODO: call level dispose when multilevel is implemented
     public Dispose(): void {
         this.layers.forEach(l => l.Dispose());
         this.layers = [];
@@ -306,5 +301,8 @@ export class Level implements IDisposable {
         this.attack?.Dispose();
         this.levelEnd.Dispose();
         this.gameObjects.forEach(e => e.Dispose());
+        this.gameObjects = [];
+        this.restartEventListeners = [];
+        this.nextLevelEventListeners = [];
     }
 }

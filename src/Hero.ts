@@ -11,12 +11,10 @@ import { SoundEffectPool } from './SoundEffectPool';
 import { SlimeEnemy } from './Enemies/SlimeEnemy';
 import { IProjectile } from './Projectiles/IProjectile';
 import { DragonEnemy } from './Enemies/DragonEnemy';
-import { IEnemy } from './Enemies/IEnemy';
 import { Spike } from './Enemies/Spike';
 import { Cactus } from './Enemies/Cactus';
 import { HealthPickup } from './Pickups/HealthPickup';
 import { CoinObject } from './Pickups/CoinObject';
-import { IPickup } from './Pickups/IPickup';
 import { IGameobject } from './IGameobject';
 import { SoundEffect } from './SoundEffect';
 import { KeyHandler } from './KeyHandler';
@@ -65,6 +63,7 @@ export class Hero implements IDisposable {
   private dashAvailable = true;
   private timeSinceLastMeleeAttack = 0;
   private timeInOverHeal = 0;
+  private timeLeftInDeadState: number = 3000;
 
   private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
   private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], null);
@@ -240,6 +239,12 @@ export class Hero implements IDisposable {
       if (this.invincible) {
         this.invincibleTime += delta;
       }
+    } else if (this.state === State.DEAD) {
+      this.timeLeftInDeadState -= delta;
+      if (this.timeLeftInDeadState <= 0) {
+        this.onDeath();
+        this.timeLeftInDeadState = 3000;
+      }
     }
 
     const dir = vec3.subtract(vec3.create(), this.position, this.lastPosition);
@@ -304,8 +309,6 @@ export class Hero implements IDisposable {
       // This is only kind-of correct, but im already in dead state so who cares if the bb is not correctly aligned.
       // The only important thing is not to fall through the geometry...
       this.bbOffset[0] = dir[0] > 0 ? this.bbOffset[0] : 1.5 - this.bbOffset[0];
-
-      setTimeout(this.onDeath, 3000);
     }
   }
 

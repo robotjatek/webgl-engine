@@ -7,6 +7,7 @@ import { Sprite } from './Sprite';
 import { SpriteBatch } from './SpriteBatch';
 import { gl } from './WebGLUtils';
 import { IDisposable } from './IDisposable';
+import { FontConfigPool } from './FontConfigPool';
 
 class CharProperties {
     public x: number;
@@ -18,7 +19,7 @@ class CharProperties {
     public advance: number;
 }
 
-class FontConfig {
+export class FontConfig {
     private constructor(public characters: Map<string, CharProperties>) { }
 
     public static async Create(fontPath: string) {
@@ -89,7 +90,7 @@ export class Textbox implements IDisposable {
     public static async Create(fontname: string): Promise<Textbox> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Font.frag');
         const fontMap = await TexturePool.GetInstance().GetTexture(`textures/Fonts/${fontname}/font.png`);
-        const fontConfig = await FontConfig.Create(`textures/Fonts/${fontname}/font.json`); // TODO: fontconfig pool
+        const fontConfig = await FontConfigPool.GetInstance().GetFontConfig(`textures/Fonts/${fontname}/font.json`);
 
         return new Textbox(fontMap, shader, fontConfig)
             .WithHue(1).WithSaturation(0).WithValue(1);
@@ -157,7 +158,7 @@ export class Textbox implements IDisposable {
      * @returns An object containing the width and height of the rendered textbox
      */
     public static async PrecalculateDimensions(font: string, text: string, scale: number): Promise<{ width: number, height: number }> {
-        const fontConfig = await FontConfig.Create(`textures/Fonts/${font}/font.json`);
+        const fontConfig = await FontConfigPool.GetInstance().GetFontConfig(`textures/Fonts/${font}/font.json`);
         let cursorX = 0;
         const heights = [...fontConfig.characters.values()]
             .map(c => c.height);

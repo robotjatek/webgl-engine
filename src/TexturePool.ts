@@ -31,7 +31,6 @@ export class TexturePool {
     }
 
     // TODO: preload parameter
-    // TODO: file loading itself is case insensitive, but the cache is not -- not entirely true: web server dependent
     public async Preload(): Promise<void> {
         await Promise.all([
             this.GetTexture('textures/Sword1.png'),

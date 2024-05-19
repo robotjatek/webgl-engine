@@ -27,6 +27,10 @@ export interface IQuitEventListener {
   Quit(): void;
 }
 
+export interface INextLevelEvent {
+  OnNextLevelEvent(levelName: string): Promise<void>;
+}
+
 export interface IRestartListener {
   OnRestartEvent(): void;
 }
@@ -40,9 +44,9 @@ enum State {
   PAUSED = 'paused'
 }
 
-// TODO: multiple level support
 // TODO: level editor
 
+// TODO: resource tracker: keep track of 'alive' opengl and other resurces resources the number shouldnt go up
 // TODO: ui builder framework
 // TODO: flip sprite
 // TODO: recheck every vector passing. Sometimes vectors need to be cloned
@@ -50,7 +54,12 @@ enum State {
 // TODO: update ts version
 // TODO: render bounding boxes in debug mode
 // TODO: texture map padding
-export class Game implements IStartEventListener, IResumeEventListener, IQuitEventListener, IRestartListener, IDisposable {
+export class Game implements IStartEventListener,
+  IResumeEventListener,
+  IQuitEventListener,
+  IRestartListener,
+  INextLevelEvent,
+  IDisposable {
   private Width: number;
   private Height: number;
   private start: number;
@@ -58,6 +67,7 @@ export class Game implements IStartEventListener, IResumeEventListener, IQuitEve
   private textProjMat: mat4;
   private camera = new Camera(vec3.create());
   private state: State = State.START_SCREEN;
+  private level: Level = null;
 
   private keyWasReleased = true;
   private elapsedTimeSinceStateChange = 0;
@@ -66,7 +76,6 @@ export class Game implements IStartEventListener, IResumeEventListener, IQuitEve
     private gamepadHandler: ControllerHandler,
     private healthTextbox: Textbox,
     private scoreTextbox: Textbox,
-    private level: Level,
     private mainScreen: MainScreen,
     private pauseScreen: PauseScreen,
     private pauseSoundEffect: SoundEffect) {
@@ -90,20 +99,30 @@ export class Game implements IStartEventListener, IResumeEventListener, IQuitEve
     gl.viewport(0, 0, this.Width, this.Height);
     gl.clearColor(0, 1, 0, 1);
 
-    this.level = level;
-
-    level.SubscribeToRestartEvent(this);
     mainScreen.SubscribeToStartEvent(this);
     pauseScreen.SubscribeToResumeEvent(this);
     pauseScreen.SubscribeToQuitEvent(this);
 
     this.start = performance.now();
   }
+
   public Dispose(): void {
     this.mainScreen.Dispose();
     this.healthTextbox.Dispose();
     this.scoreTextbox.Dispose();
     this.pauseScreen.Dispose();
+  }
+
+  public async OnNextLevelEvent(levelName: string): Promise<void> {
+    this.pauseScreen.ResetStates();
+    const nextLevel = await Level.Create(levelName, this.keyHandler, this.gamepadHandler);
+    await nextLevel.InitLevel();
+    nextLevel.SubscribeToNextLevelEvent(this);
+    nextLevel.SubscribeToRestartEvent(this);
+
+    const oldLevel = this.level;
+    oldLevel.Dispose();
+    this.level = nextLevel;
   }
 
   public OnRestartEvent(): void {
@@ -120,15 +139,18 @@ export class Game implements IStartEventListener, IResumeEventListener, IQuitEve
 
     const textbox = await Textbox.Create('Consolas');
     const scoreTextBox = await Textbox.Create('Consolas');
-    const level = await Level.Create(keyHandler, controllerHandler);
 
     const pauseSoundEffect = await SoundEffectPool.GetInstance().GetAudio('audio/pause.mp3');
     const mainScreen = await MainScreen.Create(keyHandler, controllerHandler, canvas.width, canvas.height);
     const pauseScreen = await PauseScreen.Create(canvas.width, canvas.height, keyHandler, controllerHandler);
-    return new Game(keyHandler, controllerHandler, textbox, scoreTextBox, level, mainScreen, pauseScreen, pauseSoundEffect);
+    return new Game(keyHandler, controllerHandler, textbox, scoreTextBox, mainScreen, pauseScreen, pauseSoundEffect);
   }
 
   public async Start(): Promise<void> {
+    const level = await Level.Create('levels/level1.json', this.keyHandler, this.gamepadHandler);
+    level.SubscribeToNextLevelEvent(this);
+    level.SubscribeToRestartEvent(this);
+    this.level = level;
 
     if (this.state === State.START_SCREEN) {
       await this.level.InitLevel();
@@ -139,7 +161,10 @@ export class Game implements IStartEventListener, IResumeEventListener, IQuitEve
   }
 
   public Quit(): void {
+    this.pauseScreen.ResetStates();
     this.level.StopMusic();
+    this.level.Dispose();
+    this.level = null;
     this.state = State.START_SCREEN;
   }
 

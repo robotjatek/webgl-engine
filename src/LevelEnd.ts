@@ -20,7 +20,8 @@ export class LevelEnd implements ICollider, IDisposable {
     private batch: SpriteBatch;
     private enabled: boolean = false;
     private static readonly transparentValue: number = 0.5;
-    private size: vec3 = vec3.fromValues(2, 1, 0)
+    private size: vec3 = vec3.fromValues(2, 1, 0);
+    private interacted: boolean = false;
 
     public get IsEnabled(): boolean {
         return this.enabled;
@@ -31,8 +32,10 @@ export class LevelEnd implements ICollider, IDisposable {
         this.shader.SetFloatUniform('alpha', enabled ? 1.0 : LevelEnd.transparentValue);
     }
 
-    private constructor(private position: vec3, private shader: Shader, private endReachedEffect: SoundEffect, texture: Texture) {
-        
+    private constructor(private position: vec3, private shader: Shader, private endReachedEffect: SoundEffect, texture: Texture,
+        private interactCallback: () => void
+    ) {
+
         this.sprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
         this.batch = new SpriteBatch(this.shader, [this.sprite], texture);
         this.shader.SetFloatUniform('alpha', LevelEnd.transparentValue);
@@ -42,12 +45,12 @@ export class LevelEnd implements ICollider, IDisposable {
         return new BoundingBox(this.position, vec2.fromValues(this.size[0], this.size[1]));
     }
 
-    public static async Create(position: vec3): Promise<LevelEnd> {
+    public static async Create(position: vec3, interactCallback: () => void): Promise<LevelEnd> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Transparent.frag');
         const endReachedEffect = await SoundEffectPool.GetInstance().GetAudio('audio/ding.wav', false);
         const texture = await TexturePool.GetInstance().GetTexture('textures/exit.png');
 
-        return new LevelEnd(position, shader, endReachedEffect, texture);
+        return new LevelEnd(position, shader, endReachedEffect, texture, interactCallback);
     }
 
     // TODO: All these drawable objects need a common interface or a base class with all of the drawing/Update functionality
@@ -57,14 +60,20 @@ export class LevelEnd implements ICollider, IDisposable {
         mat4.scale(this.batch.ModelMatrix, this.batch.ModelMatrix, this.size)
     }
 
+    public Update(delta: number): void {
+        if (this.interacted) {
+            this.interactCallback();
+        }
+    }
+
     public IsCollidingWith(boundingBox: BoundingBox): boolean {
         return boundingBox.IsCollidingWith(this.BoundingBox);
     }
 
     // TODO: Interface for interactable objects / Component system for interactable objects
-    public Interact(hero: Hero, callback: () => void): void {
+    public Interact(hero: Hero): void {
         if (this.enabled) {
-            this.endReachedEffect.Play(1, 1, () => callback());
+            this.endReachedEffect.Play(1, 1, () => this.interacted = true);
         }
     }
 

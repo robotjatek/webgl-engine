@@ -1,7 +1,6 @@
 import { Sprite } from './Sprite';
 import { mat4, vec2, vec3 } from 'gl-matrix';
 import { BoundingBox } from './BoundingBox';
-import { ICollider } from './ICollider';
 import { SpriteBatch } from './SpriteBatch';
 import { TexturePool } from './TexturePool';
 import { Shader } from './Shader';
@@ -11,10 +10,15 @@ import { SoundEffect } from './SoundEffect';
 import { SoundEffectPool } from './SoundEffectPool';
 import { Texture } from './Texture';
 import { IDisposable } from './IDisposable';
+import { IGameobject } from './IGameobject';
+import { IProjectile } from './Projectiles/IProjectile';
+import { Level } from './Level';
 
-// TODO: levelend is kind-of a "IPickup" itself
-// TODO: Make levelend an IGameObject
-export class LevelEnd implements ICollider, IDisposable {
+export interface IEndConditionsMetEventListener {
+    OnEndConditionsMet(): void;
+}
+
+export class LevelEnd implements IGameobject, IEndConditionsMetEventListener, IDisposable {
 
     private sprite: Sprite;
     private batch: SpriteBatch;
@@ -23,34 +27,37 @@ export class LevelEnd implements ICollider, IDisposable {
     private size: vec3 = vec3.fromValues(2, 1, 0);
     private interacted: boolean = false;
 
-    public get IsEnabled(): boolean {
-        return this.enabled;
-    }
-
-    public set IsEnabled(enabled: boolean) {
-        this.enabled = enabled;
-        this.shader.SetFloatUniform('alpha', enabled ? 1.0 : LevelEnd.transparentValue);
-    }
-
     private constructor(private position: vec3, private shader: Shader, private endReachedEffect: SoundEffect, texture: Texture,
-        private interactCallback: () => void
+        private interactCallback: () => void, private level: Level
     ) {
-
         this.sprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
         this.batch = new SpriteBatch(this.shader, [this.sprite], texture);
         this.shader.SetFloatUniform('alpha', LevelEnd.transparentValue);
+    }
+
+    public OnEndConditionsMet(): void {
+        this.enabled = true;
+        this.shader.SetFloatUniform('alpha', this.enabled ? 1.0 : LevelEnd.transparentValue);
+    }
+
+    public get EndCondition(): boolean {
+        return false;
+    }
+
+    public CollideWithAttack(attack: IProjectile): void {
+        // NO-OP
     }
 
     public get BoundingBox(): BoundingBox {
         return new BoundingBox(this.position, vec2.fromValues(this.size[0], this.size[1]));
     }
 
-    public static async Create(position: vec3, interactCallback: () => void): Promise<LevelEnd> {
+    public static async Create(position: vec3, interactCallback: () => void, level: Level): Promise<LevelEnd> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Transparent.frag');
         const endReachedEffect = await SoundEffectPool.GetInstance().GetAudio('audio/ding.wav', false);
         const texture = await TexturePool.GetInstance().GetTexture('textures/exit.png');
 
-        return new LevelEnd(position, shader, endReachedEffect, texture, interactCallback);
+        return new LevelEnd(position, shader, endReachedEffect, texture, interactCallback, level);
     }
 
     // TODO: All these drawable objects need a common interface or a base class with all of the drawing/Update functionality
@@ -60,7 +67,7 @@ export class LevelEnd implements ICollider, IDisposable {
         mat4.scale(this.batch.ModelMatrix, this.batch.ModelMatrix, this.size)
     }
 
-    public Update(delta: number): void {
+    public async Update(delta: number): Promise<void> {
         if (this.interacted) {
             this.interactCallback();
         }
@@ -70,10 +77,17 @@ export class LevelEnd implements ICollider, IDisposable {
         return boundingBox.IsCollidingWith(this.BoundingBox);
     }
 
-    // TODO: Interface for interactable objects / Component system for interactable objects
-    public Interact(hero: Hero): void {
-        if (this.enabled) {
-            this.endReachedEffect.Play(1, 1, () => this.interacted = true);
+    public Visit(hero: Hero): void {
+        if (this.enabled && !this.interacted) {
+            this.level.updateDisabled = true; // pause level updates
+            this.endReachedEffect.Play(1, 1, () => {
+                /** Wait for the soundeffect to play then restart level update loop.
+                * This in turn will result in the calling of the @see Update() method,
+                * which will notify the game object that the level change can occur
+                */
+                this.interacted = true;
+                this.level.updateDisabled = false;
+            });
         }
     }
 

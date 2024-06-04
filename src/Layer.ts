@@ -60,7 +60,7 @@ export class Layer implements ICollider, IDisposable {
         const bbMinX = boundingBox.position[0];
         const bbMaxX = boundingBox.position[0] + boundingBox.size[0];
 
-        const inside = bbMinX > minX && bbMaxX < maxX;
+        const inside = bbMinX >= minX && bbMaxX <= maxX;
         return !inside;
     }
 

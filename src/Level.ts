@@ -59,6 +59,7 @@ type LevelEntity = {
     nextLevel: string
 }
 
+// TODO: Multi layer support: other than layer[0] as the MainLayer
 // TODO: parallax scrolling
 export class Level implements IDisposable {
     private Background: SpriteBatch;
@@ -73,7 +74,7 @@ export class Level implements IDisposable {
     private nextLevelEventListeners: INextLevelEvent[] = [];
     private endConditionsMetEventListeners: IEndConditionsMetEventListener[] = [];
 
-    private constructor(private layers: Layer[], bgShader: Shader, bgTexture: Texture, private music: SoundEffect, private levelDesctiptor: LevelEntity,
+    private constructor(private layers: Layer[], bgShader: Shader, bgTexture: Texture, private music: SoundEffect, private levelDescriptor: LevelEntity,
         private levelEndOpenSoundEffect: SoundEffect, private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler
     ) {
         this.Background = new SpriteBatch(bgShader, [new Background()], bgTexture);
@@ -160,11 +161,11 @@ export class Level implements IDisposable {
     }
 
     public get MainLayer(): Layer {
-        return this.layers[0];
+        return this.layers[0]; // TODO: make this configurable by the loaded level
     }
 
     public PlayMusic(volume: number): void {
-        // this.music.Play(1, volume, null, true);
+        this.music.Play(1, volume, null, true);
     }
 
     public StopMusic(): void {
@@ -222,7 +223,7 @@ export class Level implements IDisposable {
 
     private async InitHero(): Promise<void> {
         this.hero = await Hero.Create(
-            vec3.fromValues(this.levelDesctiptor.start.xPos, this.levelDesctiptor.start.yPos - 1.91, 1), // shift heroes spawn position by the height of its bounding box
+            vec3.fromValues(this.levelDescriptor.start.xPos - 0.9, this.levelDescriptor.start.yPos - 1.91, 1), // shift heroes spawn position by the height of its bounding box
             vec2.fromValues(3, 3),
             this.MainLayer,
             async () => await this.RestartLevel(),
@@ -283,12 +284,12 @@ export class Level implements IDisposable {
     }
 
     private async InitGameObjects(): Promise<void> {
-        const objects = await Promise.all(this.levelDesctiptor.gameObjects.map(async (o) => await this.CreateGameObject(o)));
+        const objects = await Promise.all(this.levelDescriptor.gameObjects.map(async (o) => await this.CreateGameObject(o)));
         this.gameObjects.push(...objects);
 
-        const levelEnd = await LevelEnd.Create(vec3.fromValues(this.levelDesctiptor.levelEnd.xPos, this.levelDesctiptor.levelEnd.yPos, 0),
+        const levelEnd = await LevelEnd.Create(vec3.fromValues(this.levelDescriptor.levelEnd.xPos - 1, this.levelDescriptor.levelEnd.yPos, 0),
             async () => {
-                this.nextLevelEventListeners.forEach(l => l.OnNextLevelEvent(this.levelDesctiptor.nextLevel));
+                this.nextLevelEventListeners.forEach(l => l.OnNextLevelEvent(this.levelDescriptor.nextLevel));
             }, this
         );
         this.SubscribeToEndConditionsMetEvent(levelEnd);

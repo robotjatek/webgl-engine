@@ -20,7 +20,7 @@ export class Camera {
      */
     public LookAtPosition(position: vec3, layer: Layer): void {
         position[0] = this.Clamp(position[0], layer.MinX + Environment.HorizontalTiles / 2, layer.MaxX - Environment.HorizontalTiles / 2);
-        position[1] = this.Clamp(position[1], layer.MinY + Environment.VerticalTiles / 2, layer.MaxY - Environment.VerticalTiles / 2);
+        position[1] = Math.min(position[1], layer.MinY + Environment.VerticalTiles / 2);
 
         mat4.translate(
             this.viewMatrix,

@@ -56,10 +56,10 @@ type LevelEntity = {
     gameObjects: GameObjectEntity[],
     levelEnd: LevelEndEntity,
     start: StartEntity,
-    nextLevel: string
+    nextLevel: string,
+    defaultLayer: number
 }
 
-// TODO: Multi layer support: other than layer[0] as the MainLayer
 // TODO: parallax scrolling
 export class Level implements IDisposable {
     private Background: SpriteBatch;
@@ -74,7 +74,7 @@ export class Level implements IDisposable {
     private nextLevelEventListeners: INextLevelEvent[] = [];
     private endConditionsMetEventListeners: IEndConditionsMetEventListener[] = [];
 
-    private constructor(private layers: Layer[], bgShader: Shader, bgTexture: Texture, private music: SoundEffect, private levelDescriptor: LevelEntity,
+    private constructor(private layers: Layer[], private defaultLayer: number, bgShader: Shader, bgTexture: Texture, private music: SoundEffect, private levelDescriptor: LevelEntity,
         private levelEndOpenSoundEffect: SoundEffect, private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler
     ) {
         this.Background = new SpriteBatch(bgShader, [new Background()], bgTexture);
@@ -101,6 +101,7 @@ export class Level implements IDisposable {
         const levelEndOpenSoundEffect = await SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);
 
         return new Level(loadedLayers,
+            levelDescriptor.defaultLayer,
             bgShader,
             bgTexture,
             music,
@@ -116,13 +117,14 @@ export class Level implements IDisposable {
 
     public Draw(projectionMatrix: mat4, viewMatrix: mat4): void {
         this.Background.Draw(projectionMatrix, this.BackgroundViewMatrix);
-        this.layers.forEach((layer) => {
+        this.layers.forEach((layer, i) => {
             layer.Draw(projectionMatrix, viewMatrix);
+            if (i === this.defaultLayer) {
+                this.gameObjects.forEach(h => h.Draw(projectionMatrix, viewMatrix));
+                this.attack?.Draw(projectionMatrix, viewMatrix);
+                this.hero.Draw(projectionMatrix, viewMatrix);
+            }
         });
-
-        this.gameObjects.forEach(h => h.Draw(projectionMatrix, viewMatrix));
-        this.attack?.Draw(projectionMatrix, viewMatrix);
-        this.hero.Draw(projectionMatrix, viewMatrix);
     }
 
     public async Update(delta: number): Promise<void> {
@@ -161,7 +163,7 @@ export class Level implements IDisposable {
     }
 
     public get MainLayer(): Layer {
-        return this.layers[0]; // TODO: make this configurable by the loaded level
+        return this.layers[this.defaultLayer];
     }
 
     public PlayMusic(volume: number): void {
@@ -176,7 +178,7 @@ export class Level implements IDisposable {
         this.music.SetVolume(volume);
     }
 
-    private CheckForEndCondition(): void{
+    private CheckForEndCondition(): void {
         const numberOfEndConditions = this.gameObjects.filter(p => p.EndCondition).length;
         if (numberOfEndConditions === 0 && !this.levelEndSoundPlayed) {
             this.levelEndOpenSoundEffect.Play();

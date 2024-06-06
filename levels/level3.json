@@ -1,0 +1,19 @@
+{
+  "background": "textures/bg.jpg",
+  "music": "audio/level.mp3",
+  "layers": [
+    {
+      "tiles": []
+    }
+  ],
+  "gameObjects": [],
+  "levelEnd": {
+    "xPos": 1,
+    "yPos": 9
+  },
+  "start": {
+    "xPos": 0,
+    "yPos": 9
+  },
+  "nextLevel": "levels/level1.json"
+}

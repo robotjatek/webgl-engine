@@ -1,3 +1,4 @@
+import { Lock } from './Lock';
 import { SoundEffect } from './SoundEffect';
 
 export class SoundEffectPool {
@@ -5,6 +6,7 @@ export class SoundEffectPool {
 
     private static instance: SoundEffectPool;
     private effects = new Map<string, SoundEffect>();
+    private lock = new Lock();
 
     public static GetInstance(): SoundEffectPool {
         if (!this.instance) {
@@ -15,13 +17,16 @@ export class SoundEffectPool {
 
     // TODO:key should be path + allowparallel pair
     public async GetAudio(path: string, allowParallel: boolean = true): Promise<SoundEffect> {
+        await this.lock.lock();
         const effect = this.effects.get(path);
         if (!effect) {
             const created = await SoundEffect.Create(path, allowParallel);
             this.effects.set(path, created);
+            await this.lock.release();
             return created;
         }
 
+        await this.lock.release();
         return effect;
     }
 

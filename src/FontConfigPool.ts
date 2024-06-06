@@ -1,3 +1,4 @@
+import { Lock } from './Lock';
 import { FontConfig } from './Textbox';
 
 export class FontConfigPool {
@@ -5,6 +6,7 @@ export class FontConfigPool {
 
     private static instance: FontConfigPool;
     private configs = new Map<string, FontConfig>();    
+    private lock = new Lock();
 
     public static GetInstance(): FontConfigPool {
         if (!this.instance) {
@@ -15,13 +17,16 @@ export class FontConfigPool {
     }
 
     public async GetFontConfig(fontPath): Promise<FontConfig> {
+        await this.lock.lock();
         const config = this.configs.get(fontPath);
         if (!config) {
             const created = await FontConfig.Create(fontPath);
             this.configs.set(fontPath, created);
+            await this.lock.release();
             return created;
         }
 
+        await this.lock.release();
         return config;
     }
 

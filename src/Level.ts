@@ -118,7 +118,16 @@ export class Level implements IDisposable {
     public Draw(projectionMatrix: mat4, viewMatrix: mat4): void {
         this.Background.Draw(projectionMatrix, this.BackgroundViewMatrix);
         this.layers.forEach((layer, i) => {
-            layer.Draw(projectionMatrix, viewMatrix);
+            const cameraTranslation = mat4.getTranslation(vec3.create(), viewMatrix);
+
+            // TODO: layer based translationfactor
+            const layerMatrix = mat4.clone(viewMatrix);
+            const xOffset = (i - this.defaultLayer) * cameraTranslation[0] * 0.05;
+            const yOffset = (i - this.defaultLayer) * cameraTranslation[1] * 0.1;
+            const parallaxOffset = vec3.fromValues(xOffset, yOffset, 0);
+            mat4.translate(layerMatrix, layerMatrix, parallaxOffset)
+
+            layer.Draw(projectionMatrix, layerMatrix);
             if (i === this.defaultLayer) {
                 this.gameObjects.forEach(h => h.Draw(projectionMatrix, viewMatrix));
                 this.attack?.Draw(projectionMatrix, viewMatrix);

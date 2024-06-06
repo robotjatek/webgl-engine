@@ -1,3 +1,4 @@
+import { Lock } from './Lock';
 import { Texture } from "./Texture";
 
 export class TexturePool {
@@ -12,14 +13,19 @@ export class TexturePool {
 
     private static Instance: TexturePool;
     private textures = new Map<string, Texture>();
+    private lock: Lock = new Lock();
 
     public async GetTexture(path: string): Promise<Texture> {
+        await this.lock.lock();
         const texture = this.textures.get(path);
         if (!texture) {
             const created = await Texture.Create(path);
             this.textures.set(path, created);
+            this.lock.release();
             return created;
         }
+        this.lock.release();
+
         return texture;
     }
 

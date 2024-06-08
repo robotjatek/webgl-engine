@@ -13,18 +13,28 @@ import { IDisposable } from './IDisposable';
 export class Layer implements ICollider, IDisposable {
 
     private constructor(private SpriteBatches: SpriteBatch[],
-        private Tiles: Tile[]
+        private Tiles: Tile[],
+        private parallaxOffsetFactorX: number,
+        private parallaxOffsetFactorY: number
     ) { }
 
-    public static async Create(tiles: Tile[]): Promise<Layer> {
+    public static async Create(tiles: Tile[], parallaxOffsetFactorX: number, parallaxOffsetFactorY: number): Promise<Layer> {
         const tileMap = Layer.CreateTileMap(tiles);
         const batches = await Layer.CreateSpriteBatches(tileMap);
-        const layer = new Layer(batches, tiles);
+        const layer = new Layer(batches, tiles, parallaxOffsetFactorX, parallaxOffsetFactorY);
         return layer;
     }
 
     public get BoundingBox(): BoundingBox {
         throw new Error('Method not implemented. Use IsColliding with instead');
+    }
+
+    public get ParallaxOffsetFactorX(): number {
+        return this.parallaxOffsetFactorX;
+    }
+ 
+    public get ParallaxOffsetFactorY(): number {
+        return this.parallaxOffsetFactorY;
     }
 
     public IsCollidingWith(boundingBox: BoundingBox, collideWithUndefined: boolean): boolean {

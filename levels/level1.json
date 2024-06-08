@@ -23949,7 +23949,9 @@
           "yPos": 179,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         }
-      ]
+      ],
+      "parallaxOffsetFactorX": 0.05,
+      "parallaxOffsetFactorY": 0.5
     },
     {
       "tiles": [
@@ -27088,7 +27090,9 @@
           "yPos": 179,
           "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         }
-      ]
+      ],
+      "parallaxOffsetFactorX": 0.05,
+      "parallaxOffsetFactorY": 0
     }
   ],
   "defaultLayer": 1,

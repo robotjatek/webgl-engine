@@ -569,7 +569,9 @@
           "yPos": 17,
           "texture": "textures/Platform_ByJanaChumi/PNG/48.png"
         }
-      ]
+      ],
+      "parallaxOffsetFactorX": 0.05,
+      "parallaxOffsetFactorY": 0.1
     },
     {
       "tiles": [
@@ -2493,7 +2495,9 @@
           "yPos": 17,
           "texture": "textures/Platform_ByJanaChumi/PNG/48.png"
         }
-      ]
+      ],
+      "parallaxOffsetFactorX": 0.05,
+      "parallaxOffsetFactorY": 0.1
     },
     {
       "tiles": [
@@ -3197,7 +3201,9 @@
           "yPos": 17,
           "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         }
-      ]
+      ],
+      "parallaxOffsetFactorX": 0.05,
+      "parallaxOffsetFactorY": 0.01
     },
     {
       "tiles": [
@@ -3366,7 +3372,9 @@
           "yPos": 17,
           "texture": "textures/Platform_ByJanaChumi/PNG/20.png"
         }
-      ]
+      ],
+      "parallaxOffsetFactorX": 0.05,
+      "parallaxOffsetFactorY": 0.1
     }
   ],
   "defaultLayer": 2,

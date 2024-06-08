@@ -30,7 +30,9 @@ type TileEntity = {
 }
 
 type LayerEntity = {
-    tiles: TileEntity[]
+    tiles: TileEntity[],
+    parallaxOffsetFactorX: number
+    parallaxOffsetFactorY: number
 }
 
 type GameObjectEntity = {
@@ -60,7 +62,6 @@ type LevelEntity = {
     defaultLayer: number
 }
 
-// TODO: parallax scrolling
 export class Level implements IDisposable {
     private Background: SpriteBatch;
     private BackgroundViewMatrix = mat4.create();
@@ -92,7 +93,7 @@ export class Level implements IDisposable {
                 return new Tile(tile.xPos, tile.yPos, texure)
             }));
 
-            return await Layer.Create(loadedTiles);
+            return await Layer.Create(loadedTiles, layer.parallaxOffsetFactorX, layer.parallaxOffsetFactorY);
         }));
 
         const bgShader: Shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
@@ -121,11 +122,11 @@ export class Level implements IDisposable {
         this.layers.forEach((layer, i) => {
             const cameraTranslation = mat4.getTranslation(vec3.create(), viewMatrix);
 
+            // TODO: static x.y offset per layer -- to move layer programmatically
             // TODO: initial x,y offset per layer
-            // TODO: layer based translationfactor
             const layerMatrix = mat4.clone(viewMatrix);
-            const xOffset = (i - this.defaultLayer) * cameraTranslation[0] * 0.05;
-            const yOffset = (i - this.defaultLayer) * cameraTranslation[1] * 0.1;
+            const xOffset = (i - this.defaultLayer) * cameraTranslation[0] * layer.ParallaxOffsetFactorX;
+            const yOffset = (i - this.defaultLayer) * cameraTranslation[1] * layer.ParallaxOffsetFactorY;
             
             const parallaxOffset = vec3.fromValues(xOffset, yOffset, 0);
             mat4.translate(layerMatrix, layerMatrix, parallaxOffset)

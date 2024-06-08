@@ -38,7 +38,7 @@ export class Layer implements ICollider, IDisposable {
     }
 
     public get MaxX(): number {
-        return Math.max(...this.Tiles.map(t => t.PositionX), Environment.HorizontalTiles);
+        return Math.max(...this.Tiles.map(t => t.PositionX + 1), Environment.HorizontalTiles);
     }
 
     public get MinX(): number {
@@ -50,7 +50,7 @@ export class Layer implements ICollider, IDisposable {
     }
 
     public get MaxY(): number {
-        return Math.max(...this.Tiles.map(t => t.PositionY), Environment.VerticalTiles);
+        return Math.max(...this.Tiles.map(t => t.PositionY + 1), Environment.VerticalTiles);
     }
 
     public IsOutsideBoundary(boundingBox: BoundingBox): boolean {

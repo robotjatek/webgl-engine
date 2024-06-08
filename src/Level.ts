@@ -81,8 +81,9 @@ export class Level implements IDisposable {
     }
 
     public static async Create(levelName: string, keyHandler: KeyHandler, gamepadHandler: ControllerHandler): Promise<Level> {
-        const texturePool = TexturePool.GetInstance();
+        levelName = levelName + '?version=' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 
+        const texturePool = TexturePool.GetInstance();
         const levelJsonString = await (await fetch(levelName)).text();
         const levelDescriptor = JSON.parse(levelJsonString) as LevelEntity;
         const loadedLayers = await Promise.all(levelDescriptor.layers.map(async layer => {
@@ -120,10 +121,12 @@ export class Level implements IDisposable {
         this.layers.forEach((layer, i) => {
             const cameraTranslation = mat4.getTranslation(vec3.create(), viewMatrix);
 
+            // TODO: initial x,y offset per layer
             // TODO: layer based translationfactor
             const layerMatrix = mat4.clone(viewMatrix);
             const xOffset = (i - this.defaultLayer) * cameraTranslation[0] * 0.05;
             const yOffset = (i - this.defaultLayer) * cameraTranslation[1] * 0.1;
+            
             const parallaxOffset = vec3.fromValues(xOffset, yOffset, 0);
             mat4.translate(layerMatrix, layerMatrix, parallaxOffset)
 

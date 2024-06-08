@@ -2,6 +2,7 @@
     "background": "textures/bg.jpg",
     "music": "audio/level.mp3",
     "nextLevel": "levels/level2.json",
+    "defaultLayer": 0,
     "layers": [
         {
             "tiles": [

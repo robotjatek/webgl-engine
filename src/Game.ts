@@ -44,8 +44,6 @@ enum State {
   PAUSED = 'paused'
 }
 
-// TODO: level editor
-
 // TODO: resource tracker: keep track of 'alive' opengl and other resurces resources the number shouldnt go up
 // TODO: ui builder framework
 // TODO: flip sprite

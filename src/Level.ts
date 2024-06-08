@@ -32,13 +32,15 @@ type TileEntity = {
 type LayerEntity = {
     tiles: TileEntity[],
     parallaxOffsetFactorX: number
-    parallaxOffsetFactorY: number
+    parallaxOffsetFactorY: number,
+    layerOffsetX: number,
+    layerOffsetY: number
 }
 
 type GameObjectEntity = {
     type: string,
     xPos: number,
-    yPos: number,
+    yPos: number
 }
 
 type LevelEndEntity = {
@@ -93,7 +95,7 @@ export class Level implements IDisposable {
                 return new Tile(tile.xPos, tile.yPos, texure)
             }));
 
-            return await Layer.Create(loadedTiles, layer.parallaxOffsetFactorX, layer.parallaxOffsetFactorY);
+            return await Layer.Create(loadedTiles, layer.parallaxOffsetFactorX, layer.parallaxOffsetFactorY, layer.layerOffsetX, layer.layerOffsetY);
         }));
 
         const bgShader: Shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
@@ -122,11 +124,9 @@ export class Level implements IDisposable {
         this.layers.forEach((layer, i) => {
             const cameraTranslation = mat4.getTranslation(vec3.create(), viewMatrix);
 
-            // TODO: static x.y offset per layer -- to move layer programmatically
-            // TODO: initial x,y offset per layer
             const layerMatrix = mat4.clone(viewMatrix);
             const xOffset = (i - this.defaultLayer) * cameraTranslation[0] * layer.ParallaxOffsetFactorX;
-            const yOffset = (i - this.defaultLayer) * cameraTranslation[1] * layer.ParallaxOffsetFactorY;
+            const yOffset = ((i - this.defaultLayer) * cameraTranslation[1] * layer.ParallaxOffsetFactorY) + layer.LayerOffsetY;
             
             const parallaxOffset = vec3.fromValues(xOffset, yOffset, 0);
             mat4.translate(layerMatrix, layerMatrix, parallaxOffset)

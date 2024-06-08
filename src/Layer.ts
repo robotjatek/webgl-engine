@@ -15,13 +15,15 @@ export class Layer implements ICollider, IDisposable {
     private constructor(private SpriteBatches: SpriteBatch[],
         private Tiles: Tile[],
         private parallaxOffsetFactorX: number,
-        private parallaxOffsetFactorY: number
+        private parallaxOffsetFactorY: number,
+        private layerOffsetX: number,
+        private layerOffsetY: number
     ) { }
 
-    public static async Create(tiles: Tile[], parallaxOffsetFactorX: number, parallaxOffsetFactorY: number): Promise<Layer> {
+    public static async Create(tiles: Tile[], parallaxOffsetFactorX: number, parallaxOffsetFactorY: number, layerOffsetX: number, layerOffsetY: number): Promise<Layer> {
         const tileMap = Layer.CreateTileMap(tiles);
         const batches = await Layer.CreateSpriteBatches(tileMap);
-        const layer = new Layer(batches, tiles, parallaxOffsetFactorX, parallaxOffsetFactorY);
+        const layer = new Layer(batches, tiles, parallaxOffsetFactorX, parallaxOffsetFactorY, layerOffsetX, layerOffsetY);
         return layer;
     }
 
@@ -35,6 +37,14 @@ export class Layer implements ICollider, IDisposable {
  
     public get ParallaxOffsetFactorY(): number {
         return this.parallaxOffsetFactorY;
+    }
+
+    public get LayerOffsetX(): number {
+        return this.layerOffsetX;
+    }
+
+    public get LayerOffsetY(): number {
+        return this.layerOffsetY;
     }
 
     public IsCollidingWith(boundingBox: BoundingBox, collideWithUndefined: boolean): boolean {

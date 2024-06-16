@@ -16,7 +16,7 @@ export class TexturePool {
     private lock: Lock = new Lock();
 
     public async GetTexture(path: string): Promise<Texture> {
-        await this.lock.lock(path); // TODO: lock on path, so other files still can be loaded async
+        await this.lock.lock(path);
         const texture = this.textures.get(path);
         if (!texture) {
             const created = await Texture.Create(path);

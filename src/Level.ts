@@ -23,7 +23,7 @@ import { HealthPickup } from './Pickups/HealthPickup';
 import { INextLevelEvent, IRestartListener } from './Game';
 import { IDisposable } from './IDisposable';
 import { Camera } from './Camera';
-import { EscapeEvent, FreeCameraEvent, ILevelEvent } from './EscapeEvent';
+import { EscapeEvent, FreeCameraEvent, ILevelEvent, LevelEventTrigger } from './EscapeEvent';
 
 type TileEntity = {
     xPos: number,
@@ -69,13 +69,18 @@ type LevelEntity = {
 export class Level implements IDisposable {
     private camera = new Camera(vec3.create());
 
-    // TODO: map of events
-    // TODO: create a level with the default freecamera event
     // TODO: level.json contains parametrized desciptors for other events (+ editor support)
     // TODO: new gameobject type: event trigger => escape event trigger (+ editor support)
-    private escapeEvent: EscapeEvent;
-    private freeCameraEvent: FreeCameraEvent;
+
+    private events: Map<string, ILevelEvent> = new Map<string, ILevelEvent>();
     private activeEvent: ILevelEvent;
+
+    public ChangeEvent(eventName: string): void {
+        const event = this.events.get(eventName);
+        if (event) {
+            this.activeEvent = event;
+        }
+    }
 
     private Background: SpriteBatch;
     private BackgroundViewMatrix = mat4.create();
@@ -183,12 +188,6 @@ export class Level implements IDisposable {
                 }
             });
 
-            // TODO: event trigger with parameters (+ editor support)
-            // Trigger escape event // TODO: this will be a game object
-            if ((vec3.distance(this.Hero.CenterPosition, vec3.fromValues(10, 86, 0)) < 2) && this.activeEvent !== this.escapeEvent) {
-                this.activeEvent = this.escapeEvent;
-            }
-
             this.activeEvent.Update(delta);
             this.CheckForEndCondition();
         }
@@ -237,10 +236,10 @@ export class Level implements IDisposable {
 
         // TODO: event layer as parameter
         const eventLayer = this.layers[this.layers.length - 1];
-        this.escapeEvent = await EscapeEvent.Create(this.camera, eventLayer, this.MainLayer, this.hero, this.levelDescriptor.levelEnd.yPos + 2, this.levelDescriptor.levelEnd.yPos);
-
-        this.freeCameraEvent = new FreeCameraEvent(this.camera, this.MainLayer, this.hero);
-        this.activeEvent = this.freeCameraEvent;
+        this.events.set(EscapeEvent.EVENT_KEY,
+            await EscapeEvent.Create(this.camera, eventLayer, this.MainLayer, this.hero, this.levelDescriptor.levelEnd.yPos + 2, this.levelDescriptor.levelEnd.yPos));
+        this.events.set(FreeCameraEvent.EVENT_KEY, new FreeCameraEvent(this.camera, this.MainLayer, this.hero));
+        this.activeEvent = this.events.get(FreeCameraEvent.EVENT_KEY);
     }
 
     public async InitLevel(): Promise<void> {
@@ -253,9 +252,10 @@ export class Level implements IDisposable {
 
         // TODO: event layer as parameter
         const eventLayer = this.layers[this.layers.length - 1];
-        this.escapeEvent = await EscapeEvent.Create(this.camera, eventLayer, this.MainLayer, this.hero, this.levelDescriptor.levelEnd.yPos + 2, this.levelDescriptor.levelEnd.yPos);
-        this.freeCameraEvent = new FreeCameraEvent(this.camera, this.MainLayer, this.hero);
-        this.activeEvent = this.freeCameraEvent;
+        this.events.set(EscapeEvent.EVENT_KEY,
+            await EscapeEvent.Create(this.camera, eventLayer, this.MainLayer, this.hero, this.levelDescriptor.levelEnd.yPos + 2, this.levelDescriptor.levelEnd.yPos));
+        this.events.set(FreeCameraEvent.EVENT_KEY,new FreeCameraEvent(this.camera, this.MainLayer, this.hero));
+        this.activeEvent = this.events.get(FreeCameraEvent.EVENT_KEY);
         this.updateDisabled = false;
         this.levelEndSoundPlayed = false;
     }
@@ -285,6 +285,7 @@ export class Level implements IDisposable {
         );
     }
 
+    // TODO: event trigger
     private async CreateGameObject(descriptor: GameObjectEntity): Promise<IGameobject> {
         switch (descriptor.type) {
             case 'coin':
@@ -337,6 +338,8 @@ export class Level implements IDisposable {
     private async InitGameObjects(): Promise<void> {
         const objects = await Promise.all(this.levelDescriptor.gameObjects.map(async (o) => await this.CreateGameObject(o)));
         this.gameObjects.push(...objects);
+        const trigger = new LevelEventTrigger(this, vec3.fromValues(10, 86, 0), EscapeEvent.EVENT_KEY);
+        //this.gameObjects.push(trigger);
 
         const levelEnd = await LevelEnd.Create(vec3.fromValues(this.levelDescriptor.levelEnd.xPos - 1, this.levelDescriptor.levelEnd.yPos, 0),
             async () => {

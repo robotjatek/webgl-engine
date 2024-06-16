@@ -1,15 +1,57 @@
-import { vec3 } from "gl-matrix";
+import { IGameobject } from 'src/IGameobject';
+import { mat4, vec2, vec3 } from "gl-matrix";
 import { Layer } from "./Layer";
 import { Hero } from './Hero';
 import { Camera } from './Camera';
 import { SoundEffect } from './SoundEffect';
 import { SoundEffectPool } from './SoundEffectPool';
+import { Level } from './Level';
+import { BoundingBox } from './BoundingBox';
+import { IProjectile } from './Projectiles/IProjectile';
+
+export class LevelEventTrigger implements IGameobject {
+    constructor(private level: Level, private position: vec3, private eventName: string) {
+    }
+
+    public Draw(proj: mat4, view: mat4): void {
+        // Invisible
+    }
+    
+    public Update(delta: number): Promise<void> {
+        return;
+    }
+
+    public Visit(hero: Hero): void {
+        this.level.ChangeEvent(this.eventName);
+    }
+
+    public get EndCondition(): boolean {
+        return false;
+    }
+
+    public CollideWithAttack(attack: IProjectile): void {
+        // invisible & invincible
+    }
+
+    public get BoundingBox(): BoundingBox {
+        return new BoundingBox(this.position, vec2.fromValues(1, 1));
+    }
+
+    public IsCollidingWith(boundingBox: BoundingBox, _: boolean): boolean {
+        return boundingBox.IsCollidingWith(this.BoundingBox);
+    }
+
+    public Dispose(): void {
+        // Nothing to dispose ATM
+    }
+}
 
 export interface ILevelEvent {
     Update(delta: number): void;
 }
 
 export class FreeCameraEvent implements ILevelEvent {
+    public static readonly EVENT_KEY = 'free_camera_event'
     constructor(private camera: Camera,
         private mainLayer: Layer,
         private hero: Hero
@@ -23,6 +65,7 @@ export class FreeCameraEvent implements ILevelEvent {
 // TODO: animate lava
 // TODO: make level wider + confine camera inside so camera shake wont reveal missing tiles on the borders
 export class EscapeEvent implements ILevelEvent {
+    public static readonly EVENT_KEY = 'escape_event'
     private eventCameraYPos: number;
     private elapsedTime: number = 0;
     private state: number = 0;

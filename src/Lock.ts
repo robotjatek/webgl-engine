@@ -1,25 +1,28 @@
 export class Lock {
-    private locked: boolean = false;
-    private queue: (() => void)[] = [];
+    // TODO: maybe there is a way to merge these two maps
+    private waitMap = new Map<string, (() => void)[]>();
+    private lockMap = new Map<string, boolean>();
 
-    public async lock(): Promise<void> {
+    public async lock(key: string): Promise<void> {
         return new Promise((resolve) => {
-            if (!this.locked) {
-                this.locked = true;
+            if (!this.lockMap.has(key) || !this.lockMap.get(key)) {
+                this.lockMap.set(key, true)
+                this.waitMap.set(key, []);
                 resolve();
             } else {
-                this.queue.push(resolve);
+                const waitQueue = this.waitMap.get(key)
+                waitQueue.push(resolve);
             }
         });
     }
 
-    public async release(): Promise<void> {
-        if (this.queue.length === 0 && this.locked) {
-            this.locked = false;
+    public async release(key: string): Promise<void> {
+        if (this.lockMap.get(key) && this.waitMap.get(key).length === 0) {
+            this.lockMap.set(key, false)
             return;
         }
 
-        const resolver = this.queue.shift();
+        const resolver = this.waitMap.get(key).shift();
         return new Promise((res) => {
             resolver();
             res();

@@ -1,5 +1,4 @@
 import { mat4, vec2, vec3 } from 'gl-matrix';
-import { Camera } from './Camera';
 import { Environment } from './Environment';
 import { KeyHandler } from './KeyHandler';
 import { Level } from './Level';
@@ -63,7 +62,6 @@ export class Game implements IStartEventListener,
   private start: number;
   private projectionMatrix = mat4.create();
   private textProjMat: mat4;
-  private camera = new Camera(vec3.create());
   private state: State = State.START_SCREEN;
   private level: Level = null;
 
@@ -154,7 +152,7 @@ export class Game implements IStartEventListener,
       await this.level.InitLevel();
       this.state = State.IN_GAME;
       this.elapsedTimeSinceStateChange = 0;
-      this.level.PlayMusic(0.4);
+      this.level.PlayMusic(0.6);
     }
   }
 
@@ -192,7 +190,7 @@ export class Game implements IStartEventListener,
     if (this.state === State.START_SCREEN) {
       this.mainScreen.Draw(this.projectionMatrix);
     } else {
-      this.level.Draw(this.projectionMatrix, this.camera.ViewMatrix);
+      this.level.Draw(this.projectionMatrix);
 
       const textColor = (() => {
         if (this.level.Hero.Health < 35) {
@@ -243,8 +241,6 @@ export class Game implements IStartEventListener,
         this.elapsedTimeSinceStateChange = 0;
         this.keyWasReleased = false;
       }
-
-      this.camera.LookAtPosition(vec3.clone(this.level.Hero.Position), this.level.MainLayer);
     } else if (this.state === State.PAUSED) {
       this.level.SetMusicVolume(0.15);
       this.pauseScreen.Update(elapsedTime);

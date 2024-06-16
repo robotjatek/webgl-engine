@@ -4,6 +4,7 @@ import { Layer } from './Layer';
 
 export class Camera {
     private viewMatrix: mat4;
+    private shake = false;
 
     public constructor(private position: vec3) {
         this.viewMatrix = mat4.create();
@@ -13,14 +14,25 @@ export class Camera {
         return this.viewMatrix;
     }
 
+    public get Shake(): boolean {
+        return this.shake;
+    }
+
+    public set Shake(value: boolean) {
+        this.shake = value;
+    }
+
     /**
      * The camera centers its view on the given position with its viewport confined in the boundaries of the given layer
      * @param position The position to look at
      * @param layer The layer where the camera's viewport is confined in
      */
     public LookAtPosition(position: vec3, layer: Layer): void {
-        position[0] = this.Clamp(position[0], layer.MinX + Environment.HorizontalTiles / 2, layer.MaxX - Environment.HorizontalTiles / 2);
-        position[1] = this.Clamp(position[1], layer.MinY - Environment.VerticalTiles / 2, layer.MaxY - Environment.VerticalTiles / 2);
+        const xShake = this.shake ? Math.random() * (0.2 - 0.1) + 0.1 : 0;
+        const yShake = this.shake ? Math.random() * (0.2 - 0.1) + 0.1 : 0;
+
+        position[0] = this.Clamp(position[0], layer.MinX + Environment.HorizontalTiles / 2, layer.MaxX - Environment.HorizontalTiles / 2) + xShake;
+        position[1] = this.Clamp(position[1], layer.MinY - Environment.VerticalTiles / 2, layer.MaxY - Environment.VerticalTiles / 2) + yShake;
 
         mat4.translate(
             this.viewMatrix,

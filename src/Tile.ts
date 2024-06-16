@@ -3,11 +3,8 @@ import { Texture } from "./Texture";
 import { BoundingBox } from './BoundingBox';
 
 export class Tile {
-    private positionX: number; // TODO: position vector instead of primitives
-    private positionY: number;
-    private texture: Texture;
-
-    public constructor(positionX: number, positionY: number, texture: Texture) {
+    // TODO: position vector instead of primitives
+    public constructor(private positionX: number, private positionY: number, private texture: Texture) {
         this.positionX = positionX;
         this.positionY = positionY;
         this.texture = texture;
@@ -25,23 +22,23 @@ export class Tile {
         return this.positionY;
     }
 
-    public isPointInside(point: vec3): boolean {
+    public IsPointInside(point: vec3, offsetX: number, offsetY: number): boolean {
         // A tile is always 1x1
-        const minX = this.positionX;
-        const maxX = this.positionX + 1;
-        const minY = this.positionY;
-        const maxY = this.positionY + 1;
+        const minX = this.positionX + offsetX;
+        const maxX = this.positionX + offsetX + 1;
+        const minY = this.positionY + offsetY;
+        const maxY = this.positionY + offsetY +1;
 
         return point[0] >= minX && point[0] <= maxX &&
             point[1] >= minY && point[1] <= maxY;
     }
 
-    public isCollindingWith(boundingBox: BoundingBox) {
+    public IsCollidingWith(boundingBox: BoundingBox, offsetX: number, offsetY: number) {
         // A tile is always 1x1
-        const minX = this.positionX;
-        const maxX = this.positionX + 1;
-        const minY = this.positionY;
-        const maxY = this.positionY + 1;
+        const minX = this.positionX + offsetX;
+        const maxX = this.positionX + offsetX + 1;
+        const minY = this.positionY + offsetY;
+        const maxY = this.positionY + offsetY + 1;
 
         const bbMinX = boundingBox.position[0];
         const bbMaxX = boundingBox.position[0] + boundingBox.size[0];

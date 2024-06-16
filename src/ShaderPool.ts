@@ -15,16 +15,16 @@ export class ShaderPool {
     }
 
     public async LoadShaderSource(path: string): Promise<string> {
-        await this.lock.lock();
+        await this.lock.lock(path);
         const source = this.shaderSources.get(path);
         if (!source) {
             const loaded = await this.GetSourceFromUrl(path)
             this.shaderSources.set(path, loaded);
-            await this.lock.release();
+            await this.lock.release(path);
             return loaded;
         }
 
-        await this.lock.release();
+        await this.lock.release(path);
         return source;
     }
 

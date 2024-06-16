@@ -16568,7 +16568,53 @@
     }
   ],
   "defaultLayer": 1,
-  "gameObjects": [],
+  "gameObjects": [
+    {
+      "type": "escape_trigger",
+      "xPos": 8,
+      "yPos": 79
+    },
+    {
+      "type": "escape_trigger",
+      "xPos": 8,
+      "yPos": 80
+    },
+    {
+      "type": "escape_trigger",
+      "xPos": 8,
+      "yPos": 81
+    },
+    {
+      "type": "escape_trigger",
+      "xPos": 8,
+      "yPos": 82
+    },
+    {
+      "type": "escape_trigger",
+      "xPos": 8,
+      "yPos": 83
+    },
+    {
+      "type": "escape_trigger",
+      "xPos": 8,
+      "yPos": 84
+    },
+    {
+      "type": "escape_trigger",
+      "xPos": 8,
+      "yPos": 85
+    },
+    {
+      "type": "escape_trigger",
+      "xPos": 8,
+      "yPos": 86
+    },
+    {
+      "type": "escape_trigger",
+      "xPos": 8,
+      "yPos": 87
+    }
+  ],
   "levelEnd": {
     "xPos": 28,
     "yPos": 4

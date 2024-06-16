@@ -571,7 +571,9 @@
         }
       ],
       "parallaxOffsetFactorX": 0.05,
-      "parallaxOffsetFactorY": 0.1
+      "parallaxOffsetFactorY": 0.1,
+      "layerOffsetX": 0,
+      "layerOffsetY": 0
     },
     {
       "tiles": [
@@ -2497,7 +2499,9 @@
         }
       ],
       "parallaxOffsetFactorX": 0.05,
-      "parallaxOffsetFactorY": 0.1
+      "parallaxOffsetFactorY": 0.1,
+      "layerOffsetX": 0,
+      "layerOffsetY": 0
     },
     {
       "tiles": [
@@ -3203,7 +3207,9 @@
         }
       ],
       "parallaxOffsetFactorX": 0.05,
-      "parallaxOffsetFactorY": 0.01
+      "parallaxOffsetFactorY": 0.01,
+      "layerOffsetX": 0,
+      "layerOffsetY": 0
     },
     {
       "tiles": [
@@ -3374,7 +3380,9 @@
         }
       ],
       "parallaxOffsetFactorX": 0.05,
-      "parallaxOffsetFactorY": 0.1
+      "parallaxOffsetFactorY": 0.1,
+      "layerOffsetX": 0,
+      "layerOffsetY": 0
     }
   ],
   "defaultLayer": 2,
@@ -3488,5 +3496,5 @@
     "xPos": 1,
     "yPos": 15
   },
-  "nextLevel": "levels/level1.json"
+  "nextLevel": "levels/escape.json"
 }

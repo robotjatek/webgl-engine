@@ -144,7 +144,7 @@ export class Level implements IDisposable {
             const layerMatrix = mat4.clone(this.camera.ViewMatrix);
             const xOffset = (i - this.defaultLayer) * cameraTranslation[0] * layer.ParallaxOffsetFactorX;
             const yOffset = ((i - this.defaultLayer) * cameraTranslation[1] * layer.ParallaxOffsetFactorY) + layer.LayerOffsetY;
-            
+
             const parallaxOffset = vec3.fromValues(xOffset, yOffset, 0);
             mat4.translate(layerMatrix, layerMatrix, parallaxOffset)
 
@@ -254,7 +254,7 @@ export class Level implements IDisposable {
         const eventLayer = this.layers[this.layers.length - 1];
         this.events.set(EscapeEvent.EVENT_KEY,
             await EscapeEvent.Create(this.camera, eventLayer, this.MainLayer, this.hero, this.levelDescriptor.levelEnd.yPos + 2, this.levelDescriptor.levelEnd.yPos));
-        this.events.set(FreeCameraEvent.EVENT_KEY,new FreeCameraEvent(this.camera, this.MainLayer, this.hero));
+        this.events.set(FreeCameraEvent.EVENT_KEY, new FreeCameraEvent(this.camera, this.MainLayer, this.hero));
         this.activeEvent = this.events.get(FreeCameraEvent.EVENT_KEY);
         this.updateDisabled = false;
         this.levelEndSoundPlayed = false;
@@ -319,6 +319,8 @@ export class Level implements IDisposable {
                         projectile.OnHitListeners.push(s => this.RemoveGameObject(s)); // TODO: despawning hero attack should be like this
                     }
                 );
+            case 'escape_trigger':
+                return new LevelEventTrigger(this, vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), EscapeEvent.EVENT_KEY);
             default:
                 throw new Error('Unknown object type');
         }
@@ -338,8 +340,6 @@ export class Level implements IDisposable {
     private async InitGameObjects(): Promise<void> {
         const objects = await Promise.all(this.levelDescriptor.gameObjects.map(async (o) => await this.CreateGameObject(o)));
         this.gameObjects.push(...objects);
-        const trigger = new LevelEventTrigger(this, vec3.fromValues(10, 86, 0), EscapeEvent.EVENT_KEY);
-        //this.gameObjects.push(trigger);
 
         const levelEnd = await LevelEnd.Create(vec3.fromValues(this.levelDescriptor.levelEnd.xPos - 1, this.levelDescriptor.levelEnd.yPos, 0),
             async () => {

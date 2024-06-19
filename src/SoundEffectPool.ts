@@ -32,7 +32,6 @@ export class SoundEffectPool {
 
     public async Preload(): Promise<void> {
         await Promise.all([
-            this.GetAudio('audio/level.mp3', false),
             this.GetAudio('audio/fireball_spawn.mp3'),
             this.GetAudio('audio/sword.mp3'),
             this.GetAudio('audio/enemy_damage.wav'),

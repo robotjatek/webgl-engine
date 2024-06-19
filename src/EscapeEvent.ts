@@ -1,4 +1,3 @@
-import { IGameobject } from 'src/IGameobject';
 import { mat4, vec2, vec3 } from "gl-matrix";
 import { Layer } from "./Layer";
 import { Hero } from './Hero';
@@ -8,6 +7,8 @@ import { SoundEffectPool } from './SoundEffectPool';
 import { Level } from './Level';
 import { BoundingBox } from './BoundingBox';
 import { IProjectile } from './Projectiles/IProjectile';
+import { IGameobject } from './IGameobject';
+import { IDisposable } from './IDisposable';
 
 export class LevelEventTrigger implements IGameobject {
     constructor(private level: Level, private position: vec3, private eventName: string) {
@@ -46,8 +47,9 @@ export class LevelEventTrigger implements IGameobject {
     }
 }
 
-export interface ILevelEvent {
+export interface ILevelEvent extends IDisposable {
     Update(delta: number): void;
+    get EventKey(): string;
 }
 
 export class FreeCameraEvent implements ILevelEvent {
@@ -57,8 +59,15 @@ export class FreeCameraEvent implements ILevelEvent {
         private hero: Hero
     ) { }
 
+    public get EventKey(): string {
+        return FreeCameraEvent.EVENT_KEY;
+    }
+
     public Update(_: number): void {
         this.camera.LookAtPosition(vec3.clone(this.hero.Position), this.mainLayer);
+    }
+    public Dispose(): void {
+        // nothing to dispose
     }
 }
 
@@ -69,7 +78,6 @@ export class EscapeEvent implements ILevelEvent {
     private eventCameraYPos: number;
     private elapsedTime: number = 0;
     private state: number = 0;
-
     private started = false;
 
     private constructor(private camera: Camera,
@@ -77,7 +85,9 @@ export class EscapeEvent implements ILevelEvent {
         private mainLayer: Layer,
         private hero: Hero,
         private eventLayerStopPosition: number,
+        private eventLayerSpeed: number,
         private cameraStopPos: number,
+        private cameraSpeed: number,
         private shakeSound: SoundEffect,
         private explosionSound: SoundEffect,
         private music: SoundEffect
@@ -90,16 +100,23 @@ export class EscapeEvent implements ILevelEvent {
         this.music.Stop();
     }
 
+    public get EventKey(): string {
+        return EscapeEvent.EVENT_KEY;
+    }
+
     public static async Create(camera: Camera,
         eventLayer: Layer,
         mainLayer: Layer,
         hero: Hero,
         eventLayerStopPosition: number,
-        cameraStopPosition: number): Promise<EscapeEvent> {
+        eventLayerSpeed: number,
+        cameraStopPosition: number,
+        cameraSpeed: number,
+    ): Promise<EscapeEvent> {
         const shakeSound = await SoundEffectPool.GetInstance().GetAudio('audio/shake.wav', false);
         const music = await SoundEffectPool.GetInstance().GetAudio('audio/escape.mp3', false);
         const explosionSound = await SoundEffectPool.GetInstance().GetAudio('audio/explosion.mp3', false);
-        return new EscapeEvent(camera, eventLayer, mainLayer, hero, eventLayerStopPosition, cameraStopPosition, shakeSound, explosionSound, music);
+        return new EscapeEvent(camera, eventLayer, mainLayer, hero, eventLayerStopPosition, eventLayerSpeed, cameraStopPosition, cameraSpeed, shakeSound, explosionSound, music);
     }
 
     public Update(delta: number): void {
@@ -126,7 +143,7 @@ export class EscapeEvent implements ILevelEvent {
 
                 // max offset
                 if (this.eventLayer.MinY + this.eventLayer.LayerOffsetY > this.eventLayerStopPosition) {
-                    this.eventLayer.LayerOffsetY -= 0.0022 * delta;
+                    this.eventLayer.LayerOffsetY -= this.eventLayerSpeed * delta;
                 } else {
                     this.camera.Shake = false;
                 }
@@ -136,7 +153,7 @@ export class EscapeEvent implements ILevelEvent {
                 }
 
                 if (this.eventCameraYPos > this.cameraStopPos) {
-                    this.eventCameraYPos = (this.eventCameraYPos - (0.002 * delta));
+                    this.eventCameraYPos = (this.eventCameraYPos - (this.cameraSpeed * delta));
                 } else {
                     this.state++; // The event "ends" when the camera reaches its final position
                 }
@@ -145,5 +162,10 @@ export class EscapeEvent implements ILevelEvent {
 
         const vec = vec3.fromValues((this.eventLayer.MaxX - this.eventLayer.MinX) / 2, this.eventCameraYPos - 5, 0);
         this.camera.LookAtPosition(vec, this.mainLayer);
+    }
+
+    public Dispose(): void {
+        this.music.Stop();
+        this.shakeSound.Stop();
     }
 }

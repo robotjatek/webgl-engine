@@ -1,20 +1,17 @@
 export class SoundEffect {
-    private context: AudioContext = new AudioContext();
-    private buffer: AudioBuffer;
     private playing: boolean = false;
     private source: AudioBufferSourceNode;
     private gainNode: GainNode;
     private loop: boolean = false;
     
-    private constructor(blob: ArrayBuffer, private allowMultiple: boolean = true) {
-        this.context.decodeAudioData(blob, (data) => {
-            this.buffer = data;
-        });
+    private constructor(private buffer: AudioBuffer, private context: AudioContext, private allowMultiple: boolean = true, private path: string) {
     }
 
     public static async Create(path: string, allowMultiple: boolean = true): Promise<SoundEffect> {
-        const blob = await (await fetch(path)).arrayBuffer();
-        return new SoundEffect(blob, allowMultiple)
+        const blob = await ((await fetch(path)).arrayBuffer());
+        const context = new AudioContext();
+        const buffer = await context.decodeAudioData(blob);
+        return new SoundEffect(buffer, context, allowMultiple, path);
     }
 
     public Play(playbackRate: number = 1, volume: number = 1, onEndCallback: () => void = null, loop: boolean = false): void {
@@ -54,5 +51,9 @@ export class SoundEffect {
     public SetVolume(volume: number) {
         if (this.gainNode)
             this.gainNode.gain.value = volume;
+    }
+
+    public get Path(): string {
+        return this.path;
     }
 }

@@ -107,18 +107,22 @@ export class Game implements IStartEventListener,
     this.healthTextbox.Dispose();
     this.scoreTextbox.Dispose();
     this.pauseScreen.Dispose();
+    this.level.Dispose();
   }
 
   public async OnNextLevelEvent(levelName: string): Promise<void> {
     this.pauseScreen.ResetStates();
+    const oldLevel = this.level;
+    oldLevel.StopMusic();
+
     const nextLevel = await Level.Create(levelName, this.keyHandler, this.gamepadHandler);
     await nextLevel.InitLevel();
+    
+    this.level = nextLevel;
+    oldLevel.Dispose();
+
     nextLevel.SubscribeToNextLevelEvent(this);
     nextLevel.SubscribeToRestartEvent(this);
-
-    const oldLevel = this.level;
-    oldLevel.Dispose();
-    this.level = nextLevel;
   }
 
   public OnRestartEvent(): void {
@@ -152,7 +156,6 @@ export class Game implements IStartEventListener,
       await this.level.InitLevel();
       this.state = State.IN_GAME;
       this.elapsedTimeSinceStateChange = 0;
-      this.level.PlayMusic(0.6);
     }
   }
 

@@ -21,10 +21,10 @@ export class TexturePool {
         if (!texture) {
             const created = await Texture.Create(path);
             this.textures.set(path, created);
-            this.lock.release(path);
+            await this.lock.release(path);
             return created;
         }
-        this.lock.release(path);
+        await this.lock.release(path);
 
         return texture;
     }

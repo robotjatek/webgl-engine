@@ -398,12 +398,12 @@ export class Hero implements IDisposable {
   private MoveRight(amount: number, delta: number): void {
     if (this.state !== State.DEAD && this.state !== State.STOMP && this.state !== State.DASH) {
       this.state = State.WALK;
-      if (!this.invincible) {
+      //if (!this.invincible) {
         const nextPosition = vec3.fromValues(this.position[0] + amount * delta, this.position[1], this.position[2]);
         if (!this.checkCollision(nextPosition)) {
           this.position = nextPosition;
         }
-      }
+      //}
     }
   }
 
@@ -411,12 +411,12 @@ export class Hero implements IDisposable {
     if (this.state !== State.DEAD && this.state !== State.STOMP && this.state !== State.DASH) {
       this.state = State.WALK;
 
-      if (!this.invincible) {
+      //if (!this.invincible) {
         const nextPosition = vec3.fromValues(this.position[0] - amount * delta, this.position[1], this.position[2]);
         if (!this.checkCollision(nextPosition)) {
           this.position = nextPosition;
         }
-      }
+   //   }
     }
   }
 
@@ -539,6 +539,12 @@ export class Hero implements IDisposable {
     }
   }
 
+  public DamageWithInvincibilityConsidered(pushbackForce: vec3): void {
+    if (!this.invincible) {
+      this.Damage(pushbackForce);
+    }
+  }
+
   private Damage(pushbackForce: vec3): void {
     // TODO: This is almost a 1:1 copy from the Collide method
 
@@ -547,7 +553,7 @@ export class Hero implements IDisposable {
       this.invincible = true;
       this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
       this.damageSound.Play();
-      this.Health -= 34;
+      this.Health -= 20;
 
       vec3.set(this.velocity, pushbackForce[0], pushbackForce[1], 0);
     }

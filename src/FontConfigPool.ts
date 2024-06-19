@@ -17,16 +17,16 @@ export class FontConfigPool {
     }
 
     public async GetFontConfig(fontPath): Promise<FontConfig> {
-        await this.lock.lock();
+        await this.lock.lock(fontPath);
         const config = this.configs.get(fontPath);
         if (!config) {
             const created = await FontConfig.Create(fontPath);
             this.configs.set(fontPath, created);
-            await this.lock.release();
+            await this.lock.release(fontPath);
             return created;
         }
 
-        await this.lock.release();
+        await this.lock.release(fontPath);
         return config;
     }
 

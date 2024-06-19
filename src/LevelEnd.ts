@@ -68,9 +68,6 @@ export class LevelEnd implements IGameobject, IEndConditionsMetEventListener, ID
     }
 
     public async Update(delta: number): Promise<void> {
-        if (this.interacted) {
-            this.interactCallback();
-        }
     }
 
     public IsCollidingWith(boundingBox: BoundingBox): boolean {
@@ -81,12 +78,12 @@ export class LevelEnd implements IGameobject, IEndConditionsMetEventListener, ID
         if (this.enabled && !this.interacted) {
             this.level.updateDisabled = true; // pause level updates
             this.endReachedEffect.Play(1, 1, () => {
-                /** Wait for the soundeffect to play then restart level update loop.
-                * This in turn will result in the calling of the @see Update() method,
-                * which will notify the game object that the level change can occur
+                /** 
+                 * Wait for the soundeffect to play then restart level update loop.
                 */
                 this.interacted = true;
                 this.level.updateDisabled = false;
+                this.interactCallback();
             });
         }
     }

@@ -17,22 +17,21 @@ export class SoundEffectPool {
 
     // TODO:key should be path + allowparallel pair
     public async GetAudio(path: string, allowParallel: boolean = true): Promise<SoundEffect> {
-        await this.lock.lock();
+        await this.lock.lock(path);
         const effect = this.effects.get(path);
         if (!effect) {
             const created = await SoundEffect.Create(path, allowParallel);
             this.effects.set(path, created);
-            await this.lock.release();
+            await this.lock.release(path);
             return created;
         }
 
-        await this.lock.release();
+        await this.lock.release(path);
         return effect;
     }
 
     public async Preload(): Promise<void> {
         await Promise.all([
-            this.GetAudio('audio/level.mp3', false),
             this.GetAudio('audio/fireball_spawn.mp3'),
             this.GetAudio('audio/sword.mp3'),
             this.GetAudio('audio/enemy_damage.wav'),

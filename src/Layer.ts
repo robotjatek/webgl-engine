@@ -12,19 +12,58 @@ import { IDisposable } from './IDisposable';
 
 export class Layer implements ICollider, IDisposable {
 
-    private constructor(private SpriteBatches: SpriteBatch[],
-        private Tiles: Tile[]
-    ) { }
+    private initialLayerOffsetX: number;
+    private initialLayerOffsetY: number;
 
-    public static async Create(tiles: Tile[]): Promise<Layer> {
+    private constructor(private SpriteBatches: SpriteBatch[],
+        private Tiles: Tile[],
+        private parallaxOffsetFactorX: number,
+        private parallaxOffsetFactorY: number,
+        private layerOffsetX: number,
+        private layerOffsetY: number
+    ) { 
+        this.initialLayerOffsetX = layerOffsetX;
+        this.initialLayerOffsetY = layerOffsetY;
+    }
+
+    public static async Create(tiles: Tile[], parallaxOffsetFactorX: number, parallaxOffsetFactorY: number, layerOffsetX: number, layerOffsetY: number): Promise<Layer> {
         const tileMap = Layer.CreateTileMap(tiles);
         const batches = await Layer.CreateSpriteBatches(tileMap);
-        const layer = new Layer(batches, tiles);
+        const layer = new Layer(batches, tiles, parallaxOffsetFactorX, parallaxOffsetFactorY, layerOffsetX, layerOffsetY);
         return layer;
+    }
+
+    public ResetState(): void {
+        this.layerOffsetX = this.initialLayerOffsetX;
+        this.layerOffsetY = this.initialLayerOffsetY;
     }
 
     public get BoundingBox(): BoundingBox {
         throw new Error('Method not implemented. Use IsColliding with instead');
+    }
+
+    public get ParallaxOffsetFactorX(): number {
+        return this.parallaxOffsetFactorX;
+    }
+ 
+    public get ParallaxOffsetFactorY(): number {
+        return this.parallaxOffsetFactorY;
+    }
+
+    public get LayerOffsetX(): number {
+        return this.layerOffsetX;
+    }
+
+    public get LayerOffsetY(): number {
+        return this.layerOffsetY;
+    }
+
+    public set LayerOffsetX(offset: number) {
+        this.layerOffsetX = offset;
+    }
+
+    public set LayerOffsetY(offset: number) {
+        this.layerOffsetY = offset;
     }
 
     public IsCollidingWith(boundingBox: BoundingBox, collideWithUndefined: boolean): boolean {
@@ -34,11 +73,11 @@ export class Layer implements ICollider, IDisposable {
             return true;
         }
 
-        return this.Tiles.some(tiles => tiles.isCollindingWith(boundingBox));
+        return this.Tiles.some(tile => tile.IsCollidingWith(boundingBox, this.LayerOffsetX, this.LayerOffsetY));
     }
 
     public get MaxX(): number {
-        return Math.max(...this.Tiles.map(t => t.PositionX), Environment.HorizontalTiles);
+        return Math.max(...this.Tiles.map(t => t.PositionX + 1), Environment.HorizontalTiles);
     }
 
     public get MinX(): number {
@@ -46,11 +85,11 @@ export class Layer implements ICollider, IDisposable {
     }
 
     public get MinY(): number {
-        return Math.min(...this.Tiles.map(t => t.PositionY), 0);
+        return Math.min(...this.Tiles.map(t => t.PositionY));
     }
 
     public get MaxY(): number {
-        return Math.max(...this.Tiles.map(t => t.PositionY), Environment.VerticalTiles);
+        return Math.max(...this.Tiles.map(t => t.PositionY + 1));
     }
 
     public IsOutsideBoundary(boundingBox: BoundingBox): boolean {

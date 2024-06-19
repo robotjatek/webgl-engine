@@ -16,15 +16,15 @@ export class TexturePool {
     private lock: Lock = new Lock();
 
     public async GetTexture(path: string): Promise<Texture> {
-        await this.lock.lock();
+        await this.lock.lock(path);
         const texture = this.textures.get(path);
         if (!texture) {
             const created = await Texture.Create(path);
             this.textures.set(path, created);
-            this.lock.release();
+            await this.lock.release(path);
             return created;
         }
-        this.lock.release();
+        await this.lock.release(path);
 
         return texture;
     }

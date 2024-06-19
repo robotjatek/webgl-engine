@@ -1,5 +1,4 @@
 import { mat4, vec2, vec3 } from 'gl-matrix';
-import { Camera } from './Camera';
 import { Environment } from './Environment';
 import { KeyHandler } from './KeyHandler';
 import { Level } from './Level';
@@ -44,8 +43,6 @@ enum State {
   PAUSED = 'paused'
 }
 
-// TODO: level editor
-
 // TODO: resource tracker: keep track of 'alive' opengl and other resurces resources the number shouldnt go up
 // TODO: ui builder framework
 // TODO: flip sprite
@@ -65,7 +62,6 @@ export class Game implements IStartEventListener,
   private start: number;
   private projectionMatrix = mat4.create();
   private textProjMat: mat4;
-  private camera = new Camera(vec3.create());
   private state: State = State.START_SCREEN;
   private level: Level = null;
 
@@ -111,18 +107,22 @@ export class Game implements IStartEventListener,
     this.healthTextbox.Dispose();
     this.scoreTextbox.Dispose();
     this.pauseScreen.Dispose();
+    this.level.Dispose();
   }
 
   public async OnNextLevelEvent(levelName: string): Promise<void> {
     this.pauseScreen.ResetStates();
+    const oldLevel = this.level;
+    oldLevel.StopMusic();
+
     const nextLevel = await Level.Create(levelName, this.keyHandler, this.gamepadHandler);
     await nextLevel.InitLevel();
+    
+    this.level = nextLevel;
+    oldLevel.Dispose();
+
     nextLevel.SubscribeToNextLevelEvent(this);
     nextLevel.SubscribeToRestartEvent(this);
-
-    const oldLevel = this.level;
-    oldLevel.Dispose();
-    this.level = nextLevel;
   }
 
   public OnRestartEvent(): void {
@@ -156,7 +156,6 @@ export class Game implements IStartEventListener,
       await this.level.InitLevel();
       this.state = State.IN_GAME;
       this.elapsedTimeSinceStateChange = 0;
-      this.level.PlayMusic(0.4);
     }
   }
 
@@ -194,7 +193,7 @@ export class Game implements IStartEventListener,
     if (this.state === State.START_SCREEN) {
       this.mainScreen.Draw(this.projectionMatrix);
     } else {
-      this.level.Draw(this.projectionMatrix, this.camera.ViewMatrix);
+      this.level.Draw(this.projectionMatrix);
 
       const textColor = (() => {
         if (this.level.Hero.Health < 35) {
@@ -245,8 +244,6 @@ export class Game implements IStartEventListener,
         this.elapsedTimeSinceStateChange = 0;
         this.keyWasReleased = false;
       }
-
-      this.camera.LookAtPosition(vec3.clone(this.level.Hero.Position), this.level.MainLayer);
     } else if (this.state === State.PAUSED) {
       this.level.SetMusicVolume(0.15);
       this.pauseScreen.Update(elapsedTime);

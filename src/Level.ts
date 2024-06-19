@@ -22,6 +22,8 @@ import { CoinObject } from './Pickups/CoinObject';
 import { HealthPickup } from './Pickups/HealthPickup';
 import { INextLevelEvent, IRestartListener } from './Game';
 import { IDisposable } from './IDisposable';
+import { Camera } from './Camera';
+import { EscapeEvent, FreeCameraEvent, ILevelEvent, LevelEventTrigger } from './EscapeEvent';
 
 type TileEntity = {
     xPos: number,
@@ -30,13 +32,17 @@ type TileEntity = {
 }
 
 type LayerEntity = {
-    tiles: TileEntity[]
+    tiles: TileEntity[],
+    parallaxOffsetFactorX: number
+    parallaxOffsetFactorY: number,
+    layerOffsetX: number,
+    layerOffsetY: number
 }
 
 type GameObjectEntity = {
     type: string,
     xPos: number,
-    yPos: number,
+    yPos: number
 }
 
 type LevelEndEntity = {
@@ -49,6 +55,11 @@ type StartEntity = {
     yPos: number
 }
 
+type EventEntity = {
+    type: string;
+    props: Map<string, any>;
+}
+
 type LevelEntity = {
     background: string,
     music: string,
@@ -57,11 +68,23 @@ type LevelEntity = {
     levelEnd: LevelEndEntity,
     start: StartEntity,
     nextLevel: string,
-    defaultLayer: number
+    defaultLayer: number,
+    events: EventEntity[]
 }
 
-// TODO: parallax scrolling
 export class Level implements IDisposable {
+    private camera = new Camera(vec3.create());
+
+    private events: Map<string, ILevelEvent> = new Map<string, ILevelEvent>();
+    private activeEvent: ILevelEvent;
+
+    public ChangeEvent(eventName: string): void {
+        const event = this.events.get(eventName);
+        if (event) {
+            this.activeEvent = event;
+        }
+    }
+
     private Background: SpriteBatch;
     private BackgroundViewMatrix = mat4.create();
     private gameObjects: IGameobject[] = [];
@@ -81,8 +104,9 @@ export class Level implements IDisposable {
     }
 
     public static async Create(levelName: string, keyHandler: KeyHandler, gamepadHandler: ControllerHandler): Promise<Level> {
-        const texturePool = TexturePool.GetInstance();
+        levelName = levelName + '?version=' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 
+        const texturePool = TexturePool.GetInstance();
         const levelJsonString = await (await fetch(levelName)).text();
         const levelDescriptor = JSON.parse(levelJsonString) as LevelEntity;
         const loadedLayers = await Promise.all(levelDescriptor.layers.map(async layer => {
@@ -91,12 +115,12 @@ export class Level implements IDisposable {
                 return new Tile(tile.xPos, tile.yPos, texure)
             }));
 
-            return await Layer.Create(loadedTiles);
+            return await Layer.Create(loadedTiles, layer.parallaxOffsetFactorX, layer.parallaxOffsetFactorY, layer.layerOffsetX, layer.layerOffsetY);
         }));
 
         const bgShader: Shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
         const bgTexture = await TexturePool.GetInstance().GetTexture(levelDescriptor.background);
-        const music = await SoundEffectPool.GetInstance().GetAudio(levelDescriptor.music, false);
+        const music = await SoundEffectPool.GetInstance().GetAudio(levelDescriptor.music, true);
 
         const levelEndOpenSoundEffect = await SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);
 
@@ -115,23 +139,23 @@ export class Level implements IDisposable {
         return this.hero;
     }
 
-    public Draw(projectionMatrix: mat4, viewMatrix: mat4): void {
+    public Draw(projectionMatrix: mat4): void {
         this.Background.Draw(projectionMatrix, this.BackgroundViewMatrix);
         this.layers.forEach((layer, i) => {
-            const cameraTranslation = mat4.getTranslation(vec3.create(), viewMatrix);
+            const cameraTranslation = mat4.getTranslation(vec3.create(), this.camera.ViewMatrix);
 
-            // TODO: layer based translationfactor
-            const layerMatrix = mat4.clone(viewMatrix);
-            const xOffset = (i - this.defaultLayer) * cameraTranslation[0] * 0.05;
-            const yOffset = (i - this.defaultLayer) * cameraTranslation[1] * 0.1;
+            const layerMatrix = mat4.clone(this.camera.ViewMatrix);
+            const xOffset = (i - this.defaultLayer) * cameraTranslation[0] * layer.ParallaxOffsetFactorX;
+            const yOffset = ((i - this.defaultLayer) * cameraTranslation[1] * layer.ParallaxOffsetFactorY) + layer.LayerOffsetY;
+
             const parallaxOffset = vec3.fromValues(xOffset, yOffset, 0);
             mat4.translate(layerMatrix, layerMatrix, parallaxOffset)
 
             layer.Draw(projectionMatrix, layerMatrix);
             if (i === this.defaultLayer) {
-                this.gameObjects.forEach(h => h.Draw(projectionMatrix, viewMatrix));
-                this.attack?.Draw(projectionMatrix, viewMatrix);
-                this.hero.Draw(projectionMatrix, viewMatrix);
+                this.gameObjects.forEach(h => h.Draw(projectionMatrix, this.camera.ViewMatrix));
+                this.attack?.Draw(projectionMatrix, this.camera.ViewMatrix);
+                this.hero.Draw(projectionMatrix, this.camera.ViewMatrix);
             }
         });
     }
@@ -167,6 +191,7 @@ export class Level implements IDisposable {
                 }
             });
 
+            this.activeEvent.Update(delta);
             this.CheckForEndCondition();
         }
     }
@@ -198,6 +223,9 @@ export class Level implements IDisposable {
     }
 
     private async RestartLevel(): Promise<void> {
+        // reset layer state (offset for now)
+        this.layers.forEach(layer => layer.ResetState());
+
         this.endConditionsMetEventListeners = [];
 
         this.hero.Dispose();
@@ -208,14 +236,20 @@ export class Level implements IDisposable {
         await this.InitGameObjects();
         this.updateDisabled = false;
         this.levelEndSoundPlayed = false;
+
+        this.events.clear();
+        await this.InitEvents();
     }
 
     public async InitLevel(): Promise<void> {
         this.restartEventListeners.forEach(l => l.OnRestartEvent());
-        this.SetMusicVolume(0.4);
+        this.PlayMusic(0.4);
 
         await this.InitHero();
+        // TODO: init layers -- recreate based on leveldescriptor
         await this.InitGameObjects();
+
+        await this.InitEvents();
         this.updateDisabled = false;
         this.levelEndSoundPlayed = false;
     }
@@ -278,6 +312,8 @@ export class Level implements IDisposable {
                         projectile.OnHitListeners.push(s => this.RemoveGameObject(s)); // TODO: despawning hero attack should be like this
                     }
                 );
+            case 'escape_trigger':
+                return new LevelEventTrigger(this, vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), EscapeEvent.EVENT_KEY);
             default:
                 throw new Error('Unknown object type');
         }
@@ -294,14 +330,38 @@ export class Level implements IDisposable {
         this.attack = null;
     }
 
+    private async InitEvents(): Promise<void> {
+        const events = await Promise.all(this.levelDescriptor.events.map(async e => await this.CreateLevelEvent(e)));
+        events.forEach(e => this.events.set(e.EventKey, e));
+
+        const freeCamEvent = new FreeCameraEvent(this.camera, this.MainLayer, this.hero);
+        this.events.set(FreeCameraEvent.EVENT_KEY, freeCamEvent);
+        this.activeEvent = freeCamEvent;
+    }
+
+    private async CreateLevelEvent(descriptor: EventEntity): Promise<ILevelEvent> {
+        switch (descriptor.type) {
+            case EscapeEvent.EVENT_KEY:
+                const eventLayer = this.layers[descriptor.props['eventLayerId']];
+                const eventLayerStopPosition = descriptor.props['eventLayerStopPosition'] as number;
+                const eventLayerSpeed = descriptor.props['eventLayerSpeed'] as number;
+                const cameraStopPosition = descriptor.props['cameraStopPosition'] as number;
+                const cameraSpeed = descriptor.props['cameraSpeed'] as number;
+                return await EscapeEvent.Create(this.camera, eventLayer, this.MainLayer, this.hero, eventLayerStopPosition,
+                    eventLayerSpeed,
+                    cameraStopPosition, cameraSpeed);
+            default:
+                throw new Error('Unknown event type');
+        }
+    }
+
     private async InitGameObjects(): Promise<void> {
         const objects = await Promise.all(this.levelDescriptor.gameObjects.map(async (o) => await this.CreateGameObject(o)));
         this.gameObjects.push(...objects);
 
         const levelEnd = await LevelEnd.Create(vec3.fromValues(this.levelDescriptor.levelEnd.xPos - 1, this.levelDescriptor.levelEnd.yPos, 0),
-            async () => {
-                this.nextLevelEventListeners.forEach(l => l.OnNextLevelEvent(this.levelDescriptor.nextLevel));
-            }, this
+            () => this.nextLevelEventListeners.forEach(async l => await l.OnNextLevelEvent(this.levelDescriptor.nextLevel)),
+            this
         );
         this.SubscribeToEndConditionsMetEvent(levelEnd);
         this.gameObjects.push(levelEnd);
@@ -319,5 +379,9 @@ export class Level implements IDisposable {
         this.restartEventListeners = [];
         this.nextLevelEventListeners = [];
         this.endConditionsMetEventListeners = [];
+        this.events.forEach(e => e.Dispose());
+        this.events.clear();
+        this.StopMusic();
+        this.music = null;
     }
 }

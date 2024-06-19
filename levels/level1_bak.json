@@ -1,6 +1,7 @@
 {
   "background": "textures/bg.jpg",
   "music": "audio/level.mp3",
+  "defaultLayer": 0,
   "layers": [
     {
       "tiles": [

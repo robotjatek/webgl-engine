@@ -15,6 +15,6 @@ Run the following command from the terminal:
 - install a http server `npm install --global http-server`
 - run `npm install` from the root folder
 - `$> tsc --build tsconfig.json`
-- run `http-server command` from the root folder
+- run `http-server` command from the root folder
 
 ![screenshot](webgl.png)

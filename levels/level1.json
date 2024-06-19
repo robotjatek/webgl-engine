@@ -569,7 +569,11 @@
           "yPos": 17,
           "texture": "textures/Platform_ByJanaChumi/PNG/48.png"
         }
-      ]
+      ],
+      "parallaxOffsetFactorX": 0.05,
+      "parallaxOffsetFactorY": 0.1,
+      "layerOffsetX": 0,
+      "layerOffsetY": 0
     },
     {
       "tiles": [
@@ -2493,35 +2497,14 @@
           "yPos": 17,
           "texture": "textures/Platform_ByJanaChumi/PNG/48.png"
         }
-      ]
+      ],
+      "parallaxOffsetFactorX": 0.05,
+      "parallaxOffsetFactorY": 0.1,
+      "layerOffsetX": 0,
+      "layerOffsetY": 0
     },
     {
       "tiles": [
-        {
-          "xPos": 32,
-          "yPos": 2,
-          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
-        },
-        {
-          "xPos": 33,
-          "yPos": 2,
-          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
-        },
-        {
-          "xPos": 34,
-          "yPos": 2,
-          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
-        },
-        {
-          "xPos": 30,
-          "yPos": 4,
-          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
-        },
-        {
-          "xPos": 31,
-          "yPos": 4,
-          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
-        },
         {
           "xPos": 28,
           "yPos": 5,
@@ -3222,7 +3205,11 @@
           "yPos": 17,
           "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         }
-      ]
+      ],
+      "parallaxOffsetFactorX": 0.05,
+      "parallaxOffsetFactorY": 0.01,
+      "layerOffsetX": 0,
+      "layerOffsetY": 0
     },
     {
       "tiles": [
@@ -3292,26 +3279,6 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/20.png"
         },
         {
-          "xPos": 0,
-          "yPos": 14,
-          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
-        },
-        {
-          "xPos": 1,
-          "yPos": 14,
-          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
-        },
-        {
-          "xPos": 2,
-          "yPos": 14,
-          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
-        },
-        {
-          "xPos": 3,
-          "yPos": 14,
-          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
-        },
-        {
           "xPos": 24,
           "yPos": 14,
           "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
@@ -3335,26 +3302,6 @@
           "xPos": 46,
           "yPos": 14,
           "texture": "textures/Platform_ByJanaChumi/PNG/20.png"
-        },
-        {
-          "xPos": 0,
-          "yPos": 15,
-          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
-        },
-        {
-          "xPos": 1,
-          "yPos": 15,
-          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
-        },
-        {
-          "xPos": 2,
-          "yPos": 15,
-          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
-        },
-        {
-          "xPos": 3,
-          "yPos": 15,
-          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         },
         {
           "xPos": 24,
@@ -3382,26 +3329,6 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/20.png"
         },
         {
-          "xPos": 0,
-          "yPos": 16,
-          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
-        },
-        {
-          "xPos": 1,
-          "yPos": 16,
-          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
-        },
-        {
-          "xPos": 2,
-          "yPos": 16,
-          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
-        },
-        {
-          "xPos": 3,
-          "yPos": 16,
-          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
-        },
-        {
           "xPos": 24,
           "yPos": 16,
           "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
@@ -3425,26 +3352,6 @@
           "xPos": 46,
           "yPos": 16,
           "texture": "textures/Platform_ByJanaChumi/PNG/20.png"
-        },
-        {
-          "xPos": 0,
-          "yPos": 17,
-          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
-        },
-        {
-          "xPos": 1,
-          "yPos": 17,
-          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
-        },
-        {
-          "xPos": 2,
-          "yPos": 17,
-          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
-        },
-        {
-          "xPos": 3,
-          "yPos": 17,
-          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         },
         {
           "xPos": 24,
@@ -3471,7 +3378,11 @@
           "yPos": 17,
           "texture": "textures/Platform_ByJanaChumi/PNG/20.png"
         }
-      ]
+      ],
+      "parallaxOffsetFactorX": 0.05,
+      "parallaxOffsetFactorY": 0.1,
+      "layerOffsetX": 0,
+      "layerOffsetY": 0
     }
   ],
   "defaultLayer": 2,
@@ -3507,6 +3418,11 @@
       "yPos": 12
     },
     {
+      "type": "dragon",
+      "xPos": 50,
+      "yPos": 14
+    },
+    {
       "type": "coin",
       "xPos": 10,
       "yPos": 15
@@ -3534,6 +3450,16 @@
     {
       "type": "health",
       "xPos": 31,
+      "yPos": 15
+    },
+    {
+      "type": "slime",
+      "xPos": 36,
+      "yPos": 15
+    },
+    {
+      "type": "slime",
+      "xPos": 40,
       "yPos": 15
     },
     {
@@ -3570,5 +3496,6 @@
     "xPos": 1,
     "yPos": 15
   },
-  "nextLevel": "levels/level1.json"
+  "events": [],
+  "nextLevel": "levels/escape.json"
 }

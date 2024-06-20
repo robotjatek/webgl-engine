@@ -243,7 +243,7 @@ export class Level implements IDisposable {
 
     public async InitLevel(): Promise<void> {
         this.restartEventListeners.forEach(l => l.OnRestartEvent());
-        this.PlayMusic(0.4);
+        this.PlayMusic(0.6);
 
         await this.InitHero();
         // TODO: init layers -- recreate based on leveldescriptor

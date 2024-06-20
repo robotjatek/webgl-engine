@@ -254,6 +254,6 @@ export class Game implements IStartEventListener,
     // TODO: statemachine move state
     this.state = State.IN_GAME;
     this.elapsedTimeSinceStateChange = 0;
-    this.level.SetMusicVolume(0.4);
+    this.level.SetMusicVolume(0.6);
   }
 }

@@ -1,0 +1,44 @@
+import { mat4, vec2, vec3 } from "gl-matrix";
+import { Hero } from '../Hero';
+import { Level } from '../Level';
+import { BoundingBox } from '../BoundingBox';
+import { IProjectile } from '../Projectiles/IProjectile';
+import { IGameobject } from '../IGameobject';
+
+
+export class LevelEventTrigger implements IGameobject {
+    constructor(private level: Level, private position: vec3, private eventName: string) {
+    }
+
+    public Draw(proj: mat4, view: mat4): void {
+        // Invisible
+    }
+
+    public Update(delta: number): Promise<void> {
+        return;
+    }
+
+    public Visit(hero: Hero): void {
+        this.level.ChangeEvent(this.eventName);
+    }
+
+    public get EndCondition(): boolean {
+        return false;
+    }
+
+    public CollideWithAttack(attack: IProjectile): void {
+        // invisible & invincible
+    }
+
+    public get BoundingBox(): BoundingBox {
+        return new BoundingBox(this.position, vec2.fromValues(1, 1));
+    }
+
+    public IsCollidingWith(boundingBox: BoundingBox, _: boolean): boolean {
+        return boundingBox.IsCollidingWith(this.BoundingBox);
+    }
+
+    public Dispose(): void {
+        // Nothing to dispose ATM
+    }
+}

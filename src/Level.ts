@@ -23,7 +23,10 @@ import { HealthPickup } from './Pickups/HealthPickup';
 import { INextLevelEvent, IRestartListener } from './Game';
 import { IDisposable } from './IDisposable';
 import { Camera } from './Camera';
-import { EscapeEvent, FreeCameraEvent, ILevelEvent, LevelEventTrigger } from './EscapeEvent';
+import { EscapeEvent } from './Events/EscapeEvent';
+import { ILevelEvent } from './Events/ILevelEvent';
+import { FreeCameraEvent } from './Events/FreeCameraEvent';
+import { LevelEventTrigger } from './Events/LevelEventTrigger';
 
 type TileEntity = {
     xPos: number,
@@ -246,6 +249,7 @@ export class Level implements IDisposable {
         this.PlayMusic(0.6);
 
         await this.InitHero();
+        
         // TODO: init layers -- recreate based on leveldescriptor
         await this.InitGameObjects();
 
@@ -347,9 +351,8 @@ export class Level implements IDisposable {
                 const eventLayerSpeed = descriptor.props['eventLayerSpeed'] as number;
                 const cameraStopPosition = descriptor.props['cameraStopPosition'] as number;
                 const cameraSpeed = descriptor.props['cameraSpeed'] as number;
-                return await EscapeEvent.Create(this.camera, eventLayer, this.MainLayer, this.hero, eventLayerStopPosition,
-                    eventLayerSpeed,
-                    cameraStopPosition, cameraSpeed);
+                return await EscapeEvent.Create(this.camera, eventLayer, this.MainLayer, this.hero,
+                    eventLayerStopPosition, eventLayerSpeed,cameraStopPosition, cameraSpeed);
             default:
                 throw new Error('Unknown event type');
         }

@@ -10,7 +10,7 @@ import { ICollider } from './ICollider';
 import { SoundEffectPool } from './SoundEffectPool';
 import { SlimeEnemy } from './Enemies/SlimeEnemy';
 import { IProjectile } from './Projectiles/IProjectile';
-import { DragonEnemy } from './Enemies/DragonEnemy';
+import { DragonEnemy } from './Enemies/Dragon/DragonEnemy';
 import { Spike } from './Enemies/Spike';
 import { Cactus } from './Enemies/Cactus';
 import { HealthPickup } from './Pickups/HealthPickup';
@@ -43,7 +43,13 @@ export class Hero implements IDisposable {
   private batch: SpriteBatch;
   private lastPosition: vec3 = vec3.fromValues(0, 0, 1);
   private velocity: vec3 = vec3.fromValues(0, 0, 0);
+  private acceptInput: boolean = true;
 
+  // TODO: http://www.davetech.co.uk/gamedevplatformer
+  // TODO: buffer jump
+  // TODO: coyote time -- can jump for little time after falling
+  // TODO: variable jump height
+  
   // BUG: Hero sometimes spawns its attack projectile in the wrong direction
   // TODO: longer range but much slower attack
   // TODO: make bb variables parametrizable
@@ -91,6 +97,10 @@ export class Hero implements IDisposable {
     if (this.health < 0) {
       this.health = 0;
     }
+  }
+
+  public set AcceptInput(value: boolean) {
+    this.acceptInput = value;
   }
 
   private lastFacingDirection: vec3 = vec3.fromValues(1, 0, 0);
@@ -260,40 +270,42 @@ export class Hero implements IDisposable {
   }
 
   private HandleInput(delta: number): void {
-    if (this.keyHandler.IsPressed(Keys.A) ||
-      this.gamepadHandler.LeftStick[0] < -0.5 ||
-      this.gamepadHandler.IsPressed(XBoxControllerKeys.LEFT)) {
-      this.MoveLeft(0.01, delta);
-    } else if (this.keyHandler.IsPressed(Keys.D) ||
-      this.gamepadHandler.LeftStick[0] > 0.5 ||
-      this.gamepadHandler.IsPressed(XBoxControllerKeys.RIGHT)) {
-      this.MoveRight(0.01, delta);
-    }
+    if (this.acceptInput) {
+      if (this.keyHandler.IsPressed(Keys.A) ||
+        this.gamepadHandler.LeftStick[0] < -0.5 ||
+        this.gamepadHandler.IsPressed(XBoxControllerKeys.LEFT)) {
+        this.MoveLeft(0.01, delta);
+      } else if (this.keyHandler.IsPressed(Keys.D) ||
+        this.gamepadHandler.LeftStick[0] > 0.5 ||
+        this.gamepadHandler.IsPressed(XBoxControllerKeys.RIGHT)) {
+        this.MoveRight(0.01, delta);
+      }
 
-    if (this.keyHandler.IsPressed(Keys.SPACE) ||
-      this.gamepadHandler.IsPressed(XBoxControllerKeys.A)) {
-      this.Jump();
-    }
+      if (this.keyHandler.IsPressed(Keys.SPACE) ||
+        this.gamepadHandler.IsPressed(XBoxControllerKeys.A)) {
+        this.Jump();
+      }
 
-    if (this.keyHandler.IsPressed(Keys.S) ||
-      this.gamepadHandler.LeftStick[1] > 0.8 ||
-      this.gamepadHandler.IsPressed(XBoxControllerKeys.DOWN)) {
-      this.Stomp();
-    }
+      if (this.keyHandler.IsPressed(Keys.S) ||
+        this.gamepadHandler.LeftStick[1] > 0.8 ||
+        this.gamepadHandler.IsPressed(XBoxControllerKeys.DOWN)) {
+        this.Stomp();
+      }
 
-    if (this.keyHandler.IsPressed(Keys.LEFT_SHIFT) || this.gamepadHandler.IsPressed(XBoxControllerKeys.RB)) {
-      this.Dash();
-    }
+      if (this.keyHandler.IsPressed(Keys.LEFT_SHIFT) || this.gamepadHandler.IsPressed(XBoxControllerKeys.RB)) {
+        this.Dash();
+      }
 
-    if (this.keyHandler.IsPressed(Keys.E) || this.gamepadHandler.IsPressed(XBoxControllerKeys.X)) {
-      const attackPosition = this.FacingDirection[0] > 0 ?
-        vec3.add(vec3.create(), this.Position, vec3.fromValues(1.5, 0, 0)) :
-        vec3.add(vec3.create(), this.Position, vec3.fromValues(-2.5, 0, 0));
+      if (this.keyHandler.IsPressed(Keys.E) || this.gamepadHandler.IsPressed(XBoxControllerKeys.X)) {
+        const attackPosition = this.FacingDirection[0] > 0 ?
+          vec3.add(vec3.create(), this.Position, vec3.fromValues(1.5, 0, 0)) :
+          vec3.add(vec3.create(), this.Position, vec3.fromValues(-2.5, 0, 0));
 
-      this.Attack(async () => {
-        // TODO: creating an attack instance on every attack is wasteful.
-        this.spawnProjectile(this, await MeleeAttack.Create(attackPosition, this.FacingDirection, this.despawnProjectile));
-      });
+        this.Attack(async () => {
+          // TODO: creating an attack instance on every attack is wasteful.
+          this.spawnProjectile(this, await MeleeAttack.Create(attackPosition, this.FacingDirection, this.despawnProjectile));
+        });
+      }
     }
   }
 
@@ -395,28 +407,29 @@ export class Hero implements IDisposable {
   }
 
   // TODO: move left, and move right should a change the velocity not the position itself
-  private MoveRight(amount: number, delta: number): void {
+  // TODO: gradual acceleration
+  public MoveRight(amount: number, delta: number): void {
     if (this.state !== State.DEAD && this.state !== State.STOMP && this.state !== State.DASH) {
       this.state = State.WALK;
       //if (!this.invincible) {
-        const nextPosition = vec3.fromValues(this.position[0] + amount * delta, this.position[1], this.position[2]);
-        if (!this.checkCollision(nextPosition)) {
-          this.position = nextPosition;
-        }
+      const nextPosition = vec3.fromValues(this.position[0] + amount * delta, this.position[1], this.position[2]);
+      if (!this.checkCollision(nextPosition)) {
+        this.position = nextPosition;
+      }
       //}
     }
   }
 
-  private MoveLeft(amount: number, delta: number): void {
+  public MoveLeft(amount: number, delta: number): void {
     if (this.state !== State.DEAD && this.state !== State.STOMP && this.state !== State.DASH) {
       this.state = State.WALK;
 
       //if (!this.invincible) {
-        const nextPosition = vec3.fromValues(this.position[0] - amount * delta, this.position[1], this.position[2]);
-        if (!this.checkCollision(nextPosition)) {
-          this.position = nextPosition;
-        }
-   //   }
+      const nextPosition = vec3.fromValues(this.position[0] - amount * delta, this.position[1], this.position[2]);
+      if (!this.checkCollision(nextPosition)) {
+        this.position = nextPosition;
+      }
+      //   }
     }
   }
 

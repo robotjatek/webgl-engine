@@ -134,11 +134,13 @@ export class Textbox implements IDisposable {
     public Draw(proj: mat4): void {
         gl.enable(gl.BLEND);
 
-        const sprites = this.text.map(t => t.Sprite);
-        const batch = new SpriteBatch(this.shader, sprites, this.fontMap); // TODO: recreating & destroying the batch in every frame seems very wasteful
+        if (this.text.length > 0) {
+            const sprites = this.text.map(t => t.Sprite);
+            const batch = new SpriteBatch(this.shader, sprites, this.fontMap); // TODO: recreating & destroying the batch in every frame seems very wasteful
 
-        batch.Draw(proj, mat4.create());
-        batch.Dispose();
+            batch.Draw(proj, mat4.create());
+            batch.Dispose();
+        }
 
         gl.disable(gl.BLEND);
     }

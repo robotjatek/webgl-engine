@@ -1,41 +1,39 @@
 import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
-import { BoundingBox } from '../BoundingBox';
-import { ICollider } from '../ICollider';
-import { Shader } from '../Shader';
-import { Sprite } from '../Sprite';
-import { SpriteBatch } from '../SpriteBatch';
-import { Texture } from '../Texture';
-import { TexturePool } from '../TexturePool';
-import { Utils } from '../Utils';
-import { Hero } from '../Hero';
-import { SoundEffectPool } from '../SoundEffectPool';
-import { IProjectile } from '../Projectiles/IProjectile';
-import { Fireball } from '../Projectiles/Fireball';
-import { BiteProjectile } from '../Projectiles/BiteProjectile';
-import { IEnemy } from './IEnemy';
+import { BoundingBox } from '../../BoundingBox';
+import { ICollider } from '../../ICollider';
+import { Shader } from '../../Shader';
+import { Sprite } from '../../Sprite';
+import { SpriteBatch } from '../../SpriteBatch';
+import { Texture } from '../../Texture';
+import { TexturePool } from '../../TexturePool';
+import { Utils } from '../../Utils';
+import { Hero } from '../../Hero';
+import { SoundEffectPool } from '../../SoundEffectPool';
+import { IProjectile } from '../../Projectiles/IProjectile';
+import { IEnemy } from '../IEnemy';
 import { SoundEffect } from 'src/SoundEffect';
+import { IState } from './States/IState';
+import { SharedDragonStateVariables } from './States/SharedDragonStateVariables';
+import { IdleState } from './States/IdleState';
+import { RushState as RushState } from './States/RushState';
 
-enum State {
-    IDLE = 'idle',
-    RUSH = 'rush'
-}
-
-enum RushState {
-    START = 'start',
-    BACKING = 'backing',
-    CHARGE = 'charge',
-    PRE_ATTACK = 'pre-attack',
-    ATTACK = 'attack'
-}
-
+// TODO: boss fly-by state
+// TODO. attack from the air
 export class DragonEnemy implements IEnemy {
-    private state: State = State.IDLE;
-    private rushState: RushState = RushState.START;
-    private timeInBacking = 0;
-    private timeInCharge = 0;
-    private timeSinceLastCharge = 0;
-    private timeinPreAttack = 0;
-    private herosLastPositionWhenTheChargingStarted = vec3.create();
+
+    public ChangeState(state: IState) {
+        this.state = state;
+    }
+
+    public IDLE_STATE(): IState {
+        return new IdleState(this.hero, this, this.collider, this.biteAttackSound, this.spawnProjectile);
+    }
+
+    public RUSH_STATE(): IState {
+        return new RushState(this.hero, this, this.rushSound, this.backingStartSound, this.biteAttackSound, this.spawnProjectile);
+    }
+
+    private state: IState = this.IDLE_STATE();
 
     // Animation related
     private currentFrameTime: number = 0;
@@ -61,7 +59,12 @@ export class DragonEnemy implements IEnemy {
     private batch: SpriteBatch = new SpriteBatch(this.shader, [this.sprite], this.texture);
 
     // Behaviour related
-    private timeSinceLastAttack = 0;
+    private shared: SharedDragonStateVariables = {
+        timeSinceLastAttack: 0,
+        timeSinceLastCharge: 9999
+
+    };
+
     private lastFacingDirection = vec3.fromValues(-1, 0, 0); // Facing right by default
 
     private health = 3;
@@ -114,6 +117,10 @@ export class DragonEnemy implements IEnemy {
             enemyDamageSound, enemyDeathSound, biteAttackSound, rushSound, backingStartSound, texture);
     }
 
+    public get Health(): number {
+        return this.health;
+    }
+
     public Visit(hero: Hero): void {
         hero.CollideWithDragon(this); // This call is not needad at all as hero does nothing with this interaction
     }
@@ -142,7 +149,7 @@ export class DragonEnemy implements IEnemy {
     }
 
     public get EndCondition(): boolean {
-        return false;
+        return true;
     }
 
     public IsCollidingWith(boundingBox: BoundingBox): boolean {
@@ -167,9 +174,8 @@ export class DragonEnemy implements IEnemy {
         }
 
         // Cancel rush on damage
-        if (this.state === State.RUSH) {
-            this.state = State.IDLE;
-            this.rushState = RushState.START;
+        if (this.state instanceof RushState) {
+            this.ChangeState(this.IDLE_STATE());
         }
     }
 
@@ -190,8 +196,8 @@ export class DragonEnemy implements IEnemy {
     }
 
     public async Update(delta: number): Promise<void> {
-        this.timeSinceLastAttack += delta;
-        this.timeSinceLastCharge += delta;
+        this.shared.timeSinceLastAttack += delta;
+        this.shared.timeSinceLastCharge += delta;
 
         // Face in the direction of the hero
         const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);
@@ -203,49 +209,20 @@ export class DragonEnemy implements IEnemy {
             vec3.set(this.lastFacingDirection, 1, 0, 0);
         }
         this.Animate(delta);
-
         this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
 
-        // Attack when hero is near
+        this.state.Update(delta, this.shared);
+
+        // In every state
+        // Move towards the hero on the X axis no matter the current state
         const distance = vec3.distance(this.CenterPosition, this.hero.CenterPosition);
-        if (this.state !== State.RUSH) {
-            if (this.timeSinceLastAttack > 2000) {
-                this.timeSinceLastAttack = 0;
-
-                // Spit fireball
-                if (distance < 30 && distance > 10) {
-                    const projectileCenter = this.FacingDirection[0] > 0 ?
-                        vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-3, 1, 0)) :
-                        vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(3, 1, 0));
-                    const fireball = await Fireball.Create(
-                        projectileCenter,
-                        vec3.clone(this.FacingDirection),
-                        this.collider);
-
-                    this.spawnProjectile(this, fireball);
-                }
-                // Bite
-                else if (distance < 5) {
-                    const projectileCenter = this.FacingDirection[0] > 0 ?
-                        vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-3, 1, 0)) :
-                        vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(3, 1, 0));
-                    const bite = await BiteProjectile.Create(projectileCenter, this.FacingDirection);
-                    this.biteAttackSound.Play();
-                    this.spawnProjectile(this, bite);
-                }
+        if (distance > 3) {
+            if (dir[0] > 0) {
+                this.MoveOnX(-0.003, delta)
+            } else if (dir[0] > 0) {
+                this.MoveOnX(0.003, delta);
             }
         }
-
-        // Change to charge attack when the hero is in the attack interval
-        if (distance < 20 && distance > 5 && this.timeSinceLastCharge > 5000) {
-            this.state = State.RUSH;
-            this.timeSinceLastCharge = 0;
-            this.timeSinceLastAttack = 0;
-        }
-        await this.HandleRushState(delta);
-        // Follow hero on the Y axis with a little delay.
-        // "Delay" is achieved by moving the dragon slower than the hero movement speed.
-        this.MatchHeroHeight(delta);
 
         // TODO: gravity to velocity -- flying enemy maybe does not need gravity?
         // TODO: velocity to position
@@ -264,22 +241,7 @@ export class DragonEnemy implements IEnemy {
         }
     }
 
-    private MatchHeroHeight(delta: number): void {
-        if (this.rushState !== RushState.CHARGE) {
-            // Reduce shaking by only moving when the distance is larger than a limit
-            const distance = Math.abs(this.hero.CenterPosition[1] - this.CenterPosition[1]);
-            if (distance > 0.2) {
-                const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);
-                if (dir[1] > 0) {
-                    this.MoveOnY(-0.0025, delta);
-                } else if (dir[1] < 0) {
-                    this.MoveOnY(0.0025, delta);
-                }
-            }
-        }
-    }
-
-    private MoveOnX(amount: number, delta: number): void {
+    public MoveOnX(amount: number, delta: number): void {
         // TODO: this fails with fast movement speed
         const nextPosition =
             vec3.fromValues(this.position[0] + amount * delta, this.position[1], this.position[2]);
@@ -288,7 +250,7 @@ export class DragonEnemy implements IEnemy {
         }
     }
 
-    private MoveOnY(amount: number, delta: number): void {
+    public MoveOnY(amount: number, delta: number): void {
         const nextPosition = vec3.fromValues(this.position[0], this.position[1] + amount * delta, 0);
         if (!this.CheckCollisionWithCollider(nextPosition)) {
             this.position = nextPosition;
@@ -323,69 +285,6 @@ export class DragonEnemy implements IEnemy {
     private ChangeFrameSet(frames: vec2[]) {
         this.currentFrameSet = frames;
         this.sprite.textureOffset = this.currentFrameSet[this.currentAnimationFrame];
-    }
-
-    private async HandleRushState(delta: number): Promise<void> {
-        if (this.state === State.RUSH) {
-            if (this.rushState === RushState.START) {
-                this.timeInBacking = 0;
-                this.rushState = RushState.BACKING;
-                this.backingStartSound.Play(1.0, 0.3);
-            } else if (this.rushState === RushState.BACKING) {
-                this.timeInBacking += delta
-                const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);
-                if (dir[0] > 0) {
-                    this.MoveOnX(0.0035, delta);
-                } else if (dir[0] < 0) {
-                    this.MoveOnX(-0.0035, delta);
-                }
-
-                if (this.timeInBacking > 3000 || (vec3.distance(this.CenterPosition, this.hero.CenterPosition) > 15 && this.timeInBacking > 1000)) {
-                    this.timeInBacking = 0;
-                    this.rushState = RushState.CHARGE;
-                    this.herosLastPositionWhenTheChargingStarted = vec3.clone(this.hero.CenterPosition);
-                    this.rushSound.Play();
-                }
-            } else if (this.rushState === RushState.CHARGE) {
-                this.timeInCharge += delta;
-                this.timeSinceLastAttack = 0;
-                this.timeSinceLastCharge = 0;
-                const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);
-                if (dir[0] > 0) {
-                    this.MoveOnX(-0.035, delta);
-                } else if (dir[0] < 0) {
-                    this.MoveOnX(0.035, delta);
-                }
-
-                // Move out of charge state when distance on the Y axis is close enough
-                const distanceOnX = Math.abs(this.CenterPosition[0] - this.hero.CenterPosition[0]);
-                if (distanceOnX < 3) {
-                    this.rushState = RushState.PRE_ATTACK;
-                    this.timeInCharge = 0;
-                }
-            } else if (this.rushState === RushState.PRE_ATTACK) {
-                // The charge is completed but we wait a couple of frames before executing an attack
-                this.timeinPreAttack += delta;
-
-                if (this.timeinPreAttack > 96) {
-                    this.timeinPreAttack = 0;
-                    this.rushState = RushState.ATTACK;
-                }
-            } else if (this.rushState === RushState.ATTACK) {
-                // Spawn a bite projectile
-                // This is handled differently from the normal attack, when the hero remains close
-                const projectileCenter = this.FacingDirection[0] > 0 ?
-                    vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-2.5, 1, 0)) :
-                    vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(2.5, 1, 0));
-                const bite = await BiteProjectile.Create(projectileCenter, vec3.clone(this.FacingDirection));
-                this.biteAttackSound.Play();
-                this.spawnProjectile(this, bite);
-                this.timeSinceLastAttack = 0;
-                this.state = State.IDLE;
-                this.rushState = RushState.START;
-                return;
-            }
-        }
     }
 
     public Dispose(): void {

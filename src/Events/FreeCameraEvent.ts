@@ -16,9 +16,14 @@ export class FreeCameraEvent implements ILevelEvent {
         return FreeCameraEvent.EVENT_KEY;
     }
 
+    public get CanStart(): boolean {
+        return true;
+    }
+
     public Update(_: number): void {
         this.camera.LookAtPosition(vec3.clone(this.hero.Position), this.mainLayer);
     }
+
     public Dispose(): void {
         // nothing to dispose
     }

@@ -114,6 +114,10 @@ export class SlimeEnemy implements IEnemy {
         return false;
     }
 
+    public get Health(): number {
+        return this.health;
+    }
+
     // TODO: this is also duplicated in the code
     public IsCollidingWith(boundingBox: BoundingBox): boolean {
         return this.BoundingBox.IsCollidingWith(boundingBox);

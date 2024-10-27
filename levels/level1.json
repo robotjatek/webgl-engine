@@ -572,7 +572,7 @@
       ],
       "parallaxOffsetFactorX": 0.05,
       "parallaxOffsetFactorY": 0.1,
-      "layerOffsetX": 0,
+      "layerOffsetX": 0.4,
       "layerOffsetY": 0
     },
     {
@@ -3381,7 +3381,7 @@
       ],
       "parallaxOffsetFactorX": 0.05,
       "parallaxOffsetFactorY": 0.1,
-      "layerOffsetX": 0,
+      "layerOffsetX": -0.4,
       "layerOffsetY": 0
     }
   ],
@@ -3416,11 +3416,6 @@
       "type": "coin",
       "xPos": 16,
       "yPos": 12
-    },
-    {
-      "type": "dragon",
-      "xPos": 50,
-      "yPos": 14
     },
     {
       "type": "coin",
@@ -3496,6 +3491,6 @@
     "xPos": 1,
     "yPos": 15
   },
-  "events": [],
-  "nextLevel": "levels/escape.json"
+  "nextLevel": "levels/boss_arena.json",
+  "events": []
 }

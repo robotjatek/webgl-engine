@@ -13,6 +13,8 @@ import { SoundEffect } from './SoundEffect';
 import { MainScreen } from './MainScreen';
 import { PauseScreen } from './PauseScreen/PauseScreen';
 import { IDisposable } from './IDisposable';
+import { UIService } from './UIService';
+import { Camera } from './Camera';
 
 export interface IStartEventListener {
   Start(): Promise<void>;
@@ -43,6 +45,10 @@ enum State {
   PAUSED = 'paused'
 }
 
+// TODO: shake camera when attack hit
+// TODO: play attack sound in different pitches
+// TODO: outro level after escape sequence
+
 // TODO: resource tracker: keep track of 'alive' opengl and other resurces resources the number shouldnt go up
 // TODO: ui builder framework
 // TODO: flip sprite
@@ -61,7 +67,7 @@ export class Game implements IStartEventListener,
   private Height: number;
   private start: number;
   private projectionMatrix = mat4.create();
-  private textProjMat: mat4;
+
   private state: State = State.START_SCREEN;
   private level: Level = null;
 
@@ -70,6 +76,7 @@ export class Game implements IStartEventListener,
 
   private constructor(private keyHandler: KeyHandler,
     private gamepadHandler: ControllerHandler,
+    private uiService: UIService,
     private healthTextbox: Textbox,
     private scoreTextbox: Textbox,
     private mainScreen: MainScreen,
@@ -88,8 +95,6 @@ export class Game implements IStartEventListener,
       1
     );
 
-    this.textProjMat = mat4.ortho(mat4.create(), 0, this.Width, this.Height, 0, -1, 1);
-
     gl.disable(gl.DEPTH_TEST); // TODO: Depth test has value when rendering layers. Shouldn't be disabled completely
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.viewport(0, 0, this.Width, this.Height);
@@ -104,20 +109,21 @@ export class Game implements IStartEventListener,
 
   public Dispose(): void {
     this.mainScreen.Dispose();
-    this.healthTextbox.Dispose();
-    this.scoreTextbox.Dispose();
     this.pauseScreen.Dispose();
     this.level.Dispose();
+    this.uiService.Dispose();
   }
+
+  private camera = new Camera(vec3.create());
 
   public async OnNextLevelEvent(levelName: string): Promise<void> {
     this.pauseScreen.ResetStates();
     const oldLevel = this.level;
     oldLevel.StopMusic();
 
-    const nextLevel = await Level.Create(levelName, this.keyHandler, this.gamepadHandler);
+    const nextLevel = await Level.Create(levelName, this.keyHandler, this.gamepadHandler, this.uiService, this.camera);
     await nextLevel.InitLevel();
-    
+
     this.level = nextLevel;
     oldLevel.Dispose();
 
@@ -137,17 +143,18 @@ export class Game implements IStartEventListener,
     await SoundEffectPool.GetInstance().Preload();
     await TexturePool.GetInstance().Preload();
 
-    const textbox = await Textbox.Create('Consolas');
-    const scoreTextBox = await Textbox.Create('Consolas');
+    const uiService = new UIService(canvas.width, canvas.height);
+    const healthTextbox = await uiService.AddTextbox();
+    const scoreTextBox = await uiService.AddTextbox();
 
     const pauseSoundEffect = await SoundEffectPool.GetInstance().GetAudio('audio/pause.mp3');
     const mainScreen = await MainScreen.Create(keyHandler, controllerHandler, canvas.width, canvas.height);
     const pauseScreen = await PauseScreen.Create(canvas.width, canvas.height, keyHandler, controllerHandler);
-    return new Game(keyHandler, controllerHandler, textbox, scoreTextBox, mainScreen, pauseScreen, pauseSoundEffect);
+    return new Game(keyHandler, controllerHandler, uiService, healthTextbox, scoreTextBox, mainScreen, pauseScreen, pauseSoundEffect);
   }
 
   public async Start(): Promise<void> {
-    const level = await Level.Create('levels/level1.json', this.keyHandler, this.gamepadHandler);
+    const level = await Level.Create('levels/boss_arena.json', this.keyHandler, this.gamepadHandler, this.uiService, this.camera);
     level.SubscribeToNextLevelEvent(this);
     level.SubscribeToRestartEvent(this);
     this.level = level;
@@ -171,7 +178,7 @@ export class Game implements IStartEventListener,
     const end = performance.now();
     const elapsed = Math.min(end - this.start, 32);
     this.start = end;
-    this.Render(elapsed);
+    await this.Render(elapsed);
     await this.Update(elapsed);
   }
 
@@ -195,25 +202,8 @@ export class Game implements IStartEventListener,
     } else {
       this.level.Draw(this.projectionMatrix);
 
-      const textColor = (() => {
-        if (this.level.Hero.Health < 35) {
-          return { hue: 0, saturation: 100 / 100, value: 100 / 100 };
-        } else if (this.level.Hero.Health > 100) {
-          return { hue: 120 / 360, saturation: 100 / 100, value: 100 / 100 };
-        } else {
-          return { hue: 0, saturation: 0, value: 100 / 100 };
-        }
-      })();
-      this.healthTextbox
-        .WithText(`Health: ${this.level.Hero.Health}`, vec2.fromValues(10, 0), 0.5)
-        .WithHue(textColor.hue)
-        .WithSaturation(textColor.saturation)
-        .WithValue(textColor.value)
-        .Draw(this.textProjMat);
 
-      this.scoreTextbox
-        .WithText(`Coins: ${this.level.Hero.CollectedCoins}`, vec2.fromValues(10, this.healthTextbox.Height), 0.5)
-        .Draw(this.textProjMat);
+      this.uiService.Draw(elapsedTime);
 
       if (this.state === State.PAUSED) {
         // Draw the pause screen over the other rendered elements
@@ -244,6 +234,25 @@ export class Game implements IStartEventListener,
         this.elapsedTimeSinceStateChange = 0;
         this.keyWasReleased = false;
       }
+
+      const healthTextColor = (() => {
+        if (this.level.Hero.Health < 35) {
+          return { hue: 0, saturation: 100 / 100, value: 100 / 100 };
+        } else if (this.level.Hero.Health > 100) {
+          return { hue: 120 / 360, saturation: 100 / 100, value: 100 / 100 };
+        } else {
+          return { hue: 0, saturation: 0, value: 100 / 100 };
+        }
+      })();
+
+      this.healthTextbox
+        .WithText(`Health: ${this.level.Hero.Health}`, vec2.fromValues(10, 0), 0.5)
+        .WithHue(healthTextColor.hue)
+        .WithSaturation(healthTextColor.saturation)
+        .WithValue(healthTextColor.value);
+
+      this.scoreTextbox
+        .WithText(`Coins: ${this.level.Hero.CollectedCoins}`, vec2.fromValues(10, this.healthTextbox.Height), 0.5);
     } else if (this.state === State.PAUSED) {
       this.level.SetMusicVolume(0.15);
       this.pauseScreen.Update(elapsedTime);

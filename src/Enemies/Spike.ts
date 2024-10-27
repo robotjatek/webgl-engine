@@ -1,5 +1,5 @@
 import { Texture } from './../Texture';
-import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
+import { mat4, vec2, vec3} from 'gl-matrix';
 import { Hero } from 'src/Hero';
 import { IEnemy } from './IEnemy';
 import { TexturePool } from 'src/TexturePool';
@@ -73,6 +73,10 @@ export class Spike implements IEnemy {
 
     public get EndCondition(): boolean {
         return false;
+    }
+
+    public get Health(): number {
+        return 0;
     }
 
     public Visit(hero: Hero): void {

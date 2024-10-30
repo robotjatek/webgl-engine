@@ -46,7 +46,7 @@ export class IdleState extends DragonStateBase implements IState {
                     vec3.add(vec3.create(), this.dragon.CenterPosition, vec3.fromValues(-3, 1, 0)) :
                     vec3.add(vec3.create(), this.dragon.CenterPosition, vec3.fromValues(3, 1, 0));
                 const bite = await BiteProjectile.Create(projectileCenter, this.dragon.FacingDirection);
-                this.biteAttackSound.Play(); // TODO: play sound in spawnProjectile? -- Az nem jó, mert a fireball és a bite is projectile
+                this.biteAttackSound.Play();
                 this.spawnProjectile(this.dragon, bite);
             }
         }
@@ -60,5 +60,13 @@ export class IdleState extends DragonStateBase implements IState {
         }
 
         this.MatchHeroHeight(delta);
+    }
+
+    public Enter(): void {
+        // Do nothing
+    }
+
+    public Exit(): void {
+        // Do nothing
     }
 }

@@ -1,5 +1,7 @@
 import { SharedDragonStateVariables } from './SharedDragonStateVariables';
 
 export interface IState {
-    Update(delta: number, shared: SharedDragonStateVariables): void;
+    Enter(): void;
+    Update(delta: number, shared: SharedDragonStateVariables): Promise<void>;
+    Exit(): void;
 }

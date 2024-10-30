@@ -15,14 +15,16 @@ import { SoundEffect } from 'src/SoundEffect';
 import { IState } from './States/IState';
 import { SharedDragonStateVariables } from './States/SharedDragonStateVariables';
 import { IdleState } from './States/IdleState';
-import { RushState as RushState } from './States/RushState';
+import { RushState as RushState } from './States/RushStates/RushState';
 
 // TODO: boss fly-by state
 // TODO. attack from the air
 export class DragonEnemy implements IEnemy {
 
     public ChangeState(state: IState) {
+        this.state.Exit();
         this.state = state;
+        this.state.Enter();
     }
 
     public IDLE_STATE(): IState {
@@ -211,7 +213,7 @@ export class DragonEnemy implements IEnemy {
         this.Animate(delta);
         this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
 
-        this.state.Update(delta, this.shared);
+        await this.state.Update(delta, this.shared);
 
         // In every state
         // Move towards the hero on the X axis no matter the current state

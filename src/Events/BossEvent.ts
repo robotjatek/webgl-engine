@@ -13,6 +13,7 @@ import { Camera } from 'src/Camera';
 import { Environment } from 'src/Environment';
 
 // TODO: boss trigger + editor
+// TODO: state machine
 export class BossEvent implements ILevelEvent {
 
     public static readonly EVENT_KEY = 'boss_event';

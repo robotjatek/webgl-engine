@@ -159,12 +159,14 @@ export class Fireball implements IProjectile {
 
     private MoveInDirection(delta: number): void {
         if (this.moveDirection[0] < 0) {
-            this.MoveOnX(0.01, delta);
+            this.MoveOnX(0.015, delta);
         } else {
-            this.MoveOnX(-0.01, delta);
+            this.MoveOnX(-0.015, delta);
         }
     }
 
+    // TODO: generic move function like in dragon
+    // TODO: generic move function as a component
     private MoveOnX(amount: number, delta: number): void {
         const nextCenterPosition = vec3.fromValues(this.centerPosition[0] + amount * delta, this.centerPosition[1], 0);
         if (!this.CheckCollisionWithCollider(nextCenterPosition)) {

@@ -4,7 +4,7 @@ import { vec3 } from 'gl-matrix';
 
 export abstract class DragonStateBase {
 
-    constructor(protected hero: Hero, protected dragon: DragonEnemy) {}
+    protected constructor(protected hero: Hero, protected dragon: DragonEnemy) {}
 
     /**
      * Follow hero on the Y axis with a little delay.
@@ -17,9 +17,9 @@ export abstract class DragonStateBase {
         if (distance > 0.2) {
             const dir = vec3.sub(vec3.create(), this.dragon.CenterPosition, this.hero.CenterPosition);
             if (dir[1] > 0) {
-                this.dragon.MoveOnY(-0.0025, delta);
+                this.dragon.Move(vec3.fromValues(0, -0.003, 0), delta);
             } else if (dir[1] < 0) {
-                this.dragon.MoveOnY(0.0025, delta);
+                this.dragon.Move(vec3.fromValues(0, 0.003, 0), delta);
             }
         }
     }

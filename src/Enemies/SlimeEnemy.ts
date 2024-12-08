@@ -205,6 +205,7 @@ export class SlimeEnemy implements IEnemy {
         this.sprite.textureOffset = this.currentFrameSet[this.currentAnimationFrame];
     }
 
+    // TODO: simple move component implemented like in dragonenemy.ts. Implement it like a reusable component
     private MoveOnX(amount: number, delta: number): void {
         const nextPosition =
             vec3.fromValues(this.position[0] + amount * delta, this.position[1], this.position[2]);

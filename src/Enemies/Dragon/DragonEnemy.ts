@@ -1,6 +1,5 @@
 import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
 import { BoundingBox } from '../../BoundingBox';
-import { ICollider } from '../../ICollider';
 import { Shader } from '../../Shader';
 import { Sprite } from '../../Sprite';
 import { SpriteBatch } from '../../SpriteBatch';
@@ -16,9 +15,14 @@ import { IState } from './States/IState';
 import { SharedDragonStateVariables } from './States/SharedDragonStateVariables';
 import { IdleState } from './States/IdleState';
 import { RushState as RushState } from './States/RushStates/RushState';
+import { FlyAttackState } from './States/FlyAttackState';
+import { EnterArenaState } from './States/EnterArenaState';
+import { GroundAttackState } from './States/GroundAttackState';
+import { Layer } from '../../Layer';
 
-// TODO: boss fly-by state
-// TODO. attack from the air
+// TODO: signal spit attack
+// TODO: multi phase fight
+// TODO: sweeping flame breath - before death? with safe zones on the map
 export class DragonEnemy implements IEnemy {
 
     public ChangeState(state: IState) {
@@ -35,7 +39,19 @@ export class DragonEnemy implements IEnemy {
         return new RushState(this.hero, this, this.rushSound, this.backingStartSound, this.biteAttackSound, this.spawnProjectile);
     }
 
-    private state: IState = this.IDLE_STATE();
+    public FLY_ATTACK_STATE(): IState {
+        return new FlyAttackState(this.hero, this, this.rushSound);
+    }
+
+    public ENTER_ARENA_STATE(): IState {
+        return new EnterArenaState(this.hero, this, this.collider);
+    }
+
+    public GROUND_ATTACK_STATE() : IState {
+        return new GroundAttackState(this.hero, this, this.collider, this.spawnProjectile);
+    }
+
+    private state: IState = this.ENTER_ARENA_STATE();
 
     // Animation related
     private currentFrameTime: number = 0;
@@ -63,8 +79,8 @@ export class DragonEnemy implements IEnemy {
     // Behaviour related
     private shared: SharedDragonStateVariables = {
         timeSinceLastAttack: 0,
-        timeSinceLastCharge: 9999
-
+        timeSinceLastCharge: 9999,
+        timeSinceLastFireBall: 0
     };
 
     private lastFacingDirection = vec3.fromValues(-1, 0, 0); // Facing right by default
@@ -72,6 +88,9 @@ export class DragonEnemy implements IEnemy {
     private health = 3;
     private damagedTime = 0;
     private damaged = false;
+
+    private signaling = false;
+    private attackSignalTime = 0;
 
     private bbSize = vec2.fromValues(4.8, 3);
     private bbOffset = vec3.fromValues(0.1, 1.5, 0);
@@ -84,7 +103,7 @@ export class DragonEnemy implements IEnemy {
         private shader: Shader,
         private bbShader: Shader,
         private visualScale: vec2, // TODO: this should not be a parameter but hardcoded
-        private collider: ICollider,
+        private collider: Layer,
         private hero: Hero,
         private onDeath: (sender: DragonEnemy) => void,
         private spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void,
@@ -101,13 +120,15 @@ export class DragonEnemy implements IEnemy {
 
     public static async Create(position: vec3,
         visualScale: vec2,
-        collider: ICollider,
+        collider: Layer,
         hero: Hero,
         onDeath: (enemy: DragonEnemy) => void,
         spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void
     ): Promise<DragonEnemy> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
+
+        // TODO: ezeket a soundokat a state-ekben kéne létrehozni, nem innen lepasszolgatni
         const enemyDamageSound = await SoundEffectPool.GetInstance().GetAudio('audio/enemy_damage.wav');
         const enemyDeathSound = await SoundEffectPool.GetInstance().GetAudio('audio/enemy_death.wav');
         const biteAttackSound = await SoundEffectPool.GetInstance().GetAudio('audio/bite2.wav');
@@ -146,6 +167,14 @@ export class DragonEnemy implements IEnemy {
         return this.lastFacingDirection;
     }
 
+    public get BiteProjectilePosition(): vec3 {
+        const projectileCenter = this.FacingDirection[0] > 0 ?
+            vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-2, 1, 0)) :
+            vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(2, 1, 0));
+
+        return projectileCenter;
+    }
+
     public get BoundingBox(): BoundingBox {
         return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize);
     }
@@ -158,6 +187,7 @@ export class DragonEnemy implements IEnemy {
         return boundingBox.IsCollidingWith(this.BoundingBox);
     }
 
+    // TODO: az egész damage method duplikálva van a cactusban
     public Damage(pushbackForce: vec3): void {
         // Dragon ignores pushback at the moment
 
@@ -181,6 +211,12 @@ export class DragonEnemy implements IEnemy {
         }
     }
 
+    public SignalAttack(): void {
+        this.signaling = true;
+        this.attackSignalTime = 0;
+        this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0.8, 0.8, 0.8, 0));
+    }
+
     public Draw(proj: mat4, view: mat4): void {
         this.batch.Draw(proj, view);
         mat4.translate(this.batch.ModelMatrix, mat4.create(), this.position);
@@ -200,6 +236,7 @@ export class DragonEnemy implements IEnemy {
     public async Update(delta: number): Promise<void> {
         this.shared.timeSinceLastAttack += delta;
         this.shared.timeSinceLastCharge += delta;
+        this.shared.timeSinceLastFireBall += delta;
 
         // Face in the direction of the hero
         const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);
@@ -215,16 +252,10 @@ export class DragonEnemy implements IEnemy {
 
         await this.state.Update(delta, this.shared);
 
-        // In every state
-        // Move towards the hero on the X axis no matter the current state
-        const distance = vec3.distance(this.CenterPosition, this.hero.CenterPosition);
-        if (distance > 3) {
-            if (dir[0] > 0) {
-                this.MoveOnX(-0.003, delta)
-            } else if (dir[0] > 0) {
-                this.MoveOnX(0.003, delta);
-            }
-        }
+        // // TODO: bármikor out-of-bounds => enter arena state
+        // if (this.CenterPosition[0] > 26 && this.CenterPosition[1] > 10) {
+        //     this.ChangeState(this.ENTER_ARENA_STATE());
+        // }
 
         // TODO: gravity to velocity -- flying enemy maybe does not need gravity?
         // TODO: velocity to position
@@ -236,30 +267,35 @@ export class DragonEnemy implements IEnemy {
             this.damagedTime += delta;
         }
 
-        if (this.damagedTime > showOverlayTime) {
+        if (this.signaling) {
+            this.attackSignalTime += delta;
+        }
+
+        if (this.damagedTime > showOverlayTime || this.attackSignalTime > 5/60*1000) {
             this.damagedTime = 0;
             this.damaged = false;
+            this.attackSignalTime = 0;
+            this.signaling = false;
             this.shader.SetVec4Uniform('colorOverlay', vec4.create());
         }
     }
 
-    public MoveOnX(amount: number, delta: number): void {
-        // TODO: this fails with fast movement speed
-        const nextPosition =
-            vec3.fromValues(this.position[0] + amount * delta, this.position[1], this.position[2]);
+    public Move(direction: vec3, delta: number): void {
+        const nextPosition = vec3.scaleAndAdd(vec3.create(), this.position, direction, delta);
         if (!this.CheckCollisionWithCollider(nextPosition)) {
             this.position = nextPosition;
         }
     }
 
-    public MoveOnY(amount: number, delta: number): void {
-        const nextPosition = vec3.fromValues(this.position[0], this.position[1] + amount * delta, 0);
-        if (!this.CheckCollisionWithCollider(nextPosition)) {
-            this.position = nextPosition;
-        }
+    /**
+     * Calculate next position without considering collision
+     */
+    public CalculateNextPosition(direction: vec3, delta: number): vec3 {
+        return vec3.scaleAndAdd(vec3.create(), this.position, direction, delta);
     }
 
-    private CheckCollisionWithCollider(nextPosition: vec3): boolean {
+    // TODO: ugyanez a slimeban is benn van privátként -- szintén valami movement component kéne
+    public CheckCollisionWithCollider(nextPosition: vec3): boolean {
         const nextBbPos = vec3.add(vec3.create(), nextPosition, this.bbOffset);
         const nextBoundingBox = new BoundingBox(nextBbPos, this.bbSize);
         const colliding = this.collider.IsCollidingWith(nextBoundingBox, true);
@@ -267,6 +303,14 @@ export class DragonEnemy implements IEnemy {
         return colliding;
     }
 
+    /**
+     * Check if movement to the direction would cause a collision
+     */
+    public WillCollide(direction: vec3, delta: number): boolean {
+        return this.CheckCollisionWithCollider(this.CalculateNextPosition(direction, delta))
+    }
+
+    // TODO: duplikált kód pl a Slime enemyben is (IDE waringozik is miatta)
     private Animate(delta: number): void {
         this.currentFrameTime += delta;
         if (this.currentFrameTime > 264) {

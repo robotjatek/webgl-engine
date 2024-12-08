@@ -109,7 +109,7 @@ export class Level implements IDisposable {
         const loadedLayers = await Promise.all(levelDescriptor.layers.map(async layer => {
             const loadedTiles = await Promise.all(layer.tiles.map(async tile => {
                 const texure = await texturePool.GetTexture(tile.texture);
-                return new Tile(tile.xPos, tile.yPos, texure)
+                return new Tile(tile.xPos, tile.yPos, texure);
             }));
 
             return await Layer.Create(loadedTiles, layer.parallaxOffsetFactorX, layer.parallaxOffsetFactorY, layer.layerOffsetX, layer.layerOffsetY);
@@ -230,7 +230,7 @@ export class Level implements IDisposable {
     }
 
     private async RestartLevel(): Promise<void> {
-        // reset layer state (offset for now)
+        // reset layer state (offset and default layer collision state for now)
         this.layers.forEach(layer => layer.ResetState());
 
         this.endConditionsMetEventListeners = [];

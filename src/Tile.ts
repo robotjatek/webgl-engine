@@ -3,6 +3,8 @@ import { Texture } from "./Texture";
 import { BoundingBox } from './BoundingBox';
 
 export class Tile {
+    private collidable: boolean = true;
+
     // TODO: position vector instead of primitives
     public constructor(private positionX: number, private positionY: number, private texture: Texture) {
         this.positionX = positionX;
@@ -22,6 +24,14 @@ export class Tile {
         return this.positionY;
     }
 
+    public get Collidable(): boolean {
+        return this.collidable;
+    }
+
+    public set Collidable(value: boolean) {
+        this.collidable = value;
+    }
+
     public IsPointInside(point: vec3, offsetX: number, offsetY: number): boolean {
         // A tile is always 1x1
         const minX = this.positionX + offsetX;
@@ -34,6 +44,10 @@ export class Tile {
     }
 
     public IsCollidingWith(boundingBox: BoundingBox, offsetX: number, offsetY: number) {
+        if (!this.collidable) {
+            return false;
+        }
+
         // A tile is always 1x1
         const minX = this.positionX + offsetX;
         const maxX = this.positionX + offsetX + 1;

@@ -19,12 +19,15 @@ export class BackingState extends DragonStateBase implements IState {
         this.timeInBacking += delta;
         const dir = vec3.sub(vec3.create(), this.dragon.CenterPosition, this.hero.CenterPosition);
         if (dir[0] > 0) {
-            this.dragon.MoveOnX(0.0035, delta);
+            this.dragon.Move(vec3.fromValues(0.025, 0, 0), delta);;
         } else if (dir[0] < 0) {
-            this.dragon.MoveOnX(-0.0035, delta);
+            this.dragon.Move(vec3.fromValues(-0.025, 0, 0), delta);
         }
 
-        if (this.timeInBacking > 3000 || (vec3.distance(this.dragon.CenterPosition, this.hero.CenterPosition) > 15 && this.timeInBacking > 1000)) {
+        if (this.timeInBacking > 1500 ||
+            (vec3.distance(this.dragon.CenterPosition, this.hero.CenterPosition) > 15 &&
+                this.timeInBacking > 500)
+        ) {
             this.timeInBacking = 0;
 
             this.context.ChangeState(this.context.CHARGE_STATE());

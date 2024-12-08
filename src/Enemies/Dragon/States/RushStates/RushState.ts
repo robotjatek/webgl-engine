@@ -10,6 +10,7 @@ import { BackingState } from './BackingState';
 import { ChargeState } from './ChargeState';
 import { PreAttackState } from './PreAttackState';
 import { AttackState } from './AttackState';
+import { vec3 } from 'gl-matrix';
 
 export class RushState extends DragonStateBase implements IState {
     public START_STATE = () => new StartState(this.hero, this.dragon, this);
@@ -38,12 +39,24 @@ export class RushState extends DragonStateBase implements IState {
     }
 
     public async Update(delta: number, shared: SharedDragonStateVariables): Promise<void> {
+        console.log('rush')
         await this.internalState.Update(delta, shared);
+
+        const dir = vec3.sub(vec3.create(), this.dragon.CenterPosition, this.hero.CenterPosition);
+        const distance = vec3.distance(this.dragon.CenterPosition, this.hero.CenterPosition);
+        if (distance > 3) {
+            if (dir[0] > 0) {
+                this.dragon.Move(vec3.fromValues(-0.003, 0, 0), delta);
+            } else if (dir[0] < 0) {
+                this.dragon.Move(vec3.fromValues(0.003, 0, 0), delta);
+            }
+        }
     }
 
     public Enter(): void {
         this.internalState = this.START_STATE();
     }
+
     public Exit(): void {
         // Do nothing
     }

@@ -12,12 +12,20 @@ import { FreeCameraEvent } from './FreeCameraEvent';
 import { Camera } from 'src/Camera';
 import { Environment } from 'src/Environment';
 
-// TODO: boss trigger + editor
 // TODO: state machine
+enum State {
+    SPAWN,
+    FIGHT,
+    BOSS_DEATH,
+    HERO_EXIT,
+}
+
+// BUG: a kamera még mindig remegve marad, ha megöltem a bosst és újratöltök
+// TODO: boss trigger + editor
 export class BossEvent implements ILevelEvent {
 
     public static readonly EVENT_KEY = 'boss_event';
-    private state: number = 0;
+    private state: State = State.SPAWN;
     private boss: IEnemy;
     private started: boolean = false;
     private timeSinceBossDied = 0;
@@ -42,7 +50,7 @@ export class BossEvent implements ILevelEvent {
 
     // TODO: boss health parameter
     public async Update(delta: number): Promise<void> {
-        if (this.state === 0) {
+        if (this.state === State.SPAWN) {
             this.started = true;
             // Spawn
             this.roar.Play();
@@ -58,8 +66,9 @@ export class BossEvent implements ILevelEvent {
                 });
 
             this.level.AddGameObject(this.boss);
-            this.state++;
-        } else if (this.state === 1) {
+            this.state = State.FIGHT;
+        } 
+        else if (this.state === State.FIGHT) {
             // Fight state
             // State change is handled in OnBossDeath
             const bossHealthText = `Liz the lizard queen: ${this.boss.Health} HP`;
@@ -67,17 +76,21 @@ export class BossEvent implements ILevelEvent {
             this.bossHealthText.WithText(bossHealthText, vec2.fromValues(
                 this.uiService.Width / 2 - dimensions.width / 2, 50), 0.5)
                 .WithSaturation(1);
-
-        } else if (this.state === 2) {
+        } else if (this.state === State.BOSS_DEATH) {
             // OnBoss death state    
             // move hero to the end marker
             this.hero.AcceptInput = false;
             this.timeSinceBossDied += delta;
             // wait for some time before moving the hero
             if (this.timeSinceBossDied > 1500) {
-                this.state++;
+                this.state = State.HERO_EXIT
             }
-        } else if (this.state === 3) {
+        } else if (this.state === State.HERO_EXIT) {
+            // make exit tiles passable
+            this.level.MainLayer.SetCollision(29, 11, false);
+            this.level.MainLayer.SetCollision(29, 12, false);
+            this.level.MainLayer.SetCollision(29, 13, false);
+            this.level.MainLayer.SetCollision(29, 14, false);
             this.hero.MoveRight(0.01, delta);
         }
 
@@ -99,7 +112,7 @@ export class BossEvent implements ILevelEvent {
         this.level.RemoveGameObject(this.boss);
         this.shakeSound.Play(1, 1, null, true); // TODO: sound manager with global sounds? on/off
         this.camera.Shake = true;
-        this.state++;
+        this.state = State.BOSS_DEATH;
     }
 
     public Dispose(): void {

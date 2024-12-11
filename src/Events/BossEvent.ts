@@ -20,7 +20,6 @@ enum State {
     HERO_EXIT,
 }
 
-// BUG: a kamera még mindig remegve marad, ha megöltem a bosst és újratöltök
 // TODO: boss trigger + editor
 export class BossEvent implements ILevelEvent {
 
@@ -110,7 +109,7 @@ export class BossEvent implements ILevelEvent {
         // TODO: fade out boss music
         this.uiService.RemoveTextbox(this.bossHealthText);
         this.level.RemoveGameObject(this.boss);
-        this.shakeSound.Play(1, 1, null, true); // TODO: sound manager with global sounds? on/off
+        this.shakeSound.Play(1, 1, null, true);
         this.camera.Shake = true;
         this.state = State.BOSS_DEATH;
     }

@@ -28,8 +28,8 @@ export class MainSelectionState extends PauseStateBase {
     public override Exit(): void {
     }
 
-    public override Update(delta: number, shared: SharedVariables): void {
-        super.Update(delta, shared);
+    public override async Update(delta: number, shared: SharedVariables): Promise<void> {
+        await super.Update(delta, shared);
 
         if ((this.keyHandler.IsPressed(Keys.S) || this.gamepadHandler.IsPressed(XBoxControllerKeys.DOWN))
             && shared.elapsedTimeSinceKeypress > this.keyPressWaitTime) {

@@ -10,7 +10,6 @@ import { IProjectile } from '../../../Projectiles/IProjectile';
 
 enum States {
     SWEEPING,
-    PRE_ATTACK,
     ATTACK
 }
 
@@ -18,6 +17,8 @@ export class GroundAttackState extends DragonStateBase implements IState {
 
     private state: States = States.SWEEPING;
     private dir = vec3.fromValues(-0.01, 0, 0);
+    private timeSignalingFireballAttack = 0;
+    private signalingFireball = false;
 
     public constructor(hero: Hero,
                        dragon: DragonEnemy,
@@ -27,45 +28,56 @@ export class GroundAttackState extends DragonStateBase implements IState {
     }
 
     public async Update(delta: number, shared: SharedDragonStateVariables): Promise<void> {
-        console.log('ground')
+        // Move left and right. Change direction when colliding with a wall
         if (this.dragon.WillCollide(this.dir, delta)) {
             this.dir = vec3.fromValues(this.dir[0] * -1, 0, 0);
         }
         this.dragon.Move(this.dir, delta);
         this.MatchHeroHeight(delta);
 
-        if (this.state == States.SWEEPING) {
+        if (this.state === States.SWEEPING) {
+            // In sweeping state we randomly spit a fireball
             const distance = vec3.distance(this.hero.CenterPosition, this.dragon.CenterPosition);
             if (shared.timeSinceLastFireBall > 1500) {
                 // TODO: spit fireball with a random chance
-                // TODO: signal spit fireball
                 // spit fireball
                 if (distance < 30 && distance > 10) {
-                    // TODO: mint a bitenál ezt a kalkulációt is bemozgatni a dragonba
-                    const projectileCenter = this.dragon.FacingDirection[0] > 0 ?
-                        vec3.add(vec3.create(), this.dragon.CenterPosition, vec3.fromValues(-3, 1, 0)) :
-                        vec3.add(vec3.create(), this.dragon.CenterPosition, vec3.fromValues(3, 1, 0));
+                    // internal state in sweep: signal => (time in signaling) => spawn fireball
+                    if (!this.signalingFireball) {
+                        this.dragon.SignalAttack();
+                        this.signalingFireball = true;
+                    }
+                }
+
+                if (this.signalingFireball) {
+                    this.timeSignalingFireballAttack += delta;
+                }
+
+                if (this.timeSignalingFireballAttack > 10 / 60 * 1000) {
+                    const projectileCenter = this.dragon.FireBallProjectileSpawnPosition;
                     const fireball = await Fireball.Create(
                         projectileCenter,
                         vec3.clone(this.dragon.FacingDirection),
                         this.collider);
 
                     this.spawnProjectile(this.dragon, fireball);
-                    shared.timeSinceLastFireBall = 0;
+                    this.timeSignalingFireballAttack = 0;
+                    this.signalingFireball = false;
 
-                    if (distance < 6) {
-                        this.state = States.ATTACK;
-                    }
+                    shared.timeSinceLastFireBall = 0;
+                }
+
+                if (distance < 6) {
+                    this.state = States.ATTACK;
                 }
             }
 
+            // Random change back to "idle" to be able to change into different states
             const chance = Math.random();
             if (chance < 0.01) {
                 this.dragon.ChangeState(this.dragon.IDLE_STATE());
             }
-        } else if (this.state == States.PRE_ATTACK) {
-            // TODO: signal attack?
-        } else if (this.state == States.ATTACK) {
+        } else if (this.state === States.ATTACK) {
             // Bite attack is handled in the "idle" state
             this.dragon.ChangeState(this.dragon.IDLE_STATE());
         }

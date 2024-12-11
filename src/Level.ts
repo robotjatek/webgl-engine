@@ -175,18 +175,18 @@ export class Level implements IDisposable {
             }
 
             // TODO: it may not be safe to remove elements while iterating over them
-            this.gameObjects.forEach(async (e: IGameobject) => {
-                await e.Update(delta);
-                if (e.IsCollidingWith(this.hero.BoundingBox, false)) {
-                    this.hero.CollideWithGameObject(e);
+            for (const gameObject of this.gameObjects) {
+                await gameObject.Update(delta);
+                if (gameObject.IsCollidingWith(this.hero.BoundingBox, false)) {
+                    this.hero.CollideWithGameObject(gameObject);
                 }
 
                 // Despawn out-of-bounds gameobjects. These will be projectiles most of the time.
-                if (this.MainLayer.IsOutsideBoundary(e.BoundingBox)) {
-                    this.gameObjects = this.gameObjects.filter(item => item !== e);
-                    e.Dispose();
+                if (this.MainLayer.IsOutsideBoundary(gameObject.BoundingBox)) {
+                    this.gameObjects = this.gameObjects.filter(item => item !== gameObject);
+                    gameObject.Dispose();
                 }
-            });
+            }
 
             this.activeEvent.Update(delta);
             this.CheckForEndCondition();
@@ -311,7 +311,7 @@ export class Level implements IDisposable {
                     vec3.fromValues(descriptor.xPos, descriptor.yPos - 4, 1),
                     vec2.fromValues(5, 5),
                     this.MainLayer,
-                    this.hero, // To track where the hero is, i want to move as much of the game logic from the update loop as possible
+                    this.hero, // To track where the hero is, U want to move as much of the game logic from the update loop as possible
                     (sender: DragonEnemy) => { this.RemoveGameObject(sender) }, // onDeath
                     // Spawn projectile
                     // TODO: unused sender

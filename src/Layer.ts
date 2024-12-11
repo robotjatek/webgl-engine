@@ -12,8 +12,8 @@ import { IDisposable } from './IDisposable';
 
 export class Layer implements ICollider, IDisposable {
 
-    private initialLayerOffsetX: number;
-    private initialLayerOffsetY: number;
+    private readonly initialLayerOffsetX: number;
+    private readonly initialLayerOffsetY: number;
     private initialTileData: Tile[] = [];
 
     private constructor(private SpriteBatches: SpriteBatch[],
@@ -46,6 +46,8 @@ export class Layer implements ICollider, IDisposable {
     }
 
     public get BoundingBox(): BoundingBox {
+        // TODO: some interface segregation/liskov substitution issue...
+        //  A layer's bounding box could be a large layer sized BB. Its use is limited. Maybe the IsInsideBounds could reuse it
         throw new Error('Method not implemented. Use IsColliding with instead');
     }
 

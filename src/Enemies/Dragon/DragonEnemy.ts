@@ -20,7 +20,6 @@ import { EnterArenaState } from './States/EnterArenaState';
 import { GroundAttackState } from './States/GroundAttackState';
 import { Layer } from '../../Layer';
 
-// TODO: signal spit attack
 // TODO: multi phase fight
 // TODO: sweeping flame breath - before death? with safe zones on the map
 export class DragonEnemy implements IEnemy {
@@ -175,6 +174,14 @@ export class DragonEnemy implements IEnemy {
         return projectileCenter;
     }
 
+    public get FireBallProjectileSpawnPosition(): vec3 {
+        const projectileCenter = this.FacingDirection[0] > 0 ?
+            vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-3, 1, 0)) :
+            vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(3, 1, 0));
+
+        return projectileCenter;
+    }
+
     public get BoundingBox(): BoundingBox {
         return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize);
     }
@@ -251,11 +258,6 @@ export class DragonEnemy implements IEnemy {
         this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
 
         await this.state.Update(delta, this.shared);
-
-        // // TODO: bármikor out-of-bounds => enter arena state
-        // if (this.CenterPosition[0] > 26 && this.CenterPosition[1] > 10) {
-        //     this.ChangeState(this.ENTER_ARENA_STATE());
-        // }
 
         // TODO: gravity to velocity -- flying enemy maybe does not need gravity?
         // TODO: velocity to position

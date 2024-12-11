@@ -142,8 +142,8 @@ export class PauseScreen implements IDisposable {
         }
     }
 
-    public Update(elapsed: number): void {
-        this.state.Update(elapsed, this.sharedVariables);
+    public async Update(elapsed: number): Promise<void> {
+        await this.state.Update(elapsed, this.sharedVariables);
     }
 
     public SubscribeToResumeEvent(listener: IResumeEventListener) {

@@ -39,7 +39,6 @@ export class RushState extends DragonStateBase implements IState {
     }
 
     public async Update(delta: number, shared: SharedDragonStateVariables): Promise<void> {
-        console.log('rush')
         await this.internalState.Update(delta, shared);
 
         const dir = vec3.sub(vec3.create(), this.dragon.CenterPosition, this.hero.CenterPosition);

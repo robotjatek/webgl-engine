@@ -25,7 +25,7 @@ export interface IResumeEventListener {
 }
 
 export interface IQuitEventListener {
-  Quit(): void;
+  Quit(): Promise<void>;
 }
 
 export interface INextLevelEvent {
@@ -166,12 +166,14 @@ export class Game implements IStartEventListener,
     }
   }
 
-  public Quit(): void {
+  public async Quit(): Promise<void> {
     this.pauseScreen.ResetStates();
     this.level.StopMusic();
     this.level.Dispose();
     this.level = null;
     this.state = State.START_SCREEN;
+    this.camera = new Camera(vec3.create());
+    SoundEffectPool.GetInstance().StopAll();
   }
 
   public async Run(): Promise<void> {
@@ -255,7 +257,7 @@ export class Game implements IStartEventListener,
         .WithText(`Coins: ${this.level.Hero.CollectedCoins}`, vec2.fromValues(10, this.healthTextbox.Height), 0.5);
     } else if (this.state === State.PAUSED) {
       this.level.SetMusicVolume(0.15);
-      this.pauseScreen.Update(elapsedTime);
+      await this.pauseScreen.Update(elapsedTime);
     }
   }
 

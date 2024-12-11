@@ -33,7 +33,6 @@ export class EnterArenaState extends DragonStateBase implements IState {
             const dir = vec3.fromValues(-0.005, 0, 0);
             this.dragon.Move(dir, delta);
         } else {
-            // TODO: level restartnál újrainicializálni ezeket a tileokat...
             // close tiles
             this.layer.SetCollision(29, 11, true);
             this.layer.SetCollision(29, 12, true);

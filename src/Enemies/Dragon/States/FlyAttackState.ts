@@ -16,6 +16,7 @@ enum State {
 }
 
 export class FlyAttackState extends DragonStateBase implements IState {
+
     private state: State = State.REACH_ALTITUDE;
     private dir = vec3.fromValues(-0.01, 0, 0);
     private savedHeroPosition: vec3;
@@ -30,7 +31,6 @@ export class FlyAttackState extends DragonStateBase implements IState {
     }
 
     public async Update(delta: number, shared: SharedDragonStateVariables): Promise<void> {
-        console.log('fly');
         // fly up
         if (this.state === State.REACH_ALTITUDE) {
             const destinationHeight = 6;

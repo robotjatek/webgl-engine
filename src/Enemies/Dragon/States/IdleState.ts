@@ -27,13 +27,10 @@ export class IdleState extends DragonStateBase implements IState {
     }
 
     public async Update(delta: number, shared: SharedDragonStateVariables): Promise<void> {
-        console.log('idle')
         const distance = vec3.distance(this.dragon.CenterPosition, this.hero.CenterPosition);
         // Bite when the hero is near
         if (shared.timeSinceLastAttack > 2000) {
             shared.timeSinceLastAttack = 0;
-            // TODO: signal fireball attack
-
             // Bite
             if (distance < 5) {
                 const projectileCenter = this.dragon.BiteProjectilePosition;
@@ -43,19 +40,15 @@ export class IdleState extends DragonStateBase implements IState {
             }
         }
 
+        // Random chance to change into a different state
         const chance = Math.random();
-        // if (chance < 0.25) {
-        //     // TODO: ez elég felesleges...
-        //     // Stay "idle"
-        //     // Ground attack state
-        // } else
-            if (chance > 0.25 && chance < 0.40) {
+        if (chance > 0.25 && chance < 0.30) {
             // Idle => fly state
             this.dragon.ChangeState(this.dragon.FLY_ATTACK_STATE());
-        } else if (chance > 0.40 && chance < 0.60) {
+        } else if (chance > 0.30 && chance < 0.35) {
             // idle => rush state
             this.dragon.ChangeState(this.dragon.RUSH_STATE());
-        } else if (chance > 0.60) {
+        } else if (chance > 0.35) {
             this.dragon.ChangeState(this.dragon.GROUND_ATTACK_STATE());
         }
     }

@@ -2939,7 +2939,9 @@
       "type": "boss_event",
       "props": {
         "enterWaypointX": "20",
-        "enterWaypointY": "32"
+        "enterWaypointY": "32",
+        "spawnX": "32",
+        "spawnY": "10"
       }
     }
   ]

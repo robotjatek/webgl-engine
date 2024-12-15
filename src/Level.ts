@@ -377,7 +377,11 @@ export class Level implements IDisposable {
                 return await EscapeEvent.Create(this.camera, eventLayer, this.MainLayer, this.hero,
                     eventLayerStopPosition, eventLayerSpeed, cameraStopPosition, cameraSpeed);
             case BossEvent.EVENT_KEY:
-                const bossPosition = vec3.fromValues(32, 14 - 4, 1); // TODO: from props -- offsets from here, or from editor?
+                const spawnPosition = {
+                    x: descriptor.props['spawnX'] as number,
+                    y: descriptor.props['spawnY'] as number,
+                }
+                const bossPosition = vec3.fromValues(spawnPosition.x, spawnPosition.y, 0);
                 const enterWaypoint = {
                     x: descriptor.props['enterWaypointX'],
                     y: descriptor.props['enterWaypointY'],

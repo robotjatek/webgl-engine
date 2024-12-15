@@ -36,12 +36,11 @@ export class GroundAttackState extends DragonStateBase implements IState {
         this.MatchHeroHeight(delta);
 
         if (this.state === States.SWEEPING) {
-            // In sweeping state we randomly spit a fireball
+            // In sweeping state the dragon can spit a fireball
             const distance = vec3.distance(this.hero.CenterPosition, this.dragon.CenterPosition);
             if (shared.timeSinceLastFireBall > 1500) {
-                // TODO: spit fireball with a random chance
                 // spit fireball
-                if (distance < 30 && distance > 10) {
+                if (distance < 30 && distance > 5) {
                     // internal state in sweep: signal => (time in signaling) => spawn fireball
                     if (!this.signalingFireball) {
                         this.dragon.SignalAttack();
@@ -76,10 +75,12 @@ export class GroundAttackState extends DragonStateBase implements IState {
             const chance = Math.random();
             if (chance < 0.01) {
                 this.dragon.ChangeState(this.dragon.IDLE_STATE());
+                return;
             }
         } else if (this.state === States.ATTACK) {
             // Bite attack is handled in the "idle" state
             this.dragon.ChangeState(this.dragon.IDLE_STATE());
+            return;
         }
     }
 

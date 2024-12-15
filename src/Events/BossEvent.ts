@@ -11,6 +11,7 @@ import { DragonEnemy } from 'src/Enemies/Dragon/DragonEnemy';
 import { FreeCameraEvent } from './FreeCameraEvent';
 import { Camera } from 'src/Camera';
 import { Environment } from 'src/Environment';
+import { Point } from '../Point';
 
 // TODO: state machine
 enum State {
@@ -30,21 +31,28 @@ export class BossEvent implements ILevelEvent {
     private timeSinceBossDied = 0;
 
     private constructor(private level: Level,
-        private hero: Hero,
-        private uiService: UIService,
-        private bossHealthText: Textbox,
-        private roar: SoundEffect,
-        private bossPosition: vec3,
-        private camera: Camera,
-        private shakeSound: SoundEffect
+                        private hero: Hero,
+                        private uiService: UIService,
+                        private bossHealthText: Textbox,
+                        private roar: SoundEffect,
+                        private bossPosition: vec3,
+                        private camera: Camera,
+                        private shakeSound: SoundEffect,
+                        private enterWaypoint: Point
     ) {
     }
 
-    public static async Create(level: Level, hero: Hero, uiService: UIService, bossPosition: vec3, camera: Camera): Promise<BossEvent> {
+    public static async Create(level: Level,
+                               hero: Hero,
+                               uiService: UIService,
+                               bossPosition: vec3,
+                               camera: Camera,
+                               enterWaypoint: Point): Promise<BossEvent> {
         const bossHealthText = await uiService.AddTextbox();
         const roar = await SoundEffectPool.GetInstance().GetAudio('audio/monster_small_roar.wav', false);
         const shakeSound = await SoundEffectPool.GetInstance().GetAudio('audio/shake.wav', false);
-        return new BossEvent(level, hero, uiService, bossHealthText, roar, bossPosition, camera, shakeSound);
+        return new BossEvent(
+            level, hero, uiService, bossHealthText, roar, bossPosition, camera, shakeSound, enterWaypoint);
     }
 
     // TODO: boss health parameter
@@ -62,12 +70,12 @@ export class BossEvent implements ILevelEvent {
                 () => this.OnBossDeath(),
                 (sender, projectile) => {
                     this.level.SpawnProjectile(projectile);
-                });
+                },
+                this.enterWaypoint);
 
             this.level.AddGameObject(this.boss);
             this.state = State.FIGHT;
-        } 
-        else if (this.state === State.FIGHT) {
+        } else if (this.state === State.FIGHT) {
             // Fight state
             // State change is handled in OnBossDeath
             const bossHealthText = `Liz the lizard queen: ${this.boss.Health} HP`;

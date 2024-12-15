@@ -29,6 +29,7 @@ import { FreeCameraEvent } from './Events/FreeCameraEvent';
 import { LevelEventTrigger } from './Events/LevelEventTrigger';
 import { BossEvent } from './Events/BossEvent';
 import { UIService } from './UIService';
+import { Point } from './Point';
 
 type TileEntity = {
     xPos: number,
@@ -95,7 +96,7 @@ export class Level implements IDisposable {
     private endConditionsMetEventListeners: IEndConditionsMetEventListener[] = [];
 
     private constructor(private layers: Layer[], private defaultLayer: number, bgShader: Shader, bgTexture: Texture, private music: SoundEffect, private levelDescriptor: LevelEntity,
-        private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler, private uiService: UIService, private camera: Camera
+                        private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler, private uiService: UIService, private camera: Camera
     ) {
         this.Background = new SpriteBatch(bgShader, [new Background()], bgTexture);
     }
@@ -312,12 +313,15 @@ export class Level implements IDisposable {
                     vec2.fromValues(5, 5),
                     this.MainLayer,
                     this.hero, // To track where the hero is, U want to move as much of the game logic from the update loop as possible
-                    (sender: DragonEnemy) => { this.RemoveGameObject(sender) }, // onDeath
+                    (sender: DragonEnemy) => {
+                        this.RemoveGameObject(sender)
+                    }, // onDeath
                     // Spawn projectile
                     // TODO: unused sender
                     (sender: DragonEnemy, projectile: IProjectile) => {
                         this.SpawnProjectile(projectile);
-                    }
+                    },
+                    null
                 );
             case 'escape_trigger':
                 return new LevelEventTrigger(this, vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), EscapeEvent.EVENT_KEY);
@@ -374,7 +378,11 @@ export class Level implements IDisposable {
                     eventLayerStopPosition, eventLayerSpeed, cameraStopPosition, cameraSpeed);
             case BossEvent.EVENT_KEY:
                 const bossPosition = vec3.fromValues(32, 14 - 4, 1); // TODO: from props -- offsets from here, or from editor?
-                return await BossEvent.Create(this, this.hero, this.uiService, bossPosition, this.camera);
+                const enterWaypoint = {
+                    x: descriptor.props['enterWaypointX'],
+                    y: descriptor.props['enterWaypointY'],
+                } as Point;
+                return await BossEvent.Create(this, this.hero, this.uiService, bossPosition, this.camera, enterWaypoint);
             default:
                 throw new Error('Unknown event type');
         }

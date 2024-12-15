@@ -55,7 +55,7 @@ export class FlyAttackState extends DragonStateBase implements IState {
         } else if (this.state === State.PRE_FLY_ATTACK) {
             this.timeSignalingAttack += delta;
             if (!this.signaling) {
-                this.dragon.SignalAttack();
+                this.dragon.SignalAttack(); // TODO: can be used in Enter() when the statemachine is implemented
                 this.signaling = true;
             }
 
@@ -83,6 +83,7 @@ export class FlyAttackState extends DragonStateBase implements IState {
             const distanceToRushPosition = vec3.distance(this.savedHeroPosition, this.dragon.CenterPosition);
             if (distanceToRushPosition < 2.0 || this.dragon.WillCollide(attackDirection, delta)) {
                 this.dragon.ChangeState(this.dragon.IDLE_STATE());
+                return;
             }
         }
 

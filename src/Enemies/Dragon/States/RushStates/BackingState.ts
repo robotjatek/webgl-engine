@@ -37,6 +37,7 @@ export class BackingState extends DragonStateBase implements IState {
     }
 
     public Enter(): void {
+        this.dragon.SignalAttack();
         this.timeInBacking = 0;
         this.backingStartSound.Play(1.0, 0.3);
     }

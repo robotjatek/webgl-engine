@@ -30,6 +30,7 @@ export class AttackState extends DragonStateBase implements IState {
 
         this.dragon.ChangeState(this.dragon.IDLE_STATE());
         shared.timeSinceLastAttack = 0;
+        return;
     }
 
     public Enter(): void {

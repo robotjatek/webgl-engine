@@ -19,12 +19,13 @@ import { FlyAttackState } from './States/FlyAttackState';
 import { EnterArenaState } from './States/EnterArenaState';
 import { GroundAttackState } from './States/GroundAttackState';
 import { Layer } from '../../Layer';
+import { Point } from '../../Point';
 
 // TODO: multi phase fight
 // TODO: sweeping flame breath - before death? with safe zones on the map
 export class DragonEnemy implements IEnemy {
 
-    public ChangeState(state: IState) {
+    public ChangeState(state: IState): void {
         this.state.Exit();
         this.state = state;
         this.state.Enter();
@@ -43,10 +44,12 @@ export class DragonEnemy implements IEnemy {
     }
 
     public ENTER_ARENA_STATE(): IState {
-        return new EnterArenaState(this.hero, this, this.collider);
+        const enterWaypoint: vec3 = this.enterWaypoint ?
+            vec3.fromValues(this.enterWaypoint.x, this.enterWaypoint.y, 0) : null;
+        return new EnterArenaState(this.hero, this, this.collider, enterWaypoint);
     }
 
-    public GROUND_ATTACK_STATE() : IState {
+    public GROUND_ATTACK_STATE(): IState {
         return new GroundAttackState(this.hero, this, this.collider, this.spawnProjectile);
     }
 
@@ -58,12 +61,12 @@ export class DragonEnemy implements IEnemy {
     private leftFacingAnimationFrames = [
         vec2.fromValues(3 / 12, 3 / 8),
         vec2.fromValues(4 / 12, 3 / 8),
-        vec2.fromValues(5 / 12, 3 / 8),
+        vec2.fromValues(5 / 12, 3 / 8)
     ];
     private rightFacingAnimationFrames = [
         vec2.fromValues(3 / 12, 1 / 8),
         vec2.fromValues(4 / 12, 1 / 8),
-        vec2.fromValues(5 / 12, 1 / 8),
+        vec2.fromValues(5 / 12, 1 / 8)
     ];
     private currentFrameSet = this.leftFacingAnimationFrames;
 
@@ -111,18 +114,20 @@ export class DragonEnemy implements IEnemy {
         private biteAttackSound: SoundEffect,
         private rushSound: SoundEffect,
         private backingStartSound: SoundEffect,
-        private texture: Texture
+        private texture: Texture,
+        private enterWaypoint?: Point
     ) {
         this.sprite.textureOffset = this.leftFacingAnimationFrames[0];
         // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
     }
 
     public static async Create(position: vec3,
-        visualScale: vec2,
-        collider: Layer,
-        hero: Hero,
-        onDeath: (enemy: DragonEnemy) => void,
-        spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void
+                               visualScale: vec2,
+                               collider: Layer,
+                               hero: Hero,
+                               onDeath: (enemy: DragonEnemy) => void,
+                               spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void,
+                               enterWaypoint?: Point
     ): Promise<DragonEnemy> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
@@ -136,7 +141,7 @@ export class DragonEnemy implements IEnemy {
         const texture = await TexturePool.GetInstance().GetTexture('textures/Monster2.png');
 
         return new DragonEnemy(position, shader, bbShader, visualScale, collider, hero, onDeath, spawnProjectile,
-            enemyDamageSound, enemyDeathSound, biteAttackSound, rushSound, backingStartSound, texture);
+            enemyDamageSound, enemyDeathSound, biteAttackSound, rushSound, backingStartSound, texture, enterWaypoint);
     }
 
     public get Health(): number {
@@ -221,7 +226,7 @@ export class DragonEnemy implements IEnemy {
     public SignalAttack(): void {
         this.signaling = true;
         this.attackSignalTime = 0;
-        this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0.8, 0.8, 0.8, 0));
+        this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0.65, 0.65, 0.65, 0));
     }
 
     public Draw(proj: mat4, view: mat4): void {
@@ -273,7 +278,7 @@ export class DragonEnemy implements IEnemy {
             this.attackSignalTime += delta;
         }
 
-        if (this.damagedTime > showOverlayTime || this.attackSignalTime > 5/60*1000) {
+        if (this.damagedTime > showOverlayTime || this.attackSignalTime > 5 / 60 * 1000) {
             this.damagedTime = 0;
             this.damaged = false;
             this.attackSignalTime = 0;

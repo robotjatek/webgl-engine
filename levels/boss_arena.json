@@ -2937,7 +2937,10 @@
   "events": [
     {
       "type": "boss_event",
-      "props": {}
+      "props": {
+        "enterWaypointX": "20",
+        "enterWaypointY": "32"
+      }
     }
   ]
 }

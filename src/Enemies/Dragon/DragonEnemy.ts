@@ -15,7 +15,7 @@ import { IState } from '../IState';
 import { SharedDragonStateVariables } from './States/SharedDragonStateVariables';
 import { IdleState } from './States/IdleState';
 import { RushState } from './States/RushStates/RushState';
-import { FlyAttackState } from './States/FlyAttackState';
+import { FlyAttackState } from './States/FlyAttackStates/FlyAttackState';
 import { EnterArenaState } from './States/EnterArenaState';
 import { GroundAttackState } from './States/GroundAttackState';
 import { Layer } from '../../Layer';
@@ -175,19 +175,17 @@ export class DragonEnemy implements IEnemy {
     }
 
     public get BiteProjectilePosition(): vec3 {
-        const projectileCenter = this.FacingDirection[0] > 0 ?
+        // returns projectile center position
+        return this.FacingDirection[0] > 0 ?
             vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-2, 1, 0)) :
             vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(2, 1, 0));
-
-        return projectileCenter;
     }
 
     public get FireBallProjectileSpawnPosition(): vec3 {
-        const projectileCenter = this.FacingDirection[0] > 0 ?
+        // returns projectile center position
+        return this.FacingDirection[0] > 0 ?
             vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-3, 1, 0)) :
             vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(3, 1, 0));
-
-        return projectileCenter;
     }
 
     public get BoundingBox(): BoundingBox {
@@ -320,9 +318,7 @@ export class DragonEnemy implements IEnemy {
     public CheckCollisionWithCollider(nextPosition: vec3): boolean {
         const nextBbPos = vec3.add(vec3.create(), nextPosition, this.bbOffset);
         const nextBoundingBox = new BoundingBox(nextBbPos, this.bbSize);
-        const colliding = this.collider.IsCollidingWith(nextBoundingBox, true);
-
-        return colliding;
+        return this.collider.IsCollidingWith(nextBoundingBox, true);
     }
 
     /**
@@ -341,8 +337,7 @@ export class DragonEnemy implements IEnemy {
                 this.currentAnimationFrame = 0;
             }
 
-            const currentFrame = this.currentFrameSet[this.currentAnimationFrame];
-            this.sprite.textureOffset = currentFrame;
+            this.sprite.textureOffset = this.currentFrameSet[this.currentAnimationFrame];
             this.currentFrameTime = 0;
         }
     }

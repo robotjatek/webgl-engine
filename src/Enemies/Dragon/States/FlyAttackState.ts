@@ -6,7 +6,8 @@ import { DragonEnemy } from '../DragonEnemy';
 import { vec3 } from 'gl-matrix';
 import { SoundEffect } from '../../../SoundEffect';
 import { IProjectile } from '../../../Projectiles/IProjectile';
-import { Fireball } from '../../../Projectiles/Fireball';
+import { ICollider } from '../../../ICollider';
+import { Firebomb } from '../../../Projectiles/Firebomb';
 
 // TODO: 125 TODOs in 12/01 on boss_event branch
 // TODO: reimplement as an internal state machine
@@ -28,6 +29,7 @@ export class FlyAttackState extends DragonStateBase implements IState {
     public constructor(hero: Hero,
                        dragon: DragonEnemy,
                        private attackSignal: SoundEffect,
+                       private collider: ICollider,
                        private spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void) {
         super(hero, dragon);
         this.savedHeroPosition = hero.CenterPosition;
@@ -52,11 +54,14 @@ export class FlyAttackState extends DragonStateBase implements IState {
             }
             this.dragon.Move(this.dir, delta);
 
-            // TODO: spit fireballs while sweeping (only in phase 2?)
-            //const
-           // const fireball = Fireball.Create(this.dragon.FireBallProjectileSpawnPosition, )
+            // spit fireballs while sweeping
+            const variance = 1500 + Math.random() * 1000; // 1500-2500
+            if (shared.timeSinceLastFireBall > variance) {
+                shared.timeSinceLastFireBall = 0;
+                const fireball = await Firebomb.Create(this.dragon.FireBallProjectileSpawnPosition, this.collider);
+                this.spawnProjectile(this.dragon, fireball);
+            }
 
-            return; // TODO: delete when spit is implemented
             const randomTrigger = Math.random();
             if (randomTrigger < 0.01) {
                 this.state = State.PRE_FLY_ATTACK;
@@ -95,8 +100,6 @@ export class FlyAttackState extends DragonStateBase implements IState {
                 return;
             }
         }
-
-        // TODO: fire breath from above attack? -- ez lehetne phase 2-ben
     }
 
     public Enter(): void { }

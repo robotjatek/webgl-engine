@@ -40,7 +40,7 @@ export class DragonEnemy implements IEnemy {
     }
 
     public FLY_ATTACK_STATE(): IState {
-        return new FlyAttackState(this.hero, this, this.rushSound, this.spawnProjectile);
+        return new FlyAttackState(this.hero, this, this.rushSound, this.collider, this.spawnProjectile);
     }
 
     public ENTER_ARENA_STATE(): IState {
@@ -225,11 +225,8 @@ export class DragonEnemy implements IEnemy {
             }
         }
 
-        // Cancel rush on damage
-        if (this.state instanceof RushState) {
-            this.ChangeState(this.IDLE_STATE());
-            return;
-        }
+        // force state change on damage
+        this.ChangeState(this.IDLE_STATE());
     }
 
     public SignalAttack(): void {

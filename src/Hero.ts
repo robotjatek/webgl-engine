@@ -34,7 +34,7 @@ enum State {
 }
 
 export class Hero implements IDisposable {
-  private health: number = 1000;
+  private health: number = 100;
   private collectedCoins: number = 0;
   private state: State = State.IDLE;
   private currentFrameTime = 0;

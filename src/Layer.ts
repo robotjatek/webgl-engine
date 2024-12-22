@@ -42,7 +42,10 @@ export class Layer implements ICollider, IDisposable {
     public ResetState(): void {
         this.layerOffsetX = this.initialLayerOffsetX;
         this.layerOffsetY = this.initialLayerOffsetY;
-        this.Tiles = this.initialTileData;
+        this.Tiles = [];
+        this.initialTileData.forEach(t => {
+            this.Tiles.push(t);
+        })
     }
 
     public get BoundingBox(): BoundingBox {

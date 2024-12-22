@@ -29,6 +29,10 @@ export class BossEvent implements ILevelEvent {
     private started: boolean = false;
     private timeSinceBossDied = 0;
 
+    private heroExitStartPosition: vec3;
+    private musicVolume: number;
+    private startMusicVolume: number;
+
     private constructor(private level: Level,
                         private hero: Hero,
                         private uiService: UIService,
@@ -37,7 +41,8 @@ export class BossEvent implements ILevelEvent {
                         private bossPosition: vec3,
                         private camera: Camera,
                         private shakeSound: SoundEffect,
-                        private enterWaypoint: Point
+                        private enterWaypoint: Point,
+                        private music: SoundEffect
     ) {
     }
 
@@ -50,8 +55,9 @@ export class BossEvent implements ILevelEvent {
         const bossHealthText = await uiService.AddTextbox();
         const roar = await SoundEffectPool.GetInstance().GetAudio('audio/monster_small_roar.wav', false);
         const shakeSound = await SoundEffectPool.GetInstance().GetAudio('audio/shake.wav', false);
+        const music = await SoundEffectPool.GetInstance().GetAudio('audio/hunters_chance.mp3', false);
         return new BossEvent(
-            level, hero, uiService, bossHealthText, roar, bossPosition, camera, shakeSound, enterWaypoint);
+            level, hero, uiService, bossHealthText, roar, bossPosition, camera, shakeSound, enterWaypoint, music);
     }
 
     // TODO: boss health parameter
@@ -60,7 +66,10 @@ export class BossEvent implements ILevelEvent {
             this.started = true;
             // Spawn
             this.roar.Play();
-            // TODO: boss music
+            this.level.ChangeMusic(this.music, 0.5);
+            this.musicVolume = this.level.GetMusicVolume();
+            this.startMusicVolume = this.musicVolume;
+
             this.boss = await DragonEnemy.Create(
                 this.bossPosition,
                 vec2.fromValues(5, 5),
@@ -87,8 +96,14 @@ export class BossEvent implements ILevelEvent {
             // move hero to the end marker
             this.hero.AcceptInput = false;
             this.timeSinceBossDied += delta;
+
+            const musicStep = this.startMusicVolume / (3000 / delta);
+            this.musicVolume -= musicStep;
+            this.level.SetMusicVolume(this.musicVolume);
+            this.heroExitStartPosition = this.hero.CenterPosition;
+
             // wait for some time before moving the hero
-            if (this.timeSinceBossDied > 1500) {
+            if (this.timeSinceBossDied > 3000) {
                 this.state = State.HERO_EXIT
             }
         } else if (this.state === State.HERO_EXIT) {
@@ -114,7 +129,6 @@ export class BossEvent implements ILevelEvent {
     }
 
     private OnBossDeath(): void {
-        // TODO: fade out boss music
         this.uiService.RemoveTextbox(this.bossHealthText);
         this.level.RemoveGameObject(this.boss);
         this.shakeSound.Play(1, 1, null, true);
@@ -129,7 +143,8 @@ export class BossEvent implements ILevelEvent {
             this.level.RemoveGameObject(this.boss);
             this.boss = null;
         }
-        this.level.ChangeEvent(FreeCameraEvent.EVENT_KEY); // make sure that the event reseted
+
+        this.level.ChangeEvent(FreeCameraEvent.EVENT_KEY); // make sure that the event has been reset
     }
 
 }

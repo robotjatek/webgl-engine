@@ -48,9 +48,17 @@ export class SoundEffect {
         }
     }
 
-    public SetVolume(volume: number) {
+    public set Volume(volume: number) {
         if (this.gainNode)
             this.gainNode.gain.value = volume;
+    }
+
+    public get Volume(): number {
+        if (!this.gainNode) {
+            return 0;
+        }
+
+        return this.gainNode.gain.value;
     }
 
     public get Path(): string {

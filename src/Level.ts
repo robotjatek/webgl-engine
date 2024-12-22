@@ -213,8 +213,21 @@ export class Level implements IDisposable {
         this.music.Stop();
     }
 
+    public ChangeMusic(music: SoundEffect, volume: number): void {
+        if (this.music !== music) {
+            this.music.Stop();
+            this.music = music;
+            music.Play(1, volume, null, true);
+        }
+    }
+
     public SetMusicVolume(volume: number): void {
-        this.music.SetVolume(volume);
+        volume = Math.max(0, Math.min(1, volume));
+        this.music.Volume = volume;
+    }
+
+    public GetMusicVolume(): number {
+        return this.music.Volume;
     }
 
     private CheckForEndCondition(): void {

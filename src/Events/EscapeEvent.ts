@@ -7,7 +7,6 @@ import { SoundEffectPool } from '../SoundEffectPool';
 import { ILevelEvent } from './ILevelEvent';
 
 // TODO: animate lava
-// TODO: make level wider + confine camera inside so camera shake wont reveal missing tiles on the borders
 export class EscapeEvent implements ILevelEvent {
     public static readonly EVENT_KEY = 'escape_event'
     private eventCameraYPos: number;

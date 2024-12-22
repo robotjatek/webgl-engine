@@ -64,7 +64,7 @@ export class Hero implements IDisposable {
   private invincible: boolean = false;
   private invincibleTime: number = 0;
   private dirOnDeath: vec3;
-  private timeSinceLastStomp: number = 0;
+  private timeSinceLastStomp: number = 9999;
   private timeSinceLastDash: number = 0;
   private dashAvailable = true;
   private timeSinceLastMeleeAttack = 0;
@@ -444,7 +444,7 @@ export class Hero implements IDisposable {
   }
 
   private Stomp(): void {
-    if (this.jumping && !this.onGround && this.state !== State.DEAD && this.state !== State.STOMP && this.timeSinceLastStomp > 350) {
+    if (this.jumping && !this.onGround && this.state !== State.DEAD && this.state !== State.STOMP && this.timeSinceLastStomp > 480) {
       this.state = State.STOMP;
       this.velocity[1] = 0.04;
       this.invincible = true;
@@ -501,7 +501,15 @@ export class Hero implements IDisposable {
   }
 
   public CollideWithDragon(enemy: DragonEnemy): void {
-    // Do nothing
+    // TODO: stomping a boss is very over powered
+    if (this.state === State.STOMP) {
+      // TODO: HandleStomp() method
+      // TODO: stomp damage pushbackelje a sárkányt valamelyik irányba
+      vec3.set(this.velocity, 0, -0.025, 0);
+      this.state = State.JUMP;
+      this.jumping = true;
+      enemy.Damage(vec3.create()); // Damage the enemy without pushing it to any direction
+    }
   }
 
   public CollideWithSlime(enemy: SlimeEnemy): void {

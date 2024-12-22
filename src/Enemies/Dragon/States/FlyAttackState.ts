@@ -5,6 +5,8 @@ import { SharedDragonStateVariables } from './SharedDragonStateVariables';
 import { DragonEnemy } from '../DragonEnemy';
 import { vec3 } from 'gl-matrix';
 import { SoundEffect } from '../../../SoundEffect';
+import { IProjectile } from '../../../Projectiles/IProjectile';
+import { Fireball } from '../../../Projectiles/Fireball';
 
 // TODO: 125 TODOs in 12/01 on boss_event branch
 // TODO: reimplement as an internal state machine
@@ -12,7 +14,7 @@ enum State {
     REACH_ALTITUDE, // Start state
     SWEEPING,
     FLY_ATTACK,
-    PRE_FLY_ATTACK
+    PRE_FLY_ATTACK,
 }
 
 export class FlyAttackState extends DragonStateBase implements IState {
@@ -25,7 +27,8 @@ export class FlyAttackState extends DragonStateBase implements IState {
 
     public constructor(hero: Hero,
                        dragon: DragonEnemy,
-                       private attackSignal: SoundEffect) {
+                       private attackSignal: SoundEffect,
+                       private spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void) {
         super(hero, dragon);
         this.savedHeroPosition = hero.CenterPosition;
     }
@@ -48,6 +51,12 @@ export class FlyAttackState extends DragonStateBase implements IState {
                 this.dir = vec3.fromValues(this.dir[0] * -1, 0, 0);
             }
             this.dragon.Move(this.dir, delta);
+
+            // TODO: spit fireballs while sweeping (only in phase 2?)
+            //const
+           // const fireball = Fireball.Create(this.dragon.FireBallProjectileSpawnPosition, )
+
+            return; // TODO: delete when spit is implemented
             const randomTrigger = Math.random();
             if (randomTrigger < 0.01) {
                 this.state = State.PRE_FLY_ATTACK;

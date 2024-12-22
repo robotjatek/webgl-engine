@@ -1,4 +1,4 @@
-import { IEnemy } from './../Enemies/IEnemy';
+import { IEnemy } from '../Enemies/IEnemy';
 import { Level } from 'src/Level';
 import { ILevelEvent } from './ILevelEvent';
 import { Hero } from 'src/Hero';
@@ -21,7 +21,6 @@ enum State {
     HERO_EXIT,
 }
 
-// TODO: boss trigger + editor
 export class BossEvent implements ILevelEvent {
 
     public static readonly EVENT_KEY = 'boss_event';
@@ -101,6 +100,7 @@ export class BossEvent implements ILevelEvent {
             this.hero.MoveRight(0.01, delta);
         }
 
+        // Lock camera in position
         const vec = vec3.fromValues(Environment.HorizontalTiles / 2, Environment.VerticalTiles, 0);
         this.camera.LookAtPosition(vec, this.level.MainLayer);
     }

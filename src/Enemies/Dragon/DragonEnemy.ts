@@ -14,7 +14,7 @@ import { SoundEffect } from 'src/SoundEffect';
 import { IState } from './States/IState';
 import { SharedDragonStateVariables } from './States/SharedDragonStateVariables';
 import { IdleState } from './States/IdleState';
-import { RushState as RushState } from './States/RushStates/RushState';
+import { RushState } from './States/RushStates/RushState';
 import { FlyAttackState } from './States/FlyAttackState';
 import { EnterArenaState } from './States/EnterArenaState';
 import { GroundAttackState } from './States/GroundAttackState';
@@ -40,7 +40,7 @@ export class DragonEnemy implements IEnemy {
     }
 
     public FLY_ATTACK_STATE(): IState {
-        return new FlyAttackState(this.hero, this, this.rushSound);
+        return new FlyAttackState(this.hero, this, this.rushSound, this.spawnProjectile);
     }
 
     public ENTER_ARENA_STATE(): IState {
@@ -87,9 +87,11 @@ export class DragonEnemy implements IEnemy {
 
     private lastFacingDirection = vec3.fromValues(-1, 0, 0); // Facing right by default
 
-    private health = 3;
+    private health = 10;
     private damagedTime = 0;
     private damaged = false;
+    private invincible = false;
+    private timeInInvincibility = 0;
 
     private signaling = false;
     private attackSignalTime = 0;
@@ -149,7 +151,7 @@ export class DragonEnemy implements IEnemy {
     }
 
     public Visit(hero: Hero): void {
-        hero.CollideWithDragon(this); // This call is not needad at all as hero does nothing with this interaction
+        hero.CollideWithDragon(this);
     }
 
     public CollideWithAttack(attack: IProjectile): void {
@@ -203,6 +205,12 @@ export class DragonEnemy implements IEnemy {
     public Damage(pushbackForce: vec3): void {
         // Dragon ignores pushback at the moment
 
+        if (this.invincible) {
+            return;
+        }
+        this.invincible = true;
+        this.timeInInvincibility = 0;
+
         this.enemyDamageSound.Play();
         this.health--;
         this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
@@ -220,6 +228,7 @@ export class DragonEnemy implements IEnemy {
         // Cancel rush on damage
         if (this.state instanceof RushState) {
             this.ChangeState(this.IDLE_STATE());
+            return;
         }
     }
 
@@ -246,9 +255,15 @@ export class DragonEnemy implements IEnemy {
     }
 
     public async Update(delta: number): Promise<void> {
+        this.timeInInvincibility += delta;
         this.shared.timeSinceLastAttack += delta;
         this.shared.timeSinceLastCharge += delta;
         this.shared.timeSinceLastFireBall += delta;
+
+        if (this.timeInInvincibility > 700 && this.invincible === true) {
+            this.invincible = false;
+            this.timeInInvincibility = 0;
+        }
 
         // Face in the direction of the hero
         const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);

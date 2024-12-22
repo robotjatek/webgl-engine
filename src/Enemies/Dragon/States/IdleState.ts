@@ -40,6 +40,10 @@ export class IdleState extends DragonStateBase implements IState {
             }
         }
 
+        // TODO: remove when fly spit implemented
+        this.dragon.ChangeState(this.dragon.GROUND_ATTACK_STATE());
+        return;
+
         // Random chance to change into a different state
         const chance = Math.random();
         if (chance > 0.25 && chance < 0.30) {

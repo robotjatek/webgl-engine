@@ -49,7 +49,7 @@ export class Fireball implements IProjectile {
 
     private batch: SpriteBatch = new SpriteBatch(this.shader, [this.sprite], this.texture);
 
-    // TODO: altough i dont use bbOffset here I kept all duplicated code nearly the same, to make refactors easier
+    // TODO: although i dont use bbOffset here I kept all duplicated code nearly the same, to make refactors easier
     private bbOffset = vec3.fromValues(0, 0, 0);
     private bbSize = vec2.fromValues(2.0, 1.0);
     private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
@@ -137,7 +137,7 @@ export class Fireball implements IProjectile {
     }
 
     public async Update(delta: number): Promise<void> {
-        this.currentFrameSet = this.moveDirection[0] < 0 ?
+        this.currentFrameSet = this.moveDirection[0] > 0 ?
             this.rightFacingAnimationFrames :
             this.leftFacingAnimationFrames;
         this.Animate(delta);
@@ -146,7 +146,8 @@ export class Fireball implements IProjectile {
             this.spawnSound.Play(1, 0.5);
             this.spawnSoundPlayed = true;
         }
-        this.MoveInDirection(delta);
+
+        this.Move(this.moveDirection, delta);
 
         if (this.alreadyHit) {
             this.OnHitListeners.forEach(l => l(this));
@@ -157,20 +158,11 @@ export class Fireball implements IProjectile {
         return this.BoundingBox.IsCollidingWith(boundingBox);
     }
 
-    private MoveInDirection(delta: number): void {
-        if (this.moveDirection[0] < 0) {
-            this.MoveOnX(0.015, delta);
-        } else {
-            this.MoveOnX(-0.015, delta);
-        }
-    }
-
-    // TODO: generic move function like in dragon
     // TODO: generic move function as a component
-    private MoveOnX(amount: number, delta: number): void {
-        const nextCenterPosition = vec3.fromValues(this.centerPosition[0] + amount * delta, this.centerPosition[1], 0);
-        if (!this.CheckCollisionWithCollider(nextCenterPosition)) {
-            this.centerPosition = nextCenterPosition;
+    private Move(direction: vec3, delta: number): void {
+        const nextPosition = vec3.scaleAndAdd(vec3.create(), this.centerPosition, direction, delta);
+        if (!this.CheckCollisionWithCollider(nextPosition)) {
+            this.centerPosition = nextPosition;
         } else {
             this.hitSound.Play();
             this.alreadyHit = true;

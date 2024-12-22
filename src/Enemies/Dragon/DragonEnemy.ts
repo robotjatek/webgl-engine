@@ -17,7 +17,7 @@ import { IdleState } from './States/IdleState';
 import { RushState } from './States/RushStates/RushState';
 import { FlyAttackState } from './States/FlyAttackStates/FlyAttackState';
 import { EnterArenaState } from './States/EnterArenaState';
-import { GroundAttackState } from './States/GroundAttackState';
+import { GroundAttackState } from './States/GroundAttackStates/GroundAttackState';
 import { Layer } from '../../Layer';
 import { Point } from '../../Point';
 

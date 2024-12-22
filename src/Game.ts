@@ -49,11 +49,10 @@ enum State {
 // TODO: play attack sound in different pitches
 // TODO: outro level after escape sequence
 
-// TODO: resource tracker: keep track of 'alive' opengl and other resurces resources the number shouldnt go up
+// TODO: resource tracker: keep track of 'alive' opengl and other resources resources the number shouldn't go up
 // TODO: ui builder framework
 // TODO: flip sprite
 // TODO: recheck every vector passing. Sometimes vectors need to be cloned
-// TODO: FF8 Starting Up/FF9 Hunter's Chance - for the final BOSS music?
 // TODO: update ts version
 // TODO: render bounding boxes in debug mode
 // TODO: texture map padding

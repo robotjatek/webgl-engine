@@ -1,5 +1,5 @@
 import { DragonStateBase } from './DragonStateBase';
-import { IState } from './IState';
+import { IState } from '../../IState';
 import { SharedDragonStateVariables } from './SharedDragonStateVariables';
 import { Hero } from '../../../Hero';
 import { DragonEnemy } from '../DragonEnemy';
@@ -23,11 +23,12 @@ export class GroundAttackState extends DragonStateBase implements IState {
     public constructor(hero: Hero,
                        dragon: DragonEnemy,
                        private collider: ICollider,
-                       private spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void) {
+                       private spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void,
+                       private shared: SharedDragonStateVariables) {
         super(hero, dragon);
     }
 
-    public async Update(delta: number, shared: SharedDragonStateVariables): Promise<void> {
+    public override async Update(delta: number): Promise<void> {
         // Move left and right. Change direction when colliding with a wall
         if (this.dragon.WillCollide(this.dir, delta)) {
             this.dir = vec3.fromValues(this.dir[0] * -1, 0, 0);
@@ -38,7 +39,7 @@ export class GroundAttackState extends DragonStateBase implements IState {
         if (this.state === States.SWEEPING) {
             // In sweeping state the dragon can spit a fireball
             const distance = vec3.distance(this.hero.CenterPosition, this.dragon.CenterPosition);
-            if (shared.timeSinceLastFireBall > 1500) {
+            if (this.shared.timeSinceLastFireBall > 1500) {
                 // spit fireball
                 if (distance < 30 && distance > 5) {
                     // internal state in sweep: signal => (time in signaling) => spawn fireball
@@ -64,7 +65,7 @@ export class GroundAttackState extends DragonStateBase implements IState {
                     this.timeSignalingFireballAttack = 0;
                     this.signalingFireball = false;
 
-                    shared.timeSinceLastFireBall = 0;
+                    this.shared.timeSinceLastFireBall = 0;
                 }
 
                 if (distance < 6) {

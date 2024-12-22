@@ -1,8 +1,7 @@
 import { Hero } from 'src/Hero';
 import { DragonEnemy } from '../../DragonEnemy';
 import { DragonStateBase } from '../DragonStateBase';
-import { IState } from '../IState';
-import { SharedDragonStateVariables } from '../SharedDragonStateVariables';
+import { IState } from '../../../IState';
 import { RushState } from './RushState';
 
 export class StartState extends DragonStateBase implements IState {
@@ -14,11 +13,12 @@ export class StartState extends DragonStateBase implements IState {
     public Enter(): void {
         // do nothing
     }
+
     public Exit(): void {
         // do nothing
     }
 
-    async Update(delta: number, shared: SharedDragonStateVariables): Promise<void> {
+    public override async Update(delta: number): Promise<void> {
         this.context.ChangeState(this.context.BACKING_STATE());
         this.MatchHeroHeight(delta);
     }

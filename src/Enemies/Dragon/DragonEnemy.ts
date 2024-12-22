@@ -11,7 +11,7 @@ import { SoundEffectPool } from '../../SoundEffectPool';
 import { IProjectile } from '../../Projectiles/IProjectile';
 import { IEnemy } from '../IEnemy';
 import { SoundEffect } from 'src/SoundEffect';
-import { IState } from './States/IState';
+import { IState } from '../IState';
 import { SharedDragonStateVariables } from './States/SharedDragonStateVariables';
 import { IdleState } from './States/IdleState';
 import { RushState } from './States/RushStates/RushState';
@@ -32,15 +32,16 @@ export class DragonEnemy implements IEnemy {
     }
 
     public IDLE_STATE(): IState {
-        return new IdleState(this.hero, this, this.collider, this.biteAttackSound, this.spawnProjectile);
+        return new IdleState(this.hero, this, this.collider, this.biteAttackSound, this.spawnProjectile, this.shared);
     }
 
     public RUSH_STATE(): IState {
-        return new RushState(this.hero, this, this.rushSound, this.backingStartSound, this.biteAttackSound, this.spawnProjectile);
+        return new RushState(this.hero, this, this.rushSound, this.backingStartSound, this.biteAttackSound,
+            this.spawnProjectile, this.shared);
     }
 
     public FLY_ATTACK_STATE(): IState {
-        return new FlyAttackState(this.hero, this, this.rushSound, this.collider, this.spawnProjectile);
+        return new FlyAttackState(this.hero, this, this.rushSound, this.collider, this.spawnProjectile, this.shared);
     }
 
     public ENTER_ARENA_STATE(): IState {
@@ -50,7 +51,7 @@ export class DragonEnemy implements IEnemy {
     }
 
     public GROUND_ATTACK_STATE(): IState {
-        return new GroundAttackState(this.hero, this, this.collider, this.spawnProjectile);
+        return new GroundAttackState(this.hero, this, this.collider, this.spawnProjectile, this.shared);
     }
 
     private state: IState = this.ENTER_ARENA_STATE();
@@ -226,7 +227,9 @@ export class DragonEnemy implements IEnemy {
         }
 
         // force state change on damage
-        this.ChangeState(this.IDLE_STATE());
+        if (!(this.state instanceof EnterArenaState)) {
+            this.ChangeState(this.IDLE_STATE());
+        }
     }
 
     public SignalAttack(): void {
@@ -274,7 +277,7 @@ export class DragonEnemy implements IEnemy {
         this.Animate(delta);
         this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
 
-        await this.state.Update(delta, this.shared);
+        await this.state.Update(delta);
 
         // TODO: gravity to velocity -- flying enemy maybe does not need gravity?
         // TODO: velocity to position

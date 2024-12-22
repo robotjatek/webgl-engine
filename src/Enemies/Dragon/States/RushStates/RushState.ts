@@ -2,7 +2,7 @@ import { Hero } from 'src/Hero';
 import { IProjectile } from 'src/Projectiles/IProjectile';
 import { SoundEffect } from 'src/SoundEffect';
 import { DragonEnemy } from '../../DragonEnemy';
-import { IState } from '../IState';
+import { IState } from '../../../IState';
 import { SharedDragonStateVariables } from '../SharedDragonStateVariables';
 import { DragonStateBase } from '../DragonStateBase';
 import { StartState } from './StartState';
@@ -15,9 +15,10 @@ import { vec3 } from 'gl-matrix';
 export class RushState extends DragonStateBase implements IState {
     public START_STATE = () => new StartState(this.hero, this.dragon, this);
     public BACKING_STATE = () => new BackingState(this.hero, this.dragon, this, this.backingStartSound);
-    public CHARGE_STATE = () => new ChargeState(this.hero, this.dragon, this, this.rushSound);
+    public CHARGE_STATE = () => new ChargeState(this.hero, this.dragon, this, this.rushSound, this.shared);
     public PREATTACK_STATE = () => new PreAttackState(this.hero, this.dragon, this);
-    public ATTACK_STATE = () => new AttackState(this.hero, this.dragon, this, this.biteAttackSound, this.spawnProjectile);
+    public ATTACK_STATE = () => new AttackState(this.hero, this.dragon, this, this.biteAttackSound,
+        this.spawnProjectile, this.shared);
 
     private internalState: IState = this.START_STATE();
 
@@ -27,19 +28,20 @@ export class RushState extends DragonStateBase implements IState {
         private rushSound: SoundEffect,
         private backingStartSound: SoundEffect,
         private biteAttackSound: SoundEffect,
-        private spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void
+        private spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void,
+        private shared: SharedDragonStateVariables
     ) {
         super(hero, dragon);
-     }
-     
+    }
+
     public ChangeState(state: IState): void {
         this.internalState.Exit();
         this.internalState = state;
         this.internalState.Enter();
     }
 
-    public async Update(delta: number, shared: SharedDragonStateVariables): Promise<void> {
-        await this.internalState.Update(delta, shared);
+    public async Update(delta: number): Promise<void> {
+        await this.internalState.Update(delta);
 
         const dir = vec3.sub(vec3.create(), this.dragon.CenterPosition, this.hero.CenterPosition);
         const distance = vec3.distance(this.dragon.CenterPosition, this.hero.CenterPosition);

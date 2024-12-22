@@ -1,7 +1,6 @@
 import { Hero } from 'src/Hero';
 import { DragonStateBase } from './DragonStateBase';
-import { IState } from './IState';
-import { SharedDragonStateVariables } from './SharedDragonStateVariables';
+import { IState } from '../../IState';
 import { DragonEnemy } from '../DragonEnemy';
 import { vec3 } from 'gl-matrix';
 import { Layer } from '../../../Layer';
@@ -18,7 +17,7 @@ export class EnterArenaState extends DragonStateBase implements IState {
 
     public Enter(): void { }
 
-    public async Update(delta: number, shared: SharedDragonStateVariables): Promise<void> {
+    public async Update(delta: number): Promise<void> {
         if (this.enterWaypoint === null) {
             this.dragon.ChangeState(this.dragon.IDLE_STATE());
             return;
@@ -32,7 +31,7 @@ export class EnterArenaState extends DragonStateBase implements IState {
 
         // Move to the predefined coordinates
         if (this.dragon.CenterPosition[0] > this.enterWaypoint[0]) {
-            const dir = vec3.fromValues(-0.005, 0, 0);
+            const dir = vec3.fromValues(-0.01, 0, 0);
             this.dragon.Move(dir, delta);
         } else {
             // close tiles

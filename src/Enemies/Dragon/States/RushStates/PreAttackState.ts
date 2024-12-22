@@ -1,8 +1,7 @@
 import { Hero } from 'src/Hero';
 import { DragonEnemy } from '../../DragonEnemy';
 import { DragonStateBase } from '../DragonStateBase';
-import { IState } from '../IState';
-import { SharedDragonStateVariables } from '../SharedDragonStateVariables';
+import { IState } from '../../../IState';
 import { RushState } from './RushState';
 
 export class PreAttackState extends DragonStateBase implements IState {
@@ -12,7 +11,7 @@ export class PreAttackState extends DragonStateBase implements IState {
         super(hero, dragon);
     }
 
-    public async Update(delta: number, shared: SharedDragonStateVariables): Promise<void> {
+    public override async Update(delta: number): Promise<void> {
         // The charge is completed but we wait a couple of frames before executing an attack
         this.timeInPreAttack += delta;
 

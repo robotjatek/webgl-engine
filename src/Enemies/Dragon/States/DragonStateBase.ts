@@ -6,6 +6,8 @@ export abstract class DragonStateBase {
 
     protected constructor(protected hero: Hero, protected dragon: DragonEnemy) {}
 
+    abstract Update(delta: number): Promise<void>;
+
     /**
      * Follow hero on the Y axis with a little delay.
      * "Delay" is achieved by moving the dragon slower than the hero movement speed.

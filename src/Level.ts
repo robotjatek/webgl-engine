@@ -27,7 +27,7 @@ import { EscapeEvent } from './Events/EscapeEvent';
 import { ILevelEvent } from './Events/ILevelEvent';
 import { FreeCameraEvent } from './Events/FreeCameraEvent';
 import { LevelEventTrigger } from './Events/LevelEventTrigger';
-import { BossEvent } from './Events/BossEvent';
+import { BossEvent } from './Events/Boss/BossEvent';
 import { UIService } from './UIService';
 import { Point } from './Point';
 

@@ -1,6 +1,6 @@
 import { Hero } from 'src/Hero';
 import { DragonStateBase } from './DragonStateBase';
-import { IState } from './IState';
+import { IState } from '../../IState';
 import { SharedDragonStateVariables } from './SharedDragonStateVariables';
 import { DragonEnemy } from '../DragonEnemy';
 import { vec3 } from 'gl-matrix';
@@ -30,12 +30,13 @@ export class FlyAttackState extends DragonStateBase implements IState {
                        dragon: DragonEnemy,
                        private attackSignal: SoundEffect,
                        private collider: ICollider,
-                       private spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void) {
+                       private spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void,
+                       private shared: SharedDragonStateVariables) {
         super(hero, dragon);
         this.savedHeroPosition = hero.CenterPosition;
     }
 
-    public async Update(delta: number, shared: SharedDragonStateVariables): Promise<void> {
+    public override async Update(delta: number): Promise<void> {
         // fly up
         if (this.state === State.REACH_ALTITUDE) {
             const destinationHeight = 6;
@@ -56,8 +57,8 @@ export class FlyAttackState extends DragonStateBase implements IState {
 
             // spit fireballs while sweeping
             const variance = 1500 + Math.random() * 1000; // 1500-2500
-            if (shared.timeSinceLastFireBall > variance) {
-                shared.timeSinceLastFireBall = 0;
+            if (this.shared.timeSinceLastFireBall > variance) {
+                this.shared.timeSinceLastFireBall = 0;
                 const fireball = await Firebomb.Create(this.dragon.FireBallProjectileSpawnPosition, this.collider);
                 this.spawnProjectile(this.dragon, fireball);
             }

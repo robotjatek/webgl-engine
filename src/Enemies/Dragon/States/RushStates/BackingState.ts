@@ -3,8 +3,7 @@ import { Hero } from 'src/Hero';
 import { SoundEffect } from 'src/SoundEffect';
 import { DragonEnemy } from '../../DragonEnemy';
 import { DragonStateBase } from '../DragonStateBase';
-import { IState } from '../IState';
-import { SharedDragonStateVariables } from '../SharedDragonStateVariables';
+import { IState } from '../../../IState';
 import { RushState } from './RushState';
 
 export class BackingState extends DragonStateBase implements IState {
@@ -15,11 +14,11 @@ export class BackingState extends DragonStateBase implements IState {
         super(hero, dragon);
     }
 
-    public async Update(delta: number, shared: SharedDragonStateVariables): Promise<void> {
+    public override async Update(delta: number): Promise<void> {
         this.timeInBacking += delta;
         const dir = vec3.sub(vec3.create(), this.dragon.CenterPosition, this.hero.CenterPosition);
         if (dir[0] > 0) {
-            this.dragon.Move(vec3.fromValues(0.025, 0, 0), delta);;
+            this.dragon.Move(vec3.fromValues(0.025, 0, 0), delta);
         } else if (dir[0] < 0) {
             this.dragon.Move(vec3.fromValues(-0.025, 0, 0), delta);
         }

@@ -5,7 +5,7 @@ import { BiteProjectile } from 'src/Projectiles/BiteProjectile';
 import { IProjectile } from 'src/Projectiles/IProjectile';
 import { SoundEffect } from 'src/SoundEffect';
 import { DragonEnemy } from '../DragonEnemy';
-import { IState } from './IState';
+import { IState } from '../../IState';
 import { SharedDragonStateVariables } from './SharedDragonStateVariables';
 import { DragonStateBase } from './DragonStateBase';
 
@@ -22,15 +22,16 @@ export class IdleState extends DragonStateBase implements IState {
         dragon: DragonEnemy,
         private collider: ICollider,
         private biteAttackSound: SoundEffect,
-        private spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void) {
+        private spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void,
+        private shared: SharedDragonStateVariables) {
         super(hero, dragon);
     }
 
-    public async Update(delta: number, shared: SharedDragonStateVariables): Promise<void> {
+    public override async Update(delta: number): Promise<void> {
         const distance = vec3.distance(this.dragon.CenterPosition, this.hero.CenterPosition);
         // Bite when the hero is near
-        if (shared.timeSinceLastAttack > 2000) {
-            shared.timeSinceLastAttack = 0;
+        if (this.shared.timeSinceLastAttack > 2000) {
+            this.shared.timeSinceLastAttack = 0;
             // Bite
             if (distance < 5) {
                 const projectileCenter = this.dragon.BiteProjectilePosition;

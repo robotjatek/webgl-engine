@@ -3,19 +3,20 @@ import { Hero } from 'src/Hero';
 import { SoundEffect } from 'src/SoundEffect';
 import { DragonEnemy } from '../../DragonEnemy';
 import { DragonStateBase } from '../DragonStateBase';
-import { IState } from '../IState';
+import { IState } from '../../../IState';
 import { SharedDragonStateVariables } from '../SharedDragonStateVariables';
 import { RushState } from './RushState';
 
 export class ChargeState extends DragonStateBase implements IState {
 
-    public constructor(hero: Hero, dragon: DragonEnemy, private context: RushState, private rushSound: SoundEffect) {
+    public constructor(hero: Hero, dragon: DragonEnemy, private context: RushState, private rushSound: SoundEffect,
+                       private shared: SharedDragonStateVariables) {
         super(hero, dragon);
     }
 
-    public async Update(delta: number, shared: SharedDragonStateVariables): Promise<void> {
-        shared.timeSinceLastAttack = 0;
-        shared.timeSinceLastCharge = 0;
+    public override async Update(delta: number): Promise<void> {
+        this.shared.timeSinceLastAttack = 0;
+        this.shared.timeSinceLastCharge = 0;
         const dir = vec3.sub(vec3.create(), this.dragon.CenterPosition, this.hero.CenterPosition);
         if (dir[0] > 0) {
             this.dragon.Move(vec3.fromValues(-0.035, 0, 0), delta);
@@ -33,6 +34,7 @@ export class ChargeState extends DragonStateBase implements IState {
     public Enter(): void {
         this.rushSound.Play();
     }
+
     public Exit(): void {
         // Do nothing
     }

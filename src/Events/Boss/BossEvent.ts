@@ -27,8 +27,9 @@ export class BossEvent implements ILevelEvent {
     };
 
     public SPAWN_STATE(): IState {
-        return new SpawnState(this, this.level, this.hero, this.shared, this.bossPosition, this.enterWaypoint,
-            this.roar, this.music, this.camera, this.uiService, this.shakeSound, this.bossHealthText);
+        return new SpawnState(this, this.level, this.hero, this.shared, this.bossPosition, this.bossHealth,
+            this.enterWaypoint, this.roar, this.music, this.camera, this.uiService, this.shakeSound,
+            this.bossHealthText);
     }
 
     public FIGHT_STATE(): IState {
@@ -60,6 +61,7 @@ export class BossEvent implements ILevelEvent {
                         private bossHealthText: Textbox,
                         private roar: SoundEffect,
                         private bossPosition: vec3,
+                        private bossHealth: number,
                         private camera: Camera,
                         private shakeSound: SoundEffect,
                         private enterWaypoint: Point,
@@ -71,6 +73,7 @@ export class BossEvent implements ILevelEvent {
                                hero: Hero,
                                uiService: UIService,
                                bossPosition: vec3,
+                               bossHealth: number,
                                camera: Camera,
                                enterWaypoint: Point): Promise<BossEvent> {
         const bossHealthText = await uiService.AddTextbox();
@@ -78,10 +81,9 @@ export class BossEvent implements ILevelEvent {
         const shakeSound = await SoundEffectPool.GetInstance().GetAudio('audio/shake.wav', false);
         const music = await SoundEffectPool.GetInstance().GetAudio('audio/hunters_chance.mp3', false);
         return new BossEvent(
-            level, hero, uiService, bossHealthText, roar, bossPosition, camera, shakeSound, enterWaypoint, music);
+            level, hero, uiService, bossHealthText, roar, bossPosition, bossHealth, camera, shakeSound, enterWaypoint, music);
     }
 
-    // TODO: boss health parameter
     public async Update(delta: number): Promise<void> {
         await this.internalState.Update(delta);
 

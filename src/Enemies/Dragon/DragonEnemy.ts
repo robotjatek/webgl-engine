@@ -86,7 +86,6 @@ export class DragonEnemy implements IEnemy {
 
     private lastFacingDirection = vec3.fromValues(-1, 0, 0); // Facing right by default
 
-    private health = 10;
     private damagedTime = 0;
     private damaged = false;
     private invincible = false;
@@ -103,6 +102,7 @@ export class DragonEnemy implements IEnemy {
 
     private constructor(
         private position: vec3,
+        private health: number,
         private shader: Shader,
         private bbShader: Shader,
         private visualScale: vec2, // TODO: this should not be a parameter but hardcoded
@@ -123,6 +123,7 @@ export class DragonEnemy implements IEnemy {
     }
 
     public static async Create(position: vec3,
+                               health: number,
                                visualScale: vec2,
                                collider: Layer,
                                hero: Hero,
@@ -141,7 +142,7 @@ export class DragonEnemy implements IEnemy {
         const backingStartSound = await SoundEffectPool.GetInstance().GetAudio('audio/charge_up.mp3');
         const texture = await TexturePool.GetInstance().GetTexture('textures/Monster2.png');
 
-        return new DragonEnemy(position, shader, bbShader, visualScale, collider, hero, onDeath, spawnProjectile,
+        return new DragonEnemy(position, health, shader, bbShader, visualScale, collider, hero, onDeath, spawnProjectile,
             enemyDamageSound, enemyDeathSound, biteAttackSound, rushSound, backingStartSound, texture, enterWaypoint);
     }
 

@@ -324,6 +324,7 @@ export class Level implements IDisposable {
                 // Dragon as a regular enemy
                 return await DragonEnemy.Create(
                     vec3.fromValues(descriptor.xPos, descriptor.yPos - 4, 1),
+                    15,
                     vec2.fromValues(5, 5),
                     this.MainLayer,
                     this.hero, // To track where the hero is, I want to move as much of the game logic from the update loop as possible
@@ -399,7 +400,9 @@ export class Level implements IDisposable {
                     x: descriptor.props['enterWaypointX'],
                     y: descriptor.props['enterWaypointY'],
                 } as Point;
-                return await BossEvent.Create(this, this.hero, this.uiService, bossPosition, this.camera, enterWaypoint);
+                const bossHealth = descriptor.props['health'] as number;
+                return await BossEvent.Create(this, this.hero, this.uiService, bossPosition, bossHealth,
+                    this.camera, enterWaypoint);
             default:
                 throw new Error('Unknown event type');
         }

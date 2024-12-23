@@ -24,6 +24,7 @@ export class SpawnState implements IState {
         private hero: Hero,
         private shared: SharedBossEventVariables,
         private bossPosition: vec3,
+        private bossHealth: number,
         private enterWaypoint: Point,
         private roar: SoundEffect,
         private music: SoundEffect,
@@ -43,6 +44,7 @@ export class SpawnState implements IState {
 
         this.boss = await DragonEnemy.Create(
             this.bossPosition,
+            this.bossHealth,
             vec2.fromValues(5, 5),
             this.level.MainLayer,
             this.hero,

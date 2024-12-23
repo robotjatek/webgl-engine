@@ -2941,7 +2941,8 @@
         "enterWaypointX": "20",
         "enterWaypointY": "32",
         "spawnX": "32",
-        "spawnY": "10"
+        "spawnY": "10",
+        "health": "10"
       }
     }
   ]

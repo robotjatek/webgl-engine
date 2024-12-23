@@ -21,8 +21,6 @@ import { GroundAttackState } from './States/GroundAttackStates/GroundAttackState
 import { Layer } from '../../Layer';
 import { Point } from '../../Point';
 
-// TODO: multi phase fight
-// TODO: sweeping flame breath - before death? with safe zones on the map
 export class DragonEnemy implements IEnemy {
 
     public ChangeState(state: IState): void {

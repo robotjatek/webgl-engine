@@ -12,6 +12,9 @@ import { DragonEnemy } from '../../../Enemies/Dragon/DragonEnemy';
 import { BossEvent } from '../BossEvent';
 import { SharedBossEventVariables } from '../SharedBossEventVariables';
 
+/**
+ * Spawns the boss to the level
+ */
 export class SpawnState implements IState {
     private boss: IEnemy;
 

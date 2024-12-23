@@ -4,6 +4,11 @@ import { Level } from '../../../Level';
 import { SharedBossEventVariables } from '../SharedBossEventVariables';
 import { BossEvent } from '../BossEvent';
 
+/**
+ * The part of the boss event after the boss died.
+ * Takes the hero's controls and fades-out the boss music
+ * After some wait time, changes the state to HeroExitState
+ */
 export class BossDeathState implements IState {
 
     private timeSinceBossDied = 0;

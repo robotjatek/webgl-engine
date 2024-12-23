@@ -269,7 +269,7 @@ export class Level implements IDisposable {
 
         await this.InitHero();
 
-        // TODO: init layers -- recreate based on leveldescriptor
+        // init layers -- recreate based on level descriptor
         await this.InitGameObjects();
 
         await this.InitEvents();
@@ -365,7 +365,6 @@ export class Level implements IDisposable {
     }
 
     private DespawnAttack(attack: IProjectile): void {
-        // TODO: Attack as a gameobject?
         attack?.Dispose();
         this.attack = null;
     }

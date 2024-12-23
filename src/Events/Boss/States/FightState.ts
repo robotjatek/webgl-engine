@@ -4,6 +4,9 @@ import { UIService } from '../../../UIService';
 import { Textbox } from '../../../Textbox';
 import { vec2 } from 'gl-matrix';
 
+/**
+ * Fight state of the boss event. Maintains the UI updates of the boss health
+ */
 export class FightState implements IState {
 
     public constructor(private boss: IEnemy, private uiService: UIService, private bossHealthText: Textbox) { }

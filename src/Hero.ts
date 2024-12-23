@@ -501,10 +501,8 @@ export class Hero implements IDisposable {
   }
 
   public CollideWithDragon(enemy: DragonEnemy): void {
-    // TODO: stomping a boss is very over powered
     if (this.state === State.STOMP) {
       // TODO: HandleStomp() method
-      // TODO: stomp damage pushbackelje a sárkányt valamelyik irányba
       vec3.set(this.velocity, 0, -0.025, 0);
       this.state = State.JUMP;
       this.jumping = true;

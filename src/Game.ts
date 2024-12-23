@@ -69,6 +69,7 @@ export class Game implements IStartEventListener,
 
   private state: State = State.START_SCREEN;
   private level: Level = null;
+  private musicVolumeStack: number[] = [];
 
   private keyWasReleased = true;
   private elapsedTimeSinceStateChange = 0;
@@ -187,8 +188,18 @@ export class Game implements IStartEventListener,
     // TODO: state machine: Only can go to paused from ingame
     if (this.state === State.IN_GAME) {
       this.state = State.PAUSED;
+      this.pauseSoundEffect.Play();
       this.elapsedTimeSinceStateChange = 0;
+      this.musicVolumeStack.push(this.level.GetMusicVolume());
+      this.level.SetMusicVolume(this.musicVolumeStack.slice(-1)[0] * 0.15);
     }
+  }
+
+  public Resume(): void {
+    // TODO: statemachine move state
+    this.state = State.IN_GAME;
+    this.elapsedTimeSinceStateChange = 0;
+    this.level.SetMusicVolume(this.musicVolumeStack.pop());
   }
 
   public Play(): void {
@@ -230,9 +241,7 @@ export class Game implements IStartEventListener,
 
       if ((this.keyHandler.IsPressed(Keys.ENTER) || this.gamepadHandler.IsPressed(XBoxControllerKeys.START))
         && this.keyWasReleased && this.elapsedTimeSinceStateChange > 100) {
-        this.state = State.PAUSED;
-        this.pauseSoundEffect.Play();
-        this.elapsedTimeSinceStateChange = 0;
+        this.Pause();
         this.keyWasReleased = false;
       }
 
@@ -255,15 +264,8 @@ export class Game implements IStartEventListener,
       this.scoreTextbox
         .WithText(`Coins: ${this.level.Hero.CollectedCoins}`, vec2.fromValues(10, this.healthTextbox.Height), 0.5);
     } else if (this.state === State.PAUSED) {
-      this.level.SetMusicVolume(0.15);
       await this.pauseScreen.Update(elapsedTime);
     }
   }
 
-  public Resume(): void {
-    // TODO: statemachine move state
-    this.state = State.IN_GAME;
-    this.elapsedTimeSinceStateChange = 0;
-    this.level.SetMusicVolume(0.6);
-  }
 }

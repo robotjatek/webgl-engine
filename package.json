@@ -15,7 +15,7 @@
   "dependencies": {
     "domready": "^1.0.8",
     "gl-matrix": "^2.8.1",
-    "requirejs": "^2.3.6"
+    "requirejs": "2.3.7"
   },
   "devDependencies": {
     "@types/domready": "^1.0.0",

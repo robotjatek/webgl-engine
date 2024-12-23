@@ -12,8 +12,9 @@ import { IDisposable } from './IDisposable';
 
 export class Layer implements ICollider, IDisposable {
 
-    private initialLayerOffsetX: number;
-    private initialLayerOffsetY: number;
+    private readonly initialLayerOffsetX: number;
+    private readonly initialLayerOffsetY: number;
+    private initialTileData: Tile[] = [];
 
     private constructor(private SpriteBatches: SpriteBatch[],
         private Tiles: Tile[],
@@ -24,6 +25,11 @@ export class Layer implements ICollider, IDisposable {
     ) { 
         this.initialLayerOffsetX = layerOffsetX;
         this.initialLayerOffsetY = layerOffsetY;
+        this.Tiles.forEach(t => {
+            const tile = new Tile(t.PositionX, t.PositionY, t.Texture);
+            tile.Collidable = t.Collidable;
+            this.initialTileData.push(tile);
+        });
     }
 
     public static async Create(tiles: Tile[], parallaxOffsetFactorX: number, parallaxOffsetFactorY: number, layerOffsetX: number, layerOffsetY: number): Promise<Layer> {
@@ -36,9 +42,15 @@ export class Layer implements ICollider, IDisposable {
     public ResetState(): void {
         this.layerOffsetX = this.initialLayerOffsetX;
         this.layerOffsetY = this.initialLayerOffsetY;
+        this.Tiles = [];
+        this.initialTileData.forEach(t => {
+            this.Tiles.push(t);
+        })
     }
 
     public get BoundingBox(): BoundingBox {
+        // TODO: some interface segregation/liskov substitution issue...
+        //  A layer's bounding box could be a large layer sized BB. Its use is limited. Maybe the IsInsideBounds could reuse it
         throw new Error('Method not implemented. Use IsColliding with instead');
     }
 
@@ -90,6 +102,18 @@ export class Layer implements ICollider, IDisposable {
 
     public get MaxY(): number {
         return Math.max(...this.Tiles.map(t => t.PositionY + 1));
+    }
+
+    public SetCollision(x: number, y: number, collidable: boolean): void {
+        const tile = this.Tiles.find(t => t.PositionX === x && t.PositionY === y);
+        if (tile) {
+            tile.Collidable = collidable;
+        } else {
+            const invisibleTile = new Tile(x, y, null);
+            invisibleTile.Collidable = collidable;
+            this.Tiles.push(invisibleTile);
+        }
+
     }
 
     public IsOutsideBoundary(boundingBox: BoundingBox): boolean {

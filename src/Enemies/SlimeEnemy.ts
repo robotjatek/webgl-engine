@@ -114,6 +114,10 @@ export class SlimeEnemy implements IEnemy {
         return false;
     }
 
+    public get Health(): number {
+        return this.health;
+    }
+
     // TODO: this is also duplicated in the code
     public IsCollidingWith(boundingBox: BoundingBox): boolean {
         return this.BoundingBox.IsCollidingWith(boundingBox);
@@ -201,6 +205,7 @@ export class SlimeEnemy implements IEnemy {
         this.sprite.textureOffset = this.currentFrameSet[this.currentAnimationFrame];
     }
 
+    // TODO: simple move component implemented like in dragonenemy.ts. Implement it like a reusable component
     private MoveOnX(amount: number, delta: number): void {
         const nextPosition =
             vec3.fromValues(this.position[0] + amount * delta, this.position[1], this.position[2]);

@@ -10,7 +10,7 @@ export abstract class PauseStateBase implements IState {
 
     protected readonly keyPressWaitTime = 200;
 
-    constructor(protected readonly numberOfItems: number,
+    protected constructor(protected readonly numberOfItems: number,
         protected keyHandler: KeyHandler,
         protected gamepadHandler: ControllerHandler,
         protected menuSound: SoundEffect,
@@ -22,7 +22,7 @@ export abstract class PauseStateBase implements IState {
 
     public abstract Exit(): void;
 
-    public Update(delta: number, shared: SharedVariables): void {
+    public async Update(delta: number, shared: SharedVariables): Promise<void> {
         shared.elapsedTimeSinceKeypress += delta;
 
         // Do not trigger enter handling when it is kept hold down. Wait for a release before allowing to trigger again

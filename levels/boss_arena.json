@@ -1,0 +1,2949 @@
+{
+  "background": "textures/bg.jpg",
+  "music": "audio/lava2.mp3",
+  "layers": [
+    {
+      "tiles": [
+        {
+          "xPos": 29,
+          "yPos": 11,
+          "texture": "textures/Platform_ByJanaChumi/PNG/55.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 11,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 11,
+          "texture": "textures/Platform_ByJanaChumi/PNG/48.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 12,
+          "texture": "textures/Platform_ByJanaChumi/PNG/46.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 12,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 12,
+          "texture": "textures/Platform_ByJanaChumi/PNG/48.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 13,
+          "texture": "textures/Platform_ByJanaChumi/PNG/46.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 13,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 13,
+          "texture": "textures/Platform_ByJanaChumi/PNG/48.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 14,
+          "texture": "textures/Platform_ByJanaChumi/PNG/46.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 14,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 14,
+          "texture": "textures/Platform_ByJanaChumi/PNG/48.png"
+        }
+      ],
+      "parallaxOffsetFactorX": 0,
+      "parallaxOffsetFactorY": 0,
+      "layerOffsetX": 0,
+      "layerOffsetY": 0
+    },
+    {
+      "tiles": [
+        {
+          "xPos": 29,
+          "yPos": 0,
+          "texture": "textures/Platform_ByJanaChumi/PNG/34.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 0,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 0,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 0,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
+          "yPos": 0,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 34,
+          "yPos": 0,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 35,
+          "yPos": 0,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 36,
+          "yPos": 0,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 37,
+          "yPos": 0,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 38,
+          "yPos": 0,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 63,
+          "yPos": 0,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 1,
+          "texture": "textures/Platform_ByJanaChumi/PNG/34.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 1,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 1,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 1,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
+          "yPos": 1,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 34,
+          "yPos": 1,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 35,
+          "yPos": 1,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 36,
+          "yPos": 1,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 37,
+          "yPos": 1,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 38,
+          "yPos": 1,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 63,
+          "yPos": 1,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 2,
+          "texture": "textures/Platform_ByJanaChumi/PNG/34.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 2,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 2,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 2,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
+          "yPos": 2,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 34,
+          "yPos": 2,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 35,
+          "yPos": 2,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 36,
+          "yPos": 2,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 37,
+          "yPos": 2,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 38,
+          "yPos": 2,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 63,
+          "yPos": 2,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 3,
+          "texture": "textures/Platform_ByJanaChumi/PNG/34.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 3,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 3,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 3,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
+          "yPos": 3,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 34,
+          "yPos": 3,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 35,
+          "yPos": 3,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 36,
+          "yPos": 3,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 37,
+          "yPos": 3,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 38,
+          "yPos": 3,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 63,
+          "yPos": 3,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 4,
+          "texture": "textures/Platform_ByJanaChumi/PNG/34.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 4,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 4,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 4,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
+          "yPos": 4,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 34,
+          "yPos": 4,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 35,
+          "yPos": 4,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 36,
+          "yPos": 4,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 37,
+          "yPos": 4,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 38,
+          "yPos": 4,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 63,
+          "yPos": 4,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 5,
+          "texture": "textures/Platform_ByJanaChumi/PNG/34.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 5,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 5,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 5,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
+          "yPos": 5,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 34,
+          "yPos": 5,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 35,
+          "yPos": 5,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 36,
+          "yPos": 5,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 37,
+          "yPos": 5,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 38,
+          "yPos": 5,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 63,
+          "yPos": 5,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 6,
+          "texture": "textures/Platform_ByJanaChumi/PNG/34.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 6,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 6,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 6,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
+          "yPos": 6,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 34,
+          "yPos": 6,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 35,
+          "yPos": 6,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 36,
+          "yPos": 6,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 37,
+          "yPos": 6,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 38,
+          "yPos": 6,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 63,
+          "yPos": 6,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 7,
+          "texture": "textures/Platform_ByJanaChumi/PNG/34.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 7,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 7,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 7,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
+          "yPos": 7,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 34,
+          "yPos": 7,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 35,
+          "yPos": 7,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 36,
+          "yPos": 7,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 37,
+          "yPos": 7,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 38,
+          "yPos": 7,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 63,
+          "yPos": 7,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 8,
+          "texture": "textures/Platform_ByJanaChumi/PNG/34.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 8,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 8,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 8,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
+          "yPos": 8,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 34,
+          "yPos": 8,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 35,
+          "yPos": 8,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 36,
+          "yPos": 8,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 37,
+          "yPos": 8,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 38,
+          "yPos": 8,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 63,
+          "yPos": 8,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 9,
+          "texture": "textures/Platform_ByJanaChumi/PNG/34.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 9,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 9,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 9,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
+          "yPos": 9,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 34,
+          "yPos": 9,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 35,
+          "yPos": 9,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 36,
+          "yPos": 9,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 37,
+          "yPos": 9,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 38,
+          "yPos": 9,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 63,
+          "yPos": 9,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/34.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 34,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 35,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 36,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 37,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 38,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 39,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 40,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 41,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 42,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 43,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 44,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 45,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 46,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 47,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 48,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 49,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 50,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 51,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 52,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 53,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 54,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 55,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 56,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 57,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 58,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 59,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 60,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 61,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 62,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 63,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 38,
+          "yPos": 11,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 63,
+          "yPos": 11,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 38,
+          "yPos": 12,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 63,
+          "yPos": 12,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 38,
+          "yPos": 13,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 63,
+          "yPos": 13,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 38,
+          "yPos": 14,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 63,
+          "yPos": 14,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 0,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 1,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 2,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 3,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 4,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 5,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 6,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 7,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 8,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 9,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 10,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 11,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 12,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 13,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 14,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 15,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 16,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 17,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 18,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 19,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 20,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 21,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 22,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 23,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 24,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 25,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 26,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 27,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 28,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 33,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 34,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 35,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 36,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 37,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 38,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 39,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 40,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 41,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 42,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 43,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 44,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 45,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 46,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 47,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 48,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 49,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 50,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 51,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 52,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 53,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 54,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 55,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 56,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 57,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 58,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 59,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 60,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 61,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 62,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 63,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 0,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 1,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 2,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 3,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 4,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 5,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 6,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 7,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 8,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 9,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 10,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 11,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 12,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 13,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 14,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 15,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 16,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 17,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 18,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 19,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 20,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 21,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 22,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 23,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 24,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 25,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 26,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 27,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 28,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 34,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 35,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 36,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 37,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 38,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 39,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 40,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 41,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 42,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 43,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 44,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 45,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 46,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 47,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 48,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 49,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 50,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 51,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 52,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 53,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 54,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 55,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 56,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 57,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 58,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 59,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 60,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 61,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 62,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 63,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 0,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 1,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 2,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 3,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 4,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 5,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 6,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 7,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 8,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 9,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 10,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 11,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 12,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 13,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 14,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 15,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 16,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 17,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 18,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 19,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 20,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 21,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 22,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 23,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 24,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 25,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 26,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 27,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 28,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 34,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 35,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 36,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 37,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 38,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 39,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 40,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 41,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 42,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 43,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 44,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 45,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 46,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 47,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 48,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 49,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 50,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 51,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 52,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 53,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 54,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 55,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 56,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 57,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 58,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 59,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 60,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 61,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 62,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 63,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        }
+      ],
+      "parallaxOffsetFactorX": 0,
+      "parallaxOffsetFactorY": 0,
+      "layerOffsetX": 0,
+      "layerOffsetY": 0
+    },
+    {
+      "tiles": [
+        {
+          "xPos": 30,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 11,
+          "texture": "textures/Platform_ByJanaChumi/PNG/34.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 11,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 11,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 12,
+          "texture": "textures/Platform_ByJanaChumi/PNG/34.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 12,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 12,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 13,
+          "texture": "textures/Platform_ByJanaChumi/PNG/34.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 13,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 13,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 14,
+          "texture": "textures/Platform_ByJanaChumi/PNG/34.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 14,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 14,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 0,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 1,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 2,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 3,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 4,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 5,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 6,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 7,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 8,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 9,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 10,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 11,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 12,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 13,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 14,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 15,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 16,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 17,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 18,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 19,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 20,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 21,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 22,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 23,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 24,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 25,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 26,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 27,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 28,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 33,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 34,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 35,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 36,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 37,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 38,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 39,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 40,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 41,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 42,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 43,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 44,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 45,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 46,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 47,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 48,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 49,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 50,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 51,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 52,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 53,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 54,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 55,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 56,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 57,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 58,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 59,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 60,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 61,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 62,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 63,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
+          "xPos": 0,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 1,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 2,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 3,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 4,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 5,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 6,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 7,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 8,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 9,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 10,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 11,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 12,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 13,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 14,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 15,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 16,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 17,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 18,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 19,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 20,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 21,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 22,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 23,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 24,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 25,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 26,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 27,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 28,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 33,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 34,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 35,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 36,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 37,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 38,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 39,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 40,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 41,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 42,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 43,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 44,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 45,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 46,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 47,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 48,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 49,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 50,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 51,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 52,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 53,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 54,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 55,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 56,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 57,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 58,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 59,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 60,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 61,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 62,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 63,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 0,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 1,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 2,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 3,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 4,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 5,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 6,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 7,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 8,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 9,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 10,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 11,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 12,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 13,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 14,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 15,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 16,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 17,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 18,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 19,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 20,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 21,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 22,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 23,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 24,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 25,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 26,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 27,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 28,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 33,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 34,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 35,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 36,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 37,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 38,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 39,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 40,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 41,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 42,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 43,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 44,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 45,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 46,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 47,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 48,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 49,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 50,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 51,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 52,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 53,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 54,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 55,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 56,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 57,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 58,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 59,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 60,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 61,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 62,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 63,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        }
+      ],
+      "parallaxOffsetFactorX": 0,
+      "parallaxOffsetFactorY": 0,
+      "layerOffsetX": 0,
+      "layerOffsetY": 1
+    }
+  ],
+  "defaultLayer": 1,
+  "gameObjects": [
+    {
+      "type": "boss_trigger",
+      "xPos": 3,
+      "yPos": 0
+    },
+    {
+      "type": "boss_trigger",
+      "xPos": 3,
+      "yPos": 1
+    },
+    {
+      "type": "boss_trigger",
+      "xPos": 3,
+      "yPos": 2
+    },
+    {
+      "type": "boss_trigger",
+      "xPos": 3,
+      "yPos": 3
+    },
+    {
+      "type": "boss_trigger",
+      "xPos": 3,
+      "yPos": 4
+    },
+    {
+      "type": "boss_trigger",
+      "xPos": 3,
+      "yPos": 5
+    },
+    {
+      "type": "boss_trigger",
+      "xPos": 3,
+      "yPos": 6
+    },
+    {
+      "type": "boss_trigger",
+      "xPos": 3,
+      "yPos": 7
+    },
+    {
+      "type": "boss_trigger",
+      "xPos": 3,
+      "yPos": 8
+    },
+    {
+      "type": "boss_trigger",
+      "xPos": 3,
+      "yPos": 9
+    },
+    {
+      "type": "boss_trigger",
+      "xPos": 3,
+      "yPos": 10
+    },
+    {
+      "type": "boss_trigger",
+      "xPos": 3,
+      "yPos": 11
+    },
+    {
+      "type": "boss_trigger",
+      "xPos": 3,
+      "yPos": 12
+    },
+    {
+      "type": "boss_trigger",
+      "xPos": 3,
+      "yPos": 13
+    },
+    {
+      "type": "boss_trigger",
+      "xPos": 3,
+      "yPos": 14
+    }
+  ],
+  "levelEnd": {
+    "xPos": 34,
+    "yPos": 14
+  },
+  "start": {
+    "xPos": 1,
+    "yPos": 14
+  },
+  "nextLevel": "levels/escape.json",
+  "events": [
+    {
+      "type": "boss_event",
+      "props": {
+        "enterWaypointX": "20",
+        "enterWaypointY": "32",
+        "spawnX": "32",
+        "spawnY": "10",
+        "health": "10"
+      }
+    }
+  ]
+}

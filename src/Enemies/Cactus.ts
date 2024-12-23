@@ -117,6 +117,10 @@ export class Cactus implements IEnemy {
         return new Cactus(position, onDeath, shader, bbShader, texture, damegeSound, deathSound);
     }
 
+    public get Health(): number {
+        return this.health;
+    }
+
     public CollideWithAttack(attack: IProjectile): void {
         this.Damage(attack.PushbackForce);
     }

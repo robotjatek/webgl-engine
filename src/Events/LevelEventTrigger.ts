@@ -5,7 +5,9 @@ import { BoundingBox } from '../BoundingBox';
 import { IProjectile } from '../Projectiles/IProjectile';
 import { IGameobject } from '../IGameobject';
 
-
+/**
+ * Changes the current global level event upon contact
+ */
 export class LevelEventTrigger implements IGameobject {
     constructor(private level: Level, private position: vec3, private eventName: string) {
     }

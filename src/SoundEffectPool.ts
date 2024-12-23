@@ -53,4 +53,8 @@ export class SoundEffectPool {
             this.GetAudio('audio/cursor1.wav')
         ]);
     }
+
+    public StopAll(): void {
+        this.effects.forEach(e => e.Stop());
+    }
 }

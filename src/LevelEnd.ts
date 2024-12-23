@@ -16,6 +16,7 @@ import { Level } from './Level';
 
 export interface IEndConditionsMetEventListener {
     OnEndConditionsMet(): void;
+    OnEndConditionsLost(): void;
 }
 
 export class LevelEnd implements IGameobject, IEndConditionsMetEventListener, IDisposable {
@@ -37,6 +38,11 @@ export class LevelEnd implements IGameobject, IEndConditionsMetEventListener, ID
 
     public OnEndConditionsMet(): void {
         this.enabled = true;
+        this.shader.SetFloatUniform('alpha', this.enabled ? 1.0 : LevelEnd.transparentValue);
+    }
+
+    public OnEndConditionsLost(): void {
+        this.enabled = false;
         this.shader.SetFloatUniform('alpha', this.enabled ? 1.0 : LevelEnd.transparentValue);
     }
 

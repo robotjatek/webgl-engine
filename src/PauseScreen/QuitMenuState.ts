@@ -29,8 +29,8 @@ export class QuitMenuState extends PauseStateBase {
         this.selectedIndex = 0;
     }
 
-    public override Update(delta: number, shared: SharedVariables): void {
-        super.Update(delta, shared);
+    public override async Update(delta: number, shared: SharedVariables): Promise<void> {
+        await super.Update(delta, shared);
 
         if ((this.keyHandler.IsPressed(Keys.A) || this.gamepadHandler.IsPressed(XBoxControllerKeys.LEFT))
             && shared.elapsedTimeSinceKeypress > this.keyPressWaitTime) {
@@ -58,7 +58,7 @@ export class QuitMenuState extends PauseStateBase {
             shared.keyWasReleased = false;
             if (this.selectedIndex === 0) { // yes
                 this.context.SelectedIndex = 0;
-                this.quitListeners.forEach(l => l.Quit());
+                this.quitListeners.forEach(async l => await l.Quit());
             }
             this.context.ChangeState(this.context.MainSelectionState);
         }

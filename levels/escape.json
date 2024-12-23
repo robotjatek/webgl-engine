@@ -5,6 +5,26 @@
     {
       "tiles": [
         {
+          "xPos": 32,
+          "yPos": 0,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 1,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 2,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 3,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 4,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -50,6 +70,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 4,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 5,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -141,6 +166,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 5,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 5,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
@@ -246,6 +276,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 6,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 6,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
@@ -385,6 +420,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 7,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 8,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -545,6 +585,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 8,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 9,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -705,6 +750,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 9,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 10,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -865,6 +915,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 11,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -1020,6 +1075,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 11,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 12,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -1131,6 +1191,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 12,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 12,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
@@ -1271,6 +1336,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 13,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 13,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
@@ -1435,6 +1505,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 14,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 15,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -1595,6 +1670,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 15,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 16,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -1755,6 +1835,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 16,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 17,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -1881,6 +1966,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 17,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 17,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
@@ -1965,6 +2055,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 18,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 19,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -2051,6 +2146,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 19,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 19,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
@@ -2161,6 +2261,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 20,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 20,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
@@ -2315,6 +2420,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 21,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 22,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -2475,6 +2585,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 22,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 23,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -2635,6 +2750,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 23,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 24,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -2790,6 +2910,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 24,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 25,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -2910,6 +3035,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 25,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 26,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -3015,6 +3145,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 26,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 27,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -3111,6 +3246,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 27,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 27,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
@@ -3275,6 +3415,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 28,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 29,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -3435,6 +3580,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 29,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 30,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -3595,6 +3745,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 30,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 31,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -3755,6 +3910,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 31,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 32,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -3911,6 +4071,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 32,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 32,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
@@ -3985,6 +4150,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 33,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 34,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -4055,6 +4225,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 34,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 35,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -4215,6 +4390,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 35,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 36,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -4375,6 +4555,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 36,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 37,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -4525,6 +4710,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 37,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 38,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -4655,6 +4845,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 38,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 39,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -4781,6 +4976,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 39,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 39,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
@@ -4921,6 +5121,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 40,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 40,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
@@ -5080,6 +5285,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 41,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 42,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -5240,6 +5450,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 42,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 43,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -5400,6 +5615,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 43,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 44,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -5535,6 +5755,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 44,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 45,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -5670,6 +5895,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 45,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 46,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -5800,6 +6030,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 46,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 47,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -5911,6 +6146,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 47,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 47,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
@@ -6025,6 +6265,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 48,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 49,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -6141,6 +6386,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 49,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 49,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
@@ -6271,6 +6521,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 50,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 50,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
@@ -6416,6 +6671,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 51,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 51,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
@@ -6566,6 +6826,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 52,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 52,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
@@ -6715,6 +6980,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 53,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 54,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -6850,6 +7120,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 54,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 55,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -6980,6 +7255,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 55,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 56,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -7105,6 +7385,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 56,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 57,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -7225,6 +7510,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 57,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 58,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -7350,6 +7640,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 58,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 59,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -7490,6 +7785,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 59,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 60,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -7645,6 +7945,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 60,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 61,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -7780,6 +8085,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 61,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 62,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -7910,6 +8220,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 62,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 63,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -8030,6 +8345,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 63,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 64,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -8155,6 +8475,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 64,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 65,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -8275,6 +8600,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 65,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 66,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -8391,6 +8721,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 66,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 66,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
@@ -8510,6 +8845,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 67,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 68,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -8635,6 +8975,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 68,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 69,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -8755,6 +9100,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 69,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 70,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -8885,6 +9235,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 70,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 71,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -9030,6 +9385,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 71,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 72,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -9190,6 +9550,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 72,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 73,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -9350,6 +9715,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 73,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 74,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -9510,6 +9880,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 74,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 75,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -9660,6 +10035,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 75,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 76,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -9791,6 +10171,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 76,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 76,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
@@ -9930,6 +10315,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 77,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 78,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -10060,6 +10450,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 78,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 79,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -10180,6 +10575,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 79,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 80,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -10296,6 +10696,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 80,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 80,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
@@ -10426,6 +10831,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 81,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 81,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
@@ -10590,6 +11000,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 82,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 83,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -10750,6 +11165,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 83,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 84,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -10910,6 +11330,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 84,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 85,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -11070,6 +11495,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 85,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 86,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -11230,6 +11660,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 86,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 87,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -11390,6 +11825,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 87,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 88,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -11545,6 +11985,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
         {
+          "xPos": 32,
+          "yPos": 88,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
           "xPos": 0,
           "yPos": 89,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
@@ -11681,6 +12126,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 89,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 89,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         },
@@ -11841,6 +12291,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 90,
+          "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 90,
           "texture": "textures/Platform_ByJanaChumi/PNG/38.png"
         }
@@ -11978,6 +12433,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
         },
         {
+          "xPos": 32,
+          "yPos": 5,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
           "xPos": 0,
           "yPos": 9,
           "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
@@ -12104,6 +12564,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 20,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 20,
           "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
         },
@@ -12523,6 +12988,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
         },
         {
+          "xPos": 32,
+          "yPos": 44,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
           "xPos": 19,
           "yPos": 48,
           "texture": "textures/Platform_ByJanaChumi/PNG/17.png"
@@ -12744,6 +13214,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 60,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 60,
           "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
         },
@@ -13123,6 +13598,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
         },
         {
+          "xPos": 32,
+          "yPos": 77,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
           "xPos": 19,
           "yPos": 81,
           "texture": "textures/Platform_ByJanaChumi/PNG/17.png"
@@ -13165,54 +13645,99 @@
         {
           "xPos": 27,
           "yPos": 81,
-          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
-        },
-        {
-          "xPos": 28,
-          "yPos": 81,
-          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
-        },
-        {
-          "xPos": 29,
-          "yPos": 81,
-          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
-        },
-        {
-          "xPos": 30,
-          "yPos": 81,
-          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
-        },
-        {
-          "xPos": 31,
-          "yPos": 81,
-          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
-        },
-        {
-          "xPos": 12,
-          "yPos": 84,
-          "texture": "textures/Platform_ByJanaChumi/PNG/17.png"
-        },
-        {
-          "xPos": 13,
-          "yPos": 84,
-          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
-        },
-        {
-          "xPos": 14,
-          "yPos": 84,
-          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
-        },
-        {
-          "xPos": 15,
-          "yPos": 84,
-          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
-        },
-        {
-          "xPos": 16,
-          "yPos": 84,
           "texture": "textures/Platform_ByJanaChumi/PNG/32.png"
         },
         {
+          "xPos": 27,
+          "yPos": 85,
+          "texture": "textures/Platform_ByJanaChumi/PNG/17.png"
+        },
+        {
+          "xPos": 28,
+          "yPos": 85,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 85,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 85,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 85,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 85,
+          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+        },
+        {
+          "xPos": 27,
+          "yPos": 86,
+          "texture": "textures/Platform_ByJanaChumi/PNG/15.png"
+        },
+        {
+          "xPos": 28,
+          "yPos": 86,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 86,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 86,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 86,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 86,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 27,
+          "yPos": 87,
+          "texture": "textures/Platform_ByJanaChumi/PNG/15.png"
+        },
+        {
+          "xPos": 28,
+          "yPos": 87,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 29,
+          "yPos": 87,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 30,
+          "yPos": 87,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 87,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 87,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
           "xPos": 0,
           "yPos": 88,
           "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
@@ -13350,27 +13875,32 @@
         {
           "xPos": 27,
           "yPos": 88,
-          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+          "texture": "textures/Platform_ByJanaChumi/PNG/9.png"
         },
         {
           "xPos": 28,
           "yPos": 88,
-          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         },
         {
           "xPos": 29,
           "yPos": 88,
-          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         },
         {
           "xPos": 30,
           "yPos": 88,
-          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         },
         {
           "xPos": 31,
           "yPos": 88,
-          "texture": "textures/Platform_ByJanaChumi/PNG/27.png"
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 88,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         },
         {
           "xPos": 0,
@@ -13533,6 +14063,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         },
         {
+          "xPos": 32,
+          "yPos": 89,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
           "xPos": 0,
           "yPos": 90,
           "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
@@ -13689,6 +14224,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 90,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 90,
           "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         }
@@ -13861,6 +14401,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
         },
         {
+          "xPos": 32,
+          "yPos": 73,
+          "texture": "textures/Platform_ByJanaChumi/PNG/72.png"
+        },
+        {
           "xPos": 0,
           "yPos": 74,
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
@@ -14021,6 +14566,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
         },
         {
+          "xPos": 32,
+          "yPos": 74,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
           "xPos": 0,
           "yPos": 75,
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
@@ -14181,6 +14731,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
         },
         {
+          "xPos": 32,
+          "yPos": 75,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
           "xPos": 0,
           "yPos": 76,
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
@@ -14341,6 +14896,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
         },
         {
+          "xPos": 32,
+          "yPos": 76,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
           "xPos": 0,
           "yPos": 77,
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
@@ -14501,6 +15061,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
         },
         {
+          "xPos": 32,
+          "yPos": 77,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
           "xPos": 0,
           "yPos": 78,
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
@@ -14661,6 +15226,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
         },
         {
+          "xPos": 32,
+          "yPos": 78,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
           "xPos": 0,
           "yPos": 79,
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
@@ -14821,6 +15391,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
         },
         {
+          "xPos": 32,
+          "yPos": 79,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
           "xPos": 0,
           "yPos": 80,
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
@@ -14981,6 +15556,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
         },
         {
+          "xPos": 32,
+          "yPos": 80,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
           "xPos": 0,
           "yPos": 81,
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
@@ -15141,6 +15721,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
         },
         {
+          "xPos": 32,
+          "yPos": 81,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
           "xPos": 0,
           "yPos": 82,
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
@@ -15301,6 +15886,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
         },
         {
+          "xPos": 32,
+          "yPos": 82,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
           "xPos": 0,
           "yPos": 83,
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
@@ -15461,6 +16051,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
         },
         {
+          "xPos": 32,
+          "yPos": 83,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
           "xPos": 0,
           "yPos": 84,
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
@@ -15621,6 +16216,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
         },
         {
+          "xPos": 32,
+          "yPos": 84,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
           "xPos": 0,
           "yPos": 85,
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
@@ -15781,6 +16381,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
         },
         {
+          "xPos": 32,
+          "yPos": 85,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
           "xPos": 0,
           "yPos": 86,
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
@@ -15941,6 +16546,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
         },
         {
+          "xPos": 32,
+          "yPos": 86,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
           "xPos": 0,
           "yPos": 87,
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
@@ -16101,6 +16711,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
         },
         {
+          "xPos": 32,
+          "yPos": 87,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
           "xPos": 0,
           "yPos": 88,
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
@@ -16261,6 +16876,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
         },
         {
+          "xPos": 32,
+          "yPos": 88,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
           "xPos": 0,
           "yPos": 89,
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
@@ -16421,6 +17041,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
         },
         {
+          "xPos": 32,
+          "yPos": 89,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
           "xPos": 0,
           "yPos": 90,
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
@@ -16577,6 +17202,11 @@
         },
         {
           "xPos": 31,
+          "yPos": 90,
+          "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
+        },
+        {
+          "xPos": 32,
           "yPos": 90,
           "texture": "textures/Platform_ByJanaChumi/PNG/69.png"
         }
@@ -16591,67 +17221,32 @@
   "gameObjects": [
     {
       "type": "escape_trigger",
-      "xPos": 8,
-      "yPos": 75
-    },
-    {
-      "type": "escape_trigger",
-      "xPos": 8,
-      "yPos": 76
-    },
-    {
-      "type": "escape_trigger",
-      "xPos": 8,
-      "yPos": 77
-    },
-    {
-      "type": "escape_trigger",
-      "xPos": 8,
-      "yPos": 78
-    },
-    {
-      "type": "escape_trigger",
-      "xPos": 8,
-      "yPos": 79
-    },
-    {
-      "type": "escape_trigger",
-      "xPos": 8,
-      "yPos": 80
-    },
-    {
-      "type": "escape_trigger",
-      "xPos": 8,
-      "yPos": 81
-    },
-    {
-      "type": "escape_trigger",
-      "xPos": 8,
+      "xPos": 18,
       "yPos": 82
     },
     {
       "type": "escape_trigger",
-      "xPos": 8,
+      "xPos": 18,
       "yPos": 83
     },
     {
       "type": "escape_trigger",
-      "xPos": 8,
+      "xPos": 18,
       "yPos": 84
     },
     {
       "type": "escape_trigger",
-      "xPos": 8,
+      "xPos": 18,
       "yPos": 85
     },
     {
       "type": "escape_trigger",
-      "xPos": 8,
+      "xPos": 18,
       "yPos": 86
     },
     {
       "type": "escape_trigger",
-      "xPos": 8,
+      "xPos": 18,
       "yPos": 87
     }
   ],

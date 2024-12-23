@@ -14,7 +14,7 @@ import { ControllerHandler } from './ControllerHandler';
 import { IGameobject } from './IGameobject';
 import { IProjectile } from './Projectiles/IProjectile';
 import { IEndConditionsMetEventListener, LevelEnd } from './LevelEnd';
-import { DragonEnemy } from './Enemies/DragonEnemy';
+import { DragonEnemy } from './Enemies/Dragon/DragonEnemy';
 import { SlimeEnemy } from './Enemies/SlimeEnemy';
 import { Spike } from './Enemies/Spike';
 import { Cactus } from './Enemies/Cactus';
@@ -27,6 +27,9 @@ import { EscapeEvent } from './Events/EscapeEvent';
 import { ILevelEvent } from './Events/ILevelEvent';
 import { FreeCameraEvent } from './Events/FreeCameraEvent';
 import { LevelEventTrigger } from './Events/LevelEventTrigger';
+import { BossEvent } from './Events/Boss/BossEvent';
+import { UIService } from './UIService';
+import { Point } from './Point';
 
 type TileEntity = {
     xPos: number,
@@ -76,17 +79,9 @@ type LevelEntity = {
 }
 
 export class Level implements IDisposable {
-    private camera = new Camera(vec3.create());
 
     private events: Map<string, ILevelEvent> = new Map<string, ILevelEvent>();
     private activeEvent: ILevelEvent;
-
-    public ChangeEvent(eventName: string): void {
-        const event = this.events.get(eventName);
-        if (event) {
-            this.activeEvent = event;
-        }
-    }
 
     private Background: SpriteBatch;
     private BackgroundViewMatrix = mat4.create();
@@ -101,12 +96,12 @@ export class Level implements IDisposable {
     private endConditionsMetEventListeners: IEndConditionsMetEventListener[] = [];
 
     private constructor(private layers: Layer[], private defaultLayer: number, bgShader: Shader, bgTexture: Texture, private music: SoundEffect, private levelDescriptor: LevelEntity,
-        private levelEndOpenSoundEffect: SoundEffect, private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler
+                        private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler, private uiService: UIService, private camera: Camera
     ) {
         this.Background = new SpriteBatch(bgShader, [new Background()], bgTexture);
     }
 
-    public static async Create(levelName: string, keyHandler: KeyHandler, gamepadHandler: ControllerHandler): Promise<Level> {
+    public static async Create(levelName: string, keyHandler: KeyHandler, gamepadHandler: ControllerHandler, uiService: UIService, camera: Camera): Promise<Level> {
         levelName = levelName + '?version=' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 
         const texturePool = TexturePool.GetInstance();
@@ -115,7 +110,7 @@ export class Level implements IDisposable {
         const loadedLayers = await Promise.all(levelDescriptor.layers.map(async layer => {
             const loadedTiles = await Promise.all(layer.tiles.map(async tile => {
                 const texure = await texturePool.GetTexture(tile.texture);
-                return new Tile(tile.xPos, tile.yPos, texure)
+                return new Tile(tile.xPos, tile.yPos, texure);
             }));
 
             return await Layer.Create(loadedTiles, layer.parallaxOffsetFactorX, layer.parallaxOffsetFactorY, layer.layerOffsetX, layer.layerOffsetY);
@@ -125,17 +120,16 @@ export class Level implements IDisposable {
         const bgTexture = await TexturePool.GetInstance().GetTexture(levelDescriptor.background);
         const music = await SoundEffectPool.GetInstance().GetAudio(levelDescriptor.music, true);
 
-        const levelEndOpenSoundEffect = await SoundEffectPool.GetInstance().GetAudio('audio/bell.wav', false);
-
         return new Level(loadedLayers,
             levelDescriptor.defaultLayer,
             bgShader,
             bgTexture,
             music,
             levelDescriptor,
-            levelEndOpenSoundEffect,
             keyHandler,
-            gamepadHandler);
+            gamepadHandler,
+            uiService,
+            camera);
     }
 
     public get Hero(): Hero {
@@ -148,7 +142,7 @@ export class Level implements IDisposable {
             const cameraTranslation = mat4.getTranslation(vec3.create(), this.camera.ViewMatrix);
 
             const layerMatrix = mat4.clone(this.camera.ViewMatrix);
-            const xOffset = (i - this.defaultLayer) * cameraTranslation[0] * layer.ParallaxOffsetFactorX;
+            const xOffset = (i - this.defaultLayer) * cameraTranslation[0] * layer.ParallaxOffsetFactorX + layer.LayerOffsetX;
             const yOffset = ((i - this.defaultLayer) * cameraTranslation[1] * layer.ParallaxOffsetFactorY) + layer.LayerOffsetY;
 
             const parallaxOffset = vec3.fromValues(xOffset, yOffset, 0);
@@ -181,18 +175,19 @@ export class Level implements IDisposable {
                 this.attack.OnHit();
             }
 
-            this.gameObjects.forEach(async (e: IGameobject) => {
-                await e.Update(delta);
-                if (e.IsCollidingWith(this.hero.BoundingBox, false)) {
-                    this.hero.CollideWithGameObject(e);
+            // TODO: it may not be safe to remove elements while iterating over them
+            for (const gameObject of this.gameObjects) {
+                await gameObject.Update(delta);
+                if (gameObject.IsCollidingWith(this.hero.BoundingBox, false)) {
+                    this.hero.CollideWithGameObject(gameObject);
                 }
 
                 // Despawn out-of-bounds gameobjects. These will be projectiles most of the time.
-                if (this.MainLayer.IsOutsideBoundary(e.BoundingBox)) {
-                    this.gameObjects = this.gameObjects.filter(item => item !== e);
-                    e.Dispose();
+                if (this.MainLayer.IsOutsideBoundary(gameObject.BoundingBox)) {
+                    this.gameObjects = this.gameObjects.filter(item => item !== gameObject);
+                    gameObject.Dispose();
                 }
-            });
+            }
 
             this.activeEvent.Update(delta);
             this.CheckForEndCondition();
@@ -203,6 +198,13 @@ export class Level implements IDisposable {
         return this.layers[this.defaultLayer];
     }
 
+    public ChangeEvent(eventName: string): void {
+        const event = this.events.get(eventName);
+        if (event && event.CanStart) {
+            this.activeEvent = event;
+        }
+    }
+
     public PlayMusic(volume: number): void {
         this.music.Play(1, volume, null, true);
     }
@@ -211,22 +213,38 @@ export class Level implements IDisposable {
         this.music.Stop();
     }
 
+    public ChangeMusic(music: SoundEffect, volume: number): void {
+        if (this.music !== music) {
+            this.music.Stop();
+            this.music = music;
+            music.Play(1, volume, null, true);
+        }
+    }
+
     public SetMusicVolume(volume: number): void {
-        this.music.SetVolume(volume);
+        volume = Math.max(0, Math.min(1, volume));
+        this.music.Volume = volume;
+    }
+
+    public GetMusicVolume(): number {
+        return this.music.Volume;
     }
 
     private CheckForEndCondition(): void {
         const numberOfEndConditions = this.gameObjects.filter(p => p.EndCondition).length;
         if (numberOfEndConditions === 0 && !this.levelEndSoundPlayed) {
-            this.levelEndOpenSoundEffect.Play();
             this.levelEndSoundPlayed = true;
 
             this.endConditionsMetEventListeners.forEach(l => l.OnEndConditionsMet());
+        } else if (numberOfEndConditions > 0) {
+            // The already met end condition can be lost when a new enemy spawns
+            this.levelEndSoundPlayed = false;
+            this.endConditionsMetEventListeners.forEach(l => l.OnEndConditionsLost());
         }
     }
 
     private async RestartLevel(): Promise<void> {
-        // reset layer state (offset for now)
+        // reset layer state (offset and default layer collision state for now)
         this.layers.forEach(layer => layer.ResetState());
 
         this.endConditionsMetEventListeners = [];
@@ -240,6 +258,7 @@ export class Level implements IDisposable {
         this.updateDisabled = false;
         this.levelEndSoundPlayed = false;
 
+        this.events.forEach(e => e.Dispose());
         this.events.clear();
         await this.InitEvents();
     }
@@ -249,8 +268,8 @@ export class Level implements IDisposable {
         this.PlayMusic(0.6);
 
         await this.InitHero();
-        
-        // TODO: init layers -- recreate based on leveldescriptor
+
+        // init layers -- recreate based on level descriptor
         await this.InitGameObjects();
 
         await this.InitEvents();
@@ -302,34 +321,51 @@ export class Level implements IDisposable {
                     vec3.fromValues(descriptor.xPos, descriptor.yPos - 1.8, 1), vec2.fromValues(3, 3), this.MainLayer,
                     (c) => this.RemoveGameObject(c));
             case 'dragon':
+                // Dragon as a regular enemy
                 return await DragonEnemy.Create(
                     vec3.fromValues(descriptor.xPos, descriptor.yPos - 4, 1),
+                    15,
                     vec2.fromValues(5, 5),
                     this.MainLayer,
-                    this.hero, // To track where the hero is, i want to move as much of the game logic from the update loop as possible
-                    (sender: DragonEnemy) => { this.RemoveGameObject(sender) }, // onDeath
+                    this.hero, // To track where the hero is, I want to move as much of the game logic from the update loop as possible
+                    (sender: DragonEnemy) => {
+                        this.RemoveGameObject(sender)
+                    }, // onDeath
                     // Spawn projectile
+                    // TODO: unused sender
                     (sender: DragonEnemy, projectile: IProjectile) => {
-                        this.gameObjects.push(projectile);
-                        // Despawn projectile that hit
-                        // TODO: instead of accessing a public array, projectiles should have a subscribe method
-                        projectile.OnHitListeners.push(s => this.RemoveGameObject(s)); // TODO: despawning hero attack should be like this
-                    }
+                        this.SpawnProjectile(projectile);
+                    },
+                    null
                 );
             case 'escape_trigger':
                 return new LevelEventTrigger(this, vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), EscapeEvent.EVENT_KEY);
+            case 'boss_trigger':
+                return new LevelEventTrigger(this, vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), BossEvent.EVENT_KEY);
+
             default:
                 throw new Error('Unknown object type');
         }
     }
 
-    private RemoveGameObject(toRemove: IGameobject): void {
+    public AddGameObject(toAdd: IGameobject): void {
+        if (toAdd)
+            this.gameObjects.push(toAdd);
+    }
+
+    public RemoveGameObject(toRemove: IGameobject): void {
         this.gameObjects = this.gameObjects.filter(e => e !== toRemove);
         toRemove.Dispose();
     }
 
+    public SpawnProjectile(projectile: IProjectile) {
+        this.gameObjects.push(projectile);
+        // Despawn projectile that hit
+        // TODO: instead of accessing a public array, projectiles should have a subscribe method
+        projectile.OnHitListeners.push(s => this.RemoveGameObject(s)); // TODO: despawning hero attack should be like this
+    }
+
     private DespawnAttack(attack: IProjectile): void {
-        // TODO: Attack as a gameobject?
         attack?.Dispose();
         this.attack = null;
     }
@@ -340,7 +376,8 @@ export class Level implements IDisposable {
 
         const freeCamEvent = new FreeCameraEvent(this.camera, this.MainLayer, this.hero);
         this.events.set(FreeCameraEvent.EVENT_KEY, freeCamEvent);
-        this.activeEvent = freeCamEvent;
+
+        this.activeEvent = this.events.get(FreeCameraEvent.EVENT_KEY);
     }
 
     private async CreateLevelEvent(descriptor: EventEntity): Promise<ILevelEvent> {
@@ -352,7 +389,20 @@ export class Level implements IDisposable {
                 const cameraStopPosition = descriptor.props['cameraStopPosition'] as number;
                 const cameraSpeed = descriptor.props['cameraSpeed'] as number;
                 return await EscapeEvent.Create(this.camera, eventLayer, this.MainLayer, this.hero,
-                    eventLayerStopPosition, eventLayerSpeed,cameraStopPosition, cameraSpeed);
+                    eventLayerStopPosition, eventLayerSpeed, cameraStopPosition, cameraSpeed);
+            case BossEvent.EVENT_KEY:
+                const spawnPosition = {
+                    x: descriptor.props['spawnX'] as number,
+                    y: descriptor.props['spawnY'] as number,
+                }
+                const bossPosition = vec3.fromValues(spawnPosition.x, spawnPosition.y, 0);
+                const enterWaypoint = {
+                    x: descriptor.props['enterWaypointX'],
+                    y: descriptor.props['enterWaypointY'],
+                } as Point;
+                const bossHealth = descriptor.props['health'] as number;
+                return await BossEvent.Create(this, this.hero, this.uiService, bossPosition, bossHealth,
+                    this.camera, enterWaypoint);
             default:
                 throw new Error('Unknown event type');
         }

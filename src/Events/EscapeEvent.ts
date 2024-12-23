@@ -7,7 +7,6 @@ import { SoundEffectPool } from '../SoundEffectPool';
 import { ILevelEvent } from './ILevelEvent';
 
 // TODO: animate lava
-// TODO: make level wider + confine camera inside so camera shake wont reveal missing tiles on the borders
 export class EscapeEvent implements ILevelEvent {
     public static readonly EVENT_KEY = 'escape_event'
     private eventCameraYPos: number;
@@ -28,15 +27,15 @@ export class EscapeEvent implements ILevelEvent {
         private music: SoundEffect
     ) {
         this.eventCameraYPos = eventLayer.MaxY;
-
-        // Set up the camera to the expected state
-        this.camera.Shake = false;
-        this.shakeSound.Stop();
         this.music.Stop();
     }
 
     public get EventKey(): string {
         return EscapeEvent.EVENT_KEY;
+    }
+
+    public get CanStart(): boolean {
+        return !this.started;
     }
 
     public static async Create(camera: Camera,
@@ -60,38 +59,34 @@ export class EscapeEvent implements ILevelEvent {
         }
 
         if (this.state === 0) {
+            this.shakeSound.Play(1, 1, null, true);
+            this.camera.Shake = true;
+            
             if (!this.started) {
                 this.started = true;
-                this.shakeSound.Play();
-                this.camera.Shake = true;
 
                 this.state++;
             }
         } else if (this.state === 1) {
-            if (this.elapsedTime > 3000) {
-                this.explosionSound.Play(1, 1, null, false);
-                this.state++;
-            }
+            this.explosionSound.Play(1, 1, null, false);
+            this.state++;
         } else if (this.state === 2) {
-            if (this.elapsedTime > 3000) {
-                this.music.Play(1, 0.4, null, false);
+            this.music.Play(1, 0.4, null, false);
 
-                // max offset
-                if (this.eventLayer.MinY + this.eventLayer.LayerOffsetY > this.eventLayerStopPosition) {
-                    this.eventLayer.LayerOffsetY -= this.eventLayerSpeed * delta;
-                } else {
-                    this.camera.Shake = false;
-                }
+            // max offset
+            if (this.eventLayer.MinY + this.eventLayer.LayerOffsetY > this.eventLayerStopPosition) {
+                this.eventLayer.LayerOffsetY -= this.eventLayerSpeed * delta;
+            } else {
+                this.camera.Shake = false;
+                this.shakeSound.Stop();
+            }
 
-                if (this.eventLayer.IsCollidingWith(this.hero.BoundingBox, true)) {
-                    this.hero.DamageWithInvincibilityConsidered(vec3.fromValues(0, -0.02, 0));
-                }
+            if (this.eventLayer.IsCollidingWith(this.hero.BoundingBox, true)) {
+                this.hero.DamageWithInvincibilityConsidered(vec3.fromValues(0, -0.02, 0));
+            }
 
-                if (this.eventCameraYPos > this.cameraStopPos) {
-                    this.eventCameraYPos = (this.eventCameraYPos - (this.cameraSpeed * delta));
-                } else {
-                    this.state++; // The event "ends" when the camera reaches its final position
-                }
+            if (this.eventCameraYPos > this.cameraStopPos) {
+                this.eventCameraYPos = (this.eventCameraYPos - (this.cameraSpeed * delta));
             }
         }
 
@@ -102,5 +97,6 @@ export class EscapeEvent implements ILevelEvent {
     public Dispose(): void {
         this.music.Stop();
         this.shakeSound.Stop();
+        this.camera.Shake = false;
     }
 }

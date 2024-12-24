@@ -274,11 +274,11 @@ export class Hero implements IDisposable {
       if (this.keyHandler.IsPressed(Keys.A) ||
         this.gamepadHandler.LeftStick[0] < -0.5 ||
         this.gamepadHandler.IsPressed(XBoxControllerKeys.LEFT)) {
-        this.MoveLeft(0.01, delta);
+        this.Move(vec3.fromValues(-0.01, 0, 0), delta);
       } else if (this.keyHandler.IsPressed(Keys.D) ||
         this.gamepadHandler.LeftStick[0] > 0.5 ||
         this.gamepadHandler.IsPressed(XBoxControllerKeys.RIGHT)) {
-        this.MoveRight(0.01, delta);
+        this.Move(vec3.fromValues(0.01, 0, 0), delta);
       }
 
       if (this.keyHandler.IsPressed(Keys.SPACE) ||
@@ -408,28 +408,13 @@ export class Hero implements IDisposable {
 
   // TODO: move left, and move right should a change the velocity not the position itself
   // TODO: gradual acceleration
-  public MoveRight(amount: number, delta: number): void {
+  public Move(direction: vec3, delta: number): void {
     if (this.state !== State.DEAD && this.state !== State.STOMP && this.state !== State.DASH) {
       this.state = State.WALK;
-      //if (!this.invincible) {
-      const nextPosition = vec3.fromValues(this.position[0] + amount * delta, this.position[1], this.position[2]);
+      const nextPosition = vec3.scaleAndAdd(vec3.create(), this.position, direction, delta);
       if (!this.checkCollision(nextPosition)) {
         this.position = nextPosition;
       }
-      //}
-    }
-  }
-
-  public MoveLeft(amount: number, delta: number): void {
-    if (this.state !== State.DEAD && this.state !== State.STOMP && this.state !== State.DASH) {
-      this.state = State.WALK;
-
-      //if (!this.invincible) {
-      const nextPosition = vec3.fromValues(this.position[0] - amount * delta, this.position[1], this.position[2]);
-      if (!this.checkCollision(nextPosition)) {
-        this.position = nextPosition;
-      }
-      //   }
     }
   }
 

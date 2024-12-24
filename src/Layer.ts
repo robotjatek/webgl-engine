@@ -1,6 +1,6 @@
 import { BoundingBox } from 'src/BoundingBox';
 import { ICollider } from './ICollider';
-import { mat4 } from "gl-matrix";
+import { mat4, vec2, vec3 } from "gl-matrix";
 import { Shader } from "./Shader";
 import { Sprite } from "./Sprite";
 import { SpriteBatch } from "./SpriteBatch";
@@ -35,8 +35,7 @@ export class Layer implements ICollider, IDisposable {
     public static async Create(tiles: Tile[], parallaxOffsetFactorX: number, parallaxOffsetFactorY: number, layerOffsetX: number, layerOffsetY: number): Promise<Layer> {
         const tileMap = Layer.CreateTileMap(tiles);
         const batches = await Layer.CreateSpriteBatches(tileMap);
-        const layer = new Layer(batches, tiles, parallaxOffsetFactorX, parallaxOffsetFactorY, layerOffsetX, layerOffsetY);
-        return layer;
+        return new Layer(batches, tiles, parallaxOffsetFactorX, parallaxOffsetFactorY, layerOffsetX, layerOffsetY);
     }
 
     public ResetState(): void {
@@ -49,9 +48,8 @@ export class Layer implements ICollider, IDisposable {
     }
 
     public get BoundingBox(): BoundingBox {
-        // TODO: some interface segregation/liskov substitution issue...
-        //  A layer's bounding box could be a large layer sized BB. Its use is limited. Maybe the IsInsideBounds could reuse it
-        throw new Error('Method not implemented. Use IsColliding with instead');
+        return new BoundingBox(vec3.fromValues(this.MinX, this.MinY, 0),
+            vec2.fromValues(this.MaxX - this.MinX, this.MaxY - this.MinY));
     }
 
     public get ParallaxOffsetFactorX(): number {

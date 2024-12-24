@@ -14,14 +14,17 @@ import { QuitMenuState } from './QuitMenuState';
 import { SharedVariables } from './SharedVariables';
 import { IDisposable } from 'src/IDisposable';
 
-// TODO: keep selection after chosing "NO" on quit
 export class PauseScreen implements IDisposable {
+    private readonly textProjMat: mat4;
+    private selectedIndex: number = 0;
+
     private resumeEventListeners: IResumeEventListener[] = [];
     private quitEventListeners: IQuitEventListener[] = [];
+    private state: IState = this.MAIN_SELECTION_STATE();
 
     public MAIN_SELECTION_STATE(): IState {
         return new MainSelectionState(this, this.keyHandler, this.gamepadHandler, this.resumeEventListeners,
-            this.menuSound, this.selectSound);
+            this.menuSound, this.selectSound, this.selectedIndex);
     }
 
     public QUIT_SELECTION_STATE(): IState {
@@ -29,10 +32,6 @@ export class PauseScreen implements IDisposable {
             this, this.keyHandler, this.gamepadHandler, this.quitEventListeners, this.menuSound, this.selectSound);
     }
 
-    private state: IState = this.MAIN_SELECTION_STATE();
-
-    private readonly textProjMat: mat4;
-    private selectedIndex: number = 0;
     public set SelectedIndex(value: number) {
         this.selectedIndex = value;
     }

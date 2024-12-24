@@ -10,14 +10,13 @@ import { XBoxControllerKeys } from 'src/XBoxControllerKeys';
 
 export class MainSelectionState extends PauseStateBase {
 
-    private selectedIndex: number = 0;
-
     public constructor(private context: PauseScreen,
-        keyhandler: KeyHandler,
-        gamepadHandler: ControllerHandler,
-        private resumeListeners: IResumeEventListener[],
-        menuSound: SoundEffect,
-        selectSound: SoundEffect
+                       keyhandler: KeyHandler,
+                       gamepadHandler: ControllerHandler,
+                       private resumeListeners: IResumeEventListener[],
+                       menuSound: SoundEffect,
+                       selectSound: SoundEffect,
+                       private selectedIndex: number
     ) {
         super(2, keyhandler, gamepadHandler, menuSound, selectSound);
     }
@@ -62,7 +61,6 @@ export class MainSelectionState extends PauseStateBase {
                 this.context.ChangeState(this.context.QUIT_SELECTION_STATE());
             }
         }
-
         this.context.SelectedIndex = this.selectedIndex;
     }
 

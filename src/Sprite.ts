@@ -1,5 +1,3 @@
-import { vec2 } from "gl-matrix";
-
 export class Sprite
 {
     public Vertices: number[];

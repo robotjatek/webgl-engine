@@ -1,4 +1,4 @@
-import { Texture } from './../Texture';
+import { Texture } from '../Texture';
 import { mat4, vec2, vec3} from 'gl-matrix';
 import { Hero } from 'src/Hero';
 import { IEnemy } from './IEnemy';

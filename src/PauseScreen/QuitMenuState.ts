@@ -58,7 +58,9 @@ export class QuitMenuState extends PauseStateBase {
             shared.keyWasReleased = false;
             if (this.selectedIndex === 0) { // yes
                 this.context.SelectedIndex = 0;
-                this.quitListeners.forEach(async l => await l.Quit());
+                for (const listener of this.quitListeners) {
+                    await listener.Quit();
+                }
             }
             this.context.ChangeState(this.context.MAIN_SELECTION_STATE());
         }

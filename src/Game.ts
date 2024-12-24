@@ -65,7 +65,16 @@ export class Game implements IStartEventListener,
   private Width: number;
   private Height: number;
   private start: number;
-  private projectionMatrix = mat4.create();
+
+  private projectionMatrix = mat4.ortho(
+      mat4.create(),
+      0,
+      Environment.HorizontalTiles,
+      Environment.VerticalTiles,
+      0,
+      -1,
+      1
+  );
 
   private state: State = State.START_SCREEN;
   private level!: Level;
@@ -85,17 +94,6 @@ export class Game implements IStartEventListener,
     this.Width = window.innerWidth;
     this.Height = window.innerHeight;
 
-    this.projectionMatrix = mat4.ortho(
-      this.projectionMatrix,
-      0,
-      Environment.HorizontalTiles,
-      Environment.VerticalTiles,
-      0,
-      -1,
-      1
-    );
-
-    gl.disable(gl.DEPTH_TEST); // TODO: Depth test has value when rendering layers. Shouldn't be disabled completely
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.viewport(0, 0, this.Width, this.Height);
     gl.clearColor(0, 1, 0, 1);
@@ -196,11 +194,6 @@ export class Game implements IStartEventListener,
     this.state = State.IN_GAME;
     this.elapsedTimeSinceStateChange = 0;
     this.level!.SetMusicVolume(this.musicVolumeStack.pop()!);
-  }
-
-  public Play(): void {
-    this.state = State.IN_GAME;
-    this.elapsedTimeSinceStateChange = 0;
   }
 
   private async Render(elapsedTime: number): Promise<void> {

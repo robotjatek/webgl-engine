@@ -12,7 +12,7 @@ import { Utils } from '../Utils';
 
 export abstract class ProjectileBase implements IProjectile {
     protected alreadyHit = false;
-    private batch: SpriteBatch;
+    protected batch: SpriteBatch;
 
     private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
     private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], null);

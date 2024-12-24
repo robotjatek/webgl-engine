@@ -60,7 +60,7 @@ export class QuitMenuState extends PauseStateBase {
                 this.context.SelectedIndex = 0;
                 this.quitListeners.forEach(async l => await l.Quit());
             }
-            this.context.ChangeState(this.context.MainSelectionState);
+            this.context.ChangeState(this.context.MAIN_SELECTION_STATE());
         }
 
         this.context.SubSelectionIndex = this.selectedIndex;

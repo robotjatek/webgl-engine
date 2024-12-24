@@ -17,7 +17,7 @@ export class LevelEventTrigger implements IGameobject {
     }
 
     public Update(delta: number): Promise<void> {
-        return;
+        return Promise.resolve();
     }
 
     public Visit(hero: Hero): void {

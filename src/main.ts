@@ -15,7 +15,7 @@ domready(async () => {
     return specialKeys.indexOf(code) > -1;
   }
 
-  const canvas = document.getElementById('canvas');
+  const canvas = document.getElementById('canvas')!;
 
   canvas.addEventListener('keydown', (event) => {
     keyHandler.SetKey(event.code, true);

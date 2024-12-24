@@ -157,7 +157,7 @@ export class Cactus implements IEnemy {
             }
 
             const currentFrame = this.currentFrameSet[this.currentAnimationFrame];
-            this.sprite.textureOffset = currentFrame;
+            this.batch.TextureOffset = currentFrame;
             this.currentFrameTime = 0;
         }
     }

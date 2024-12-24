@@ -43,7 +43,7 @@ export class DragonEnemy implements IEnemy {
     }
 
     public ENTER_ARENA_STATE(): IState {
-        const enterWaypoint: vec3 = this.enterWaypoint ?
+        const enterWaypoint = this.enterWaypoint ?
             vec3.fromValues(this.enterWaypoint.x, this.enterWaypoint.y, 0) : null;
         return new EnterArenaState(this.hero, this, this.collider, enterWaypoint);
     }
@@ -116,9 +116,9 @@ export class DragonEnemy implements IEnemy {
         private rushSound: SoundEffect,
         private backingStartSound: SoundEffect,
         private texture: Texture,
-        private enterWaypoint?: Point
+        private enterWaypoint: Point | null
     ) {
-        this.sprite.textureOffset = this.leftFacingAnimationFrames[0];
+        this.batch.TextureOffset = this.leftFacingAnimationFrames[0];
         // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
     }
 
@@ -129,7 +129,7 @@ export class DragonEnemy implements IEnemy {
                                hero: Hero,
                                onDeath: (enemy: DragonEnemy) => void,
                                spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void,
-                               enterWaypoint?: Point
+                               enterWaypoint: Point | null
     ): Promise<DragonEnemy> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
@@ -257,7 +257,7 @@ export class DragonEnemy implements IEnemy {
         this.shared.timeSinceLastCharge += delta;
         this.shared.timeSinceLastFireBall += delta;
 
-        if (this.timeInInvincibility > 700 && this.invincible === true) {
+        if (this.timeInInvincibility > 700 && this.invincible) {
             this.invincible = false;
             this.timeInInvincibility = 0;
         }
@@ -336,17 +336,17 @@ export class DragonEnemy implements IEnemy {
                 this.currentAnimationFrame = 0;
             }
 
-            this.sprite.textureOffset = this.currentFrameSet[this.currentAnimationFrame];
+            this.batch.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
             this.currentFrameTime = 0;
         }
     }
 
     /**
-     * Helper function to make frame changes seamless by immediatelly changing the spite offset when a frame change happens
+     * Helper function to make frame changes seamless by immediately changing the spite offset when a frame change happens
      */
     private ChangeFrameSet(frames: vec2[]) {
         this.currentFrameSet = frames;
-        this.sprite.textureOffset = this.currentFrameSet[this.currentAnimationFrame];
+        this.batch.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
     }
 
     public Dispose(): void {

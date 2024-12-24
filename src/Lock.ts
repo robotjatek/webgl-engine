@@ -7,7 +7,7 @@ export class Lock {
                 this.waitMap.set(key, []);
                 resolve();
             } else {
-                const waitQueue = this.waitMap.get(key);
+                const waitQueue = this.waitMap.get(key)!;
                 waitQueue.push(() => resolve());
             }
         });
@@ -22,7 +22,9 @@ export class Lock {
         }
 
         const resolver = waitQueue.shift(); // next task
-        resolver();
+        if (resolver) {
+            resolver();
+        }
         return Promise.resolve();
     }
 }

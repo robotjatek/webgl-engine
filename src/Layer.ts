@@ -142,11 +142,13 @@ export class Layer implements ICollider, IDisposable {
     private static CreateTileMap(tiles: Tile[]): Map<Texture, Tile[]> {
         const tileMap = new Map<Texture, Tile[]>();
         tiles.forEach((tile) => {
-            const tileBatch = tileMap.get(tile.Texture);
-            if (!tileBatch) {
-                tileMap.set(tile.Texture, [tile]);
-            } else {
-                tileBatch.push(tile);
+            if (tile.Texture) {
+                const tileBatch = tileMap.get(tile.Texture);
+                if (!tileBatch) {
+                    tileMap.set(tile.Texture, [tile]);
+                } else {
+                    tileBatch.push(tile);
+                }
             }
         });
 

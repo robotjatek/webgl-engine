@@ -11,7 +11,7 @@ import { Layer } from '../../../Layer';
  */
 export class EnterArenaState extends DragonStateBase implements IState {
 
-    public constructor(hero: Hero, dragon: DragonEnemy, private layer: Layer, private enterWaypoint?: vec3) {
+    public constructor(hero: Hero, dragon: DragonEnemy, private layer: Layer, private enterWaypoint: vec3 | null) {
         super(hero, dragon);
     }
 

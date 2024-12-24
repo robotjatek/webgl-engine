@@ -52,7 +52,7 @@ export class BiteProjectile implements IProjectile {
         private biteDamageSound: SoundEffect,
         private texture: Texture
     ) {
-        this.sprite.textureOffset = this.currentFrameSet[0];
+        this.batch.TextureOffset = this.currentFrameSet[0];
         // this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0, 0, 0, 1));
         // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
     }
@@ -147,7 +147,7 @@ export class BiteProjectile implements IProjectile {
             }
 
             const currentFrame = this.currentFrameSet[this.currentAnimationFrame];
-            this.sprite.textureOffset = currentFrame;
+            this.batch.TextureOffset = currentFrame;
             this.currentFrameTime = 0;
         }
     }

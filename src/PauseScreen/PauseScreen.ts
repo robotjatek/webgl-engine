@@ -14,23 +14,24 @@ import { QuitMenuState } from './QuitMenuState';
 import { SharedVariables } from './SharedVariables';
 import { IDisposable } from 'src/IDisposable';
 
+// TODO: keep selection after chosing "NO" on quit
 export class PauseScreen implements IDisposable {
     private resumeEventListeners: IResumeEventListener[] = [];
     private quitEventListeners: IQuitEventListener[] = [];
 
-    private mainSelectionState: MainSelectionState;
-    public get MainSelectionState(): IState {
-        return this.mainSelectionState;
+    public MAIN_SELECTION_STATE(): IState {
+        return new MainSelectionState(this, this.keyHandler, this.gamepadHandler, this.resumeEventListeners,
+            this.menuSound, this.selectSound);
     }
 
-    private quitSelectionState: QuitMenuState;
-    public get QuitSelectionState(): IState {
-        return this.quitSelectionState;
+    public QUIT_SELECTION_STATE(): IState {
+        return new QuitMenuState(
+            this, this.keyHandler, this.gamepadHandler, this.quitEventListeners, this.menuSound, this.selectSound);
     }
 
-    private state: IState;
+    private state: IState = this.MAIN_SELECTION_STATE();
 
-    private textProjMat: mat4;
+    private readonly textProjMat: mat4;
     private selectedIndex: number = 0;
     public set SelectedIndex(value: number) {
         this.selectedIndex = value;
@@ -68,7 +69,6 @@ export class PauseScreen implements IDisposable {
         this.textProjMat = mat4.ortho(mat4.create(), 0, width, height, 0, -1, 1);
         this.selection = [resumeTextbox, quitTextbox];
         this.subSelection = [yesTextbox, noTextbox];
-        this.ResetStates();
     }
 
     public static async Create(width: number, height: number, keyHandler: KeyHandler, gamepadHandler: ControllerHandler): Promise<PauseScreen> {
@@ -132,7 +132,7 @@ export class PauseScreen implements IDisposable {
         this.resumeTextbox.Draw(this.textProjMat);
         this.quitTextbox.Draw(this.textProjMat);
 
-        if (this.state === this.quitSelectionState) {
+        if (this.state instanceof QuitMenuState) {
             this.subSelection.forEach(s => s.WithSaturation(0).WithValue(0.3));
             this.subSelection[this.subselectionIndex].WithHue(1).WithSaturation(0).WithValue(1);
 
@@ -158,15 +158,6 @@ export class PauseScreen implements IDisposable {
         this.state.Exit();
         this.state = state;
         this.state.Enter();
-    }
-
-    public ResetStates(): void {
-        this.mainSelectionState = new MainSelectionState(
-            this, this.keyHandler, this.gamepadHandler, this.resumeEventListeners, this.menuSound, this.selectSound);
-        this.quitSelectionState = new QuitMenuState(
-            this, this.keyHandler, this.gamepadHandler, this.quitEventListeners, this.menuSound, this.selectSound);
-
-        this.state = this.mainSelectionState;
     }
 
     public Dispose(): void {

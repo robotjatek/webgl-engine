@@ -1,13 +1,17 @@
 import { vec2 } from 'gl-matrix';
 
 export class ControllerHandler {
-  private activeControllerId: number;
+  private activeControllerId: number | null = null;
 
   public ActivateGamepad(index: number): void {
     this.activeControllerId = index;
   }
 
   public IsPressed(keyId: number): boolean {
+    if (!this.activeControllerId) {
+      return false;
+    }
+
     const activeController = navigator.getGamepads()[this.activeControllerId];
     if (activeController) {
       return activeController.buttons[keyId].pressed;
@@ -17,6 +21,10 @@ export class ControllerHandler {
   }
 
   public get LeftStick(): vec2 {
+    if (!this.activeControllerId) {
+      return vec2.create();
+    }
+
     const activeController = navigator.getGamepads()[this.activeControllerId];
     if (activeController) {
       const x = activeController.axes[0];

@@ -1,20 +1,26 @@
 export class SoundEffect {
     private playing: boolean = false;
-    private source: AudioBufferSourceNode;
-    private gainNode: GainNode;
     private loop: boolean = false;
     
-    private constructor(private buffer: AudioBuffer, private context: AudioContext, private allowMultiple: boolean = true, private path: string) {
+    private constructor(private buffer: AudioBuffer,
+                        private context: AudioContext,
+                        private gainNode: GainNode,
+                        private source: AudioBufferSourceNode,
+                        private allowMultiple: boolean = true,
+                        private path: string) {
     }
 
     public static async Create(path: string, allowMultiple: boolean = true): Promise<SoundEffect> {
         const blob = await ((await fetch(path)).arrayBuffer());
         const context = new AudioContext();
+        const gainNode = context.createGain();
+        const source = context.createBufferSource();
+
         const buffer = await context.decodeAudioData(blob);
-        return new SoundEffect(buffer, context, allowMultiple, path);
+        return new SoundEffect(buffer, context, gainNode, source, allowMultiple, path);
     }
 
-    public Play(playbackRate: number = 1, volume: number = 1, onEndCallback: () => void = null, loop: boolean = false): void {
+    public Play(playbackRate: number = 1, volume: number = 1, onEndCallback: (() => void) | null = null, loop: boolean = false): void {
         if ((!this.playing || this.allowMultiple) && this.buffer) {
             this.gainNode = this.context.createGain();
             this.gainNode.gain.value = volume;

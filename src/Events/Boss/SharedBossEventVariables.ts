@@ -1,5 +1,5 @@
 export class SharedBossEventVariables {
-    musicVolume: number;
-    startMusicVolume: number;
-    started: boolean;
+    musicVolume: number = 1;
+    startMusicVolume: number = 1;
+    started: boolean = false;
 }

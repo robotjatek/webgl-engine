@@ -6,13 +6,15 @@ export class Tile {
     private collidable: boolean = true;
 
     // TODO: position vector instead of primitives
-    public constructor(private positionX: number, private positionY: number, private texture: Texture) {
+    public constructor(private readonly positionX: number,
+                       private readonly positionY: number,
+                       private readonly texture: Texture | null) {
         this.positionX = positionX;
         this.positionY = positionY;
         this.texture = texture;
     }
 
-    get Texture(): Texture {
+    get Texture(): Texture | null {
         return this.texture;
     }
 

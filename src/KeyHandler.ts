@@ -6,9 +6,6 @@ export class KeyHandler {
     }
 
     public IsPressed(code: string): boolean {
-        if (this.keys.has(code)) {
-            return this.keys.get(code);
-        }
-        return false;
+        return this.keys.get(code) ?? false;
     }
 }

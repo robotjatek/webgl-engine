@@ -1,13 +1,13 @@
 import { gl } from './WebGLUtils';
 
 export class Texture {
-    private texture: WebGLTexture;
-    private valid: boolean;
-    private height: number;
-    private width: number;
+    private readonly texture: WebGLTexture;
+    private readonly valid: boolean;
+    private readonly height: number;
+    private readonly width: number;
 
     private constructor(image: ImageBitmap) {
-        this.texture = gl.createTexture();
+        this.texture = gl.createTexture()!;
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);

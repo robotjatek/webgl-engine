@@ -16,7 +16,7 @@ import { SharedBossEventVariables } from '../SharedBossEventVariables';
  * Spawns the boss to the level
  */
 export class SpawnState implements IState {
-    private boss: IEnemy;
+    private boss: IEnemy | null = null;
 
     public constructor(
         private context: BossEvent,
@@ -64,7 +64,7 @@ export class SpawnState implements IState {
 
     private OnBossDeath(): void {
         this.uiService.RemoveTextbox(this.bossHealthText);
-        this.level.RemoveGameObject(this.boss);
+        this.level.RemoveGameObject(this.boss!);
         this.shakeSound.Play(1, 1, null, true);
         this.camera.Shake = true;
         this.context.ChangeState(this.context.BOSS_DEATH_STATE());

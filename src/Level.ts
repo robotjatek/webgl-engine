@@ -63,7 +63,7 @@ type StartEntity = {
 
 type EventEntity = {
     type: string;
-    props: Map<string, any>;
+    props: Record<string, any>;
 }
 
 type LevelEntity = {
@@ -81,13 +81,13 @@ type LevelEntity = {
 export class Level implements IDisposable {
 
     private events: Map<string, ILevelEvent> = new Map<string, ILevelEvent>();
-    private activeEvent: ILevelEvent;
+    private activeEvent!: ILevelEvent;
 
     private Background: SpriteBatch;
     private BackgroundViewMatrix = mat4.create();
     private gameObjects: IGameobject[] = [];
-    private attack: IProjectile;
-    private hero: Hero;
+    private attack: IProjectile | null = null;
+    private hero!: Hero;
     private levelEndSoundPlayed: boolean = false;
     // Makes the game "pause" for some time when the level end was reached
     public updateDisabled: boolean = false;
@@ -169,10 +169,12 @@ export class Level implements IDisposable {
             // Handle collisions between hero projectile(s) and game objects.
             await this.attack?.Update(delta);
             if (this.attack && !this.attack.AlreadyHit) {
-                const enemiesCollidingWithProjectile = this.gameObjects.filter(e => e.IsCollidingWith(this.attack.BoundingBox, false));
+                const attack = this.attack;
+                const enemiesCollidingWithProjectile = this.gameObjects.filter(
+                    e => e.IsCollidingWith(attack.BoundingBox, false));
                 // Pushback force does not necessarily mean the amount of pushback. A big enemy can ignore a sword attack for example
-                enemiesCollidingWithProjectile.forEach(e => e.CollideWithAttack(this.attack));
-                this.attack.OnHit();
+                enemiesCollidingWithProjectile.forEach(e => e.CollideWithAttack(attack));
+                attack.OnHit();
             }
 
             // TODO: it may not be safe to remove elements while iterating over them
@@ -377,13 +379,13 @@ export class Level implements IDisposable {
         const freeCamEvent = new FreeCameraEvent(this.camera, this.MainLayer, this.hero);
         this.events.set(FreeCameraEvent.EVENT_KEY, freeCamEvent);
 
-        this.activeEvent = this.events.get(FreeCameraEvent.EVENT_KEY);
+        this.activeEvent = this.events.get(FreeCameraEvent.EVENT_KEY)!;
     }
 
     private async CreateLevelEvent(descriptor: EventEntity): Promise<ILevelEvent> {
         switch (descriptor.type) {
             case EscapeEvent.EVENT_KEY:
-                const eventLayer = this.layers[descriptor.props['eventLayerId']];
+                const eventLayer = this.layers[descriptor.props['eventLayerId']! as number] as Layer;
                 const eventLayerStopPosition = descriptor.props['eventLayerStopPosition'] as number;
                 const eventLayerSpeed = descriptor.props['eventLayerSpeed'] as number;
                 const cameraStopPosition = descriptor.props['cameraStopPosition'] as number;
@@ -435,6 +437,5 @@ export class Level implements IDisposable {
         this.events.forEach(e => e.Dispose());
         this.events.clear();
         this.StopMusic();
-        this.music = null;
     }
 }

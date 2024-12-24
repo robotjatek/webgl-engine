@@ -9,14 +9,14 @@ import { gl } from './WebGLUtils';
 import { IDisposable } from './IDisposable';
 import { FontConfigPool } from './FontConfigPool';
 
-class CharProperties {
-    public x: number;
-    public y: number;
-    public width: number;
-    public height: number;
-    public originX: number;
-    public originY: number;
-    public advance: number;
+type CharProperties = {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    originX: number;
+    originY: number;
+    advance: number;
 }
 
 export class FontConfig {
@@ -39,9 +39,9 @@ export class FontConfig {
 
 class Character {
 
-    private sprite: Sprite;
+    private readonly sprite: Sprite;
 
-    private _advance: number;
+    private readonly _advance: number;
 
     public get Advance(): number {
         return this._advance;
@@ -82,7 +82,7 @@ export class Textbox implements IDisposable {
     private text: Character[] = [];
     private cursorX: number = 0;
     private maxCharacterHeight = 0;
-    private position: vec2;
+    private position: vec2 = vec2.create();
 
     private constructor(private fontMap: Texture, private shader: Shader, private fontConfig: FontConfig) {
     }
@@ -106,7 +106,7 @@ export class Textbox implements IDisposable {
         this.maxCharacterHeight = Math.max(...heights) * scale;
 
         for (const character of text) {
-            const charConfig = this.fontConfig.characters.get(character);
+            const charConfig = this.fontConfig.characters.get(character)!;
             const charPos: vec2 = vec2.fromValues(position[0] + this.cursorX, position[1] + this.maxCharacterHeight);
             const renderableChar = new Character(this.shader, this.fontMap, charConfig, charPos, scale)
             this.text.push(renderableChar);
@@ -157,6 +157,7 @@ export class Textbox implements IDisposable {
      * Helper function to predetermine the size of a textbox without creating and rendering one
      * @param text The text to 'prerender'
      * @param font The font that the text will be rendered in
+     * @param scale The scaling factor of the rendered text
      * @returns An object containing the width and height of the rendered textbox
      */
     public static async PrecalculateDimensions(font: string, text: string, scale: number): Promise<{ width: number, height: number }> {
@@ -167,7 +168,7 @@ export class Textbox implements IDisposable {
         const maxCharacterHeight = Math.max(...heights) * scale;
 
         for (const character of text) {
-            const charConfig = fontConfig.characters.get(character);
+            const charConfig = fontConfig.characters.get(character)!;
             cursorX += charConfig.advance * scale;
         }
 

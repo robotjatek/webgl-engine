@@ -60,7 +60,7 @@ export class Shader {
     }
 
     private createProgram(vertex: WebGLShader, fragment: WebGLShader): WebGLProgram {
-        const program = gl.createProgram();
+        const program = gl.createProgram()!;
         gl.attachShader(program, vertex);
         gl.attachShader(program, fragment);
         gl.linkProgram(program);
@@ -70,12 +70,12 @@ export class Shader {
     }
 
     private static async LoadShader(elementPath: string, type: number): Promise<WebGLShader> {
-        const id = gl.createShader(type);
+        const id = gl.createShader(type)!;
         const src = await ShaderPool.GetInstance().LoadShaderSource(elementPath);
         gl.shaderSource(id, src);
         gl.compileShader(id);
         const error = gl.getShaderInfoLog(id);
-        if (error !== undefined && error.length > 0) {
+        if (error !== null && error.length > 0) {
             throw new Error(`Failed to compile shader (${elementPath}): ` + error);
         }
 

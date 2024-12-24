@@ -63,7 +63,7 @@ export class Hero implements IDisposable {
   private wasInAir: boolean = false;
   private invincible: boolean = false;
   private invincibleTime: number = 0;
-  private dirOnDeath: vec3;
+  private dirOnDeath!: vec3;
   private timeSinceLastStomp: number = 9999;
   private timeSinceLastDash: number = 0;
   private dashAvailable = true;
@@ -149,13 +149,13 @@ export class Hero implements IDisposable {
         1.0 / 8.0
       )
     );
-    this.sprite.textureOffset = vec2.fromValues(1 / 12.0, 1 / 8.0);
 
     this.batch = new SpriteBatch(
       this.shader,
       [this.sprite],
       this.texture
     );
+    this.batch.TextureOffset = vec2.fromValues(1 / 12.0, 1 / 8.0);
     // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 1));
   }
 
@@ -369,14 +369,14 @@ export class Hero implements IDisposable {
         const dir = vec3.create();
         vec3.subtract(dir, this.position, this.lastPosition);
         if (vec3.squaredLength(dir) > 0) {
-          this.sprite.textureOffset = this.calculateTextureOffset(vec2.fromValues(dir[0], dir[1]));
+          this.batch.TextureOffset = this.calculateTextureOffset(vec2.fromValues(dir[0], dir[1]));
         } else {
           // same position as last frame, so it is considered idle
           this.state = State.IDLE;
           // Reset back to the idle frame of the last movement direction
           // Now it is completly dependent on the currently used texture
           // TODO: create a texture independent configuration for animation states
-          this.sprite.textureOffset = vec2.fromValues(1 / 12.0, this.sprite.textureOffset[1]);
+          this.batch.TextureOffset = vec2.fromValues(1 / 12.0, this.batch.TextureOffset[1]);
         }
       }
     }
@@ -592,7 +592,7 @@ export class Hero implements IDisposable {
     }
 
     // Remain in the current animation frame if a correct frame could not be determined
-    return this.sprite.textureOffset;
+    return this.batch.TextureOffset;
   }
 
   public Dispose(): void {

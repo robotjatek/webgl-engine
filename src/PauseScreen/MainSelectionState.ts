@@ -59,7 +59,7 @@ export class MainSelectionState extends PauseStateBase {
             if (this.selectedIndex === 0) { // resume
                 this.resumeListeners.forEach(l => l.Resume());
             } else if (this.selectedIndex === 1) { // quit
-                this.context.ChangeState(this.context.QuitSelectionState);
+                this.context.ChangeState(this.context.QUIT_SELECTION_STATE());
             }
         }
 

@@ -68,7 +68,7 @@ export class Game implements IStartEventListener,
   private projectionMatrix = mat4.create();
 
   private state: State = State.START_SCREEN;
-  private level: Level = null;
+  private level!: Level;
   private musicVolumeStack: number[] = [];
 
   private keyWasReleased = true;
@@ -117,7 +117,6 @@ export class Game implements IStartEventListener,
   private camera = new Camera(vec3.create());
 
   public async OnNextLevelEvent(levelName: string): Promise<void> {
-    this.pauseScreen.ResetStates();
     const oldLevel = this.level;
     oldLevel.StopMusic();
 
@@ -132,7 +131,6 @@ export class Game implements IStartEventListener,
   }
 
   public OnRestartEvent(): void {
-    this.pauseScreen.ResetStates();
   }
 
   public static async Create(keyHandler: KeyHandler, controllerHandler: ControllerHandler): Promise<Game> {
@@ -154,7 +152,7 @@ export class Game implements IStartEventListener,
   }
 
   public async Start(): Promise<void> {
-    const level = await Level.Create('levels/boss_arena.json', this.keyHandler, this.gamepadHandler, this.uiService, this.camera);
+    const level = await Level.Create('levels/level1.json', this.keyHandler, this.gamepadHandler, this.uiService, this.camera);
     level.SubscribeToNextLevelEvent(this);
     level.SubscribeToRestartEvent(this);
     this.level = level;
@@ -167,10 +165,8 @@ export class Game implements IStartEventListener,
   }
 
   public async Quit(): Promise<void> {
-    this.pauseScreen.ResetStates();
     this.level.StopMusic();
     this.level.Dispose();
-    this.level = null;
     this.state = State.START_SCREEN;
     this.camera = new Camera(vec3.create());
     SoundEffectPool.GetInstance().StopAll();
@@ -190,8 +186,8 @@ export class Game implements IStartEventListener,
       this.state = State.PAUSED;
       this.pauseSoundEffect.Play();
       this.elapsedTimeSinceStateChange = 0;
-      this.musicVolumeStack.push(this.level.GetMusicVolume());
-      this.level.SetMusicVolume(this.musicVolumeStack.slice(-1)[0] * 0.15);
+      this.musicVolumeStack.push(this.level!.GetMusicVolume());
+      this.level!.SetMusicVolume(this.musicVolumeStack.slice(-1)[0] * 0.15);
     }
   }
 
@@ -199,7 +195,7 @@ export class Game implements IStartEventListener,
     // TODO: statemachine move state
     this.state = State.IN_GAME;
     this.elapsedTimeSinceStateChange = 0;
-    this.level.SetMusicVolume(this.musicVolumeStack.pop());
+    this.level!.SetMusicVolume(this.musicVolumeStack.pop()!);
   }
 
   public Play(): void {
@@ -212,7 +208,7 @@ export class Game implements IStartEventListener,
     if (this.state === State.START_SCREEN) {
       this.mainScreen.Draw(this.projectionMatrix);
     } else {
-      this.level.Draw(this.projectionMatrix);
+      this.level!.Draw(this.projectionMatrix);
 
 
       this.uiService.Draw(elapsedTime);
@@ -232,7 +228,7 @@ export class Game implements IStartEventListener,
     if (this.state === State.START_SCREEN) {
       await this.mainScreen.Update(elapsedTime);
     } else if (this.state === State.IN_GAME && this.elapsedTimeSinceStateChange > 150) {
-      await this.level.Update(elapsedTime);
+      await this.level!.Update(elapsedTime);
 
       if (!this.keyHandler.IsPressed(Keys.ENTER) && !this.gamepadHandler.IsPressed(XBoxControllerKeys.START)
         && !this.keyWasReleased && this.elapsedTimeSinceStateChange > 100) {

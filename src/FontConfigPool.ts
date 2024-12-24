@@ -16,7 +16,7 @@ export class FontConfigPool {
         return this.instance;
     }
 
-    public async GetFontConfig(fontPath): Promise<FontConfig> {
+    public async GetFontConfig(fontPath: string): Promise<FontConfig> {
         await this.lock.lock(fontPath);
         const config = this.configs.get(fontPath);
         if (!config) {

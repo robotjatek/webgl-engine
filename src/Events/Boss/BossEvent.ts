@@ -33,6 +33,10 @@ export class BossEvent implements ILevelEvent {
     }
 
     public FIGHT_STATE(): IState {
+        if (!this.boss) {
+            throw new Error('Boss cannot be null');
+        }
+
         return new FightState(this.boss, this.uiService, this.bossHealthText);
     }
 
@@ -53,7 +57,7 @@ export class BossEvent implements ILevelEvent {
     }
 
     public static readonly EVENT_KEY = 'boss_event';
-    private boss: IEnemy;
+    private boss: IEnemy | null = null;
 
     private constructor(private level: Level,
                         private hero: Hero,

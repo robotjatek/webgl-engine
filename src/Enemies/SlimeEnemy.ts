@@ -73,10 +73,9 @@ export class SlimeEnemy implements IEnemy {
         this.lastPosition = vec3.create(); // If lastPosition is the same as position at initialization, the entity slowly falls through the floor
 
         // For now slimes walk between their start position and an other position with some constant offset
-        const originalWaypoint = new Waypoint(this.position);
+        const originalWaypoint = new Waypoint(this.position, null);
         const targetPosition = vec3.add(vec3.create(), this.position, vec3.fromValues(-6, 0, 0));
-        this.targetWaypoint = new Waypoint(targetPosition);
-        this.targetWaypoint.next = originalWaypoint;
+        this.targetWaypoint = new Waypoint(targetPosition, originalWaypoint);
         originalWaypoint.next = this.targetWaypoint;
     }
 
@@ -192,7 +191,7 @@ export class SlimeEnemy implements IEnemy {
             this.MoveOnX(-this.movementSpeed, delta);
         }
 
-        if (vec3.distance(this.position, this.targetWaypoint.position) < 0.25) {
+        if (vec3.distance(this.position, this.targetWaypoint.position) < 0.25 && this.targetWaypoint.next) {
             this.targetWaypoint = this.targetWaypoint.next;
         }
     }
@@ -202,7 +201,7 @@ export class SlimeEnemy implements IEnemy {
      */
     private ChangeFrameSet(frames: vec2[]) {
         this.currentFrameSet = frames;
-        this.sprite.textureOffset = this.currentFrameSet[this.currentAnimationFrame];
+        this.batch.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
     }
 
     // TODO: simple move component implemented like in dragonenemy.ts. Implement it like a reusable component
@@ -229,7 +228,7 @@ export class SlimeEnemy implements IEnemy {
             }
 
             const currentFrame = this.currentFrameSet[this.currentAnimationFrame];
-            this.sprite.textureOffset = currentFrame;
+            this.batch.TextureOffset = currentFrame;
             this.currentFrameTime = 0;
         }
     }

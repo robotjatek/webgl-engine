@@ -120,7 +120,7 @@ export class Fireball extends ProjectileBase{
             }
 
             const currentFrame = this.currentFrameSet[this.currentAnimationFrameIndex];
-            this.sprite.textureOffset = currentFrame;
+            this.batch.TextureOffset = currentFrame;
             this.currentFrameTime = 0;
         }
     }

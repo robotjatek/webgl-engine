@@ -134,7 +134,7 @@ export class MeleeAttack implements IProjectile {
             }
 
             // TODO: hardcoded for sword.png. Make animation parametrizable
-            this.sprite.textureOffset = vec2.fromValues(this.currentAnimationFrame / 5.0, 0 / 2.0);
+            this.batch.TextureOffset = vec2.fromValues(this.currentAnimationFrame / 5.0, 0 / 2.0);
             this.currentFrameTime = 0;
         }
     }

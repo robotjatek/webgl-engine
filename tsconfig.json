@@ -10,6 +10,7 @@
             "webgl2"
         ],
         "skipLibCheck": true,
-        "outFile": "bin/main.js"
+        "outFile": "bin/main.js",
+        "strict": true
     }
 }

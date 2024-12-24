@@ -31,6 +31,8 @@ export class SpriteBatch implements IDisposable {
         this.TextureCoordinateBuffer = gl.createBuffer()!;
         gl.bindBuffer(gl.ARRAY_BUFFER, this.TextureCoordinateBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.TextureCoordinates), gl.STATIC_DRAW);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
     }
 
     public set TextureOffset(value: vec2) {
@@ -47,6 +49,7 @@ export class SpriteBatch implements IDisposable {
         this.TextureCoordinates = [];
         gl.deleteBuffer(this.VertexBuffer);
         gl.deleteBuffer(this.TextureCoordinateBuffer);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
     }
 
     public Draw(projectionMatrix: mat4, viewMatrix: mat4): void {
@@ -86,6 +89,8 @@ export class SpriteBatch implements IDisposable {
 
         gl.drawArrays(gl.TRIANGLES, 0, this.Vertices.length / 3);
 
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl.disableVertexAttribArray(attribLocation);
         gl.disableVertexAttribArray(textureCoordinateAttribLocation);
         gl.disable(gl.BLEND);

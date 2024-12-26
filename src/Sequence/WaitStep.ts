@@ -1,6 +1,6 @@
-import { SequenceStep } from './SequenceStep';
+import { ISequenceStep } from './ISequenceStep';
 
-export class WaitStep implements SequenceStep {
+export class WaitStep implements ISequenceStep {
     private elapsedTime: number = 0;
 
     public constructor(private waitTime: number) {

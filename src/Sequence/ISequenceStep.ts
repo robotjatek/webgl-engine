@@ -1,3 +1,3 @@
-export interface SequenceStep {
+export interface ISequenceStep {
     Update(delta: number): Promise<boolean>;
 }

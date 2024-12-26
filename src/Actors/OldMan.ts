@@ -175,7 +175,6 @@ export class OldMan implements IGameobject {
     }
 
     public Dispose(): void {
-        console.log('Old man disposed');
         this.batch.Dispose();
         this.shader.Delete();
     }

@@ -12,6 +12,55 @@ import { UIService } from '../UIService';
 import { Textbox } from '../Textbox';
 import { Sequence } from '../Sequence/Sequence';
 import { SequenceBuilder } from '../Sequence/SequenceBuilder';
+import { ISequenceStep } from '../Sequence/ISequenceStep';
+
+class MoveToWaypoint implements ISequenceStep {
+
+    public constructor(private hero: Hero, private waypoint: vec3) {
+    }
+
+    public async Update(delta: number): Promise<boolean> {
+        this.hero.AcceptInput = false;
+        const distanceFromWaypoint = vec3.distance(this.waypoint, this.hero.CenterPosition);
+        if (distanceFromWaypoint > 0.5) {
+            this.hero.Move(vec3.fromValues(0.005, 0, 0), delta);
+            return false;
+        } else {
+            return true;
+        }
+    }
+}
+
+class SpawnOldMan implements ISequenceStep {
+    private timeAfterSpawn = 0;
+
+    public constructor(private level: Level, private oldMan: OldMan) {
+    }
+
+    public async Update(delta: number): Promise<boolean> {
+        // Spawn old man
+        if (this.timeAfterSpawn === 0) {
+            this.level.AddGameObject(this.oldMan);
+        }
+        this.timeAfterSpawn += delta;
+        return this.timeAfterSpawn > 2000;
+    }
+
+}
+
+class DragonRoar implements ISequenceStep {
+    private roarFinished = false;
+
+    public constructor(private dragonRoar: SoundEffect) {
+    }
+
+    public async Update(delta: number): Promise<boolean> {
+        // Dragon roar
+        this.dragonRoar.Play(1, 1, () => this.roarFinished = true, false);
+        return this.roarFinished;
+    }
+
+}
 
 // This is now hardcoded for the last level. In the future this event could be a scriptable event
 // TODO: start level with a pre-set event (other than free cam event)
@@ -25,10 +74,6 @@ import { SequenceBuilder } from '../Sequence/SequenceBuilder';
 // TODO: support no music in json
 export class OutroEvent implements ILevelEvent {
     public static EVENT_KEY = 'outro_event';
-
-    private roarFinished = false;
-    private heroFirstWaypoint: vec3 = vec3.fromValues(10, 15, 0);
-    private timeAfterSpawn = 0;
 
     private sequence: Sequence;
     private conversationSequence: Sequence;
@@ -111,60 +156,38 @@ export class OutroEvent implements ILevelEvent {
 
     private CreateSequence() {
         return new SequenceBuilder()
+            .Add(new MoveToWaypoint(this.hero, vec3.fromValues(10, 15, 0)))
             .Action(async (delta: number) => {
-                this.hero.AcceptInput = false;
-                const distanceFromWaypoint = vec3.distance(this.heroFirstWaypoint, this.hero.CenterPosition);
-                if (distanceFromWaypoint > 0.5) {
-                    this.hero.Move(vec3.fromValues(0.005, 0, 0), delta);
-                    return false;
-                } else {
-                    return true;
-                }
-            }).Action(async (delta: number) => {
                 // hero looks back where he came from
                 this.hero.Move(vec3.fromValues(-0.035, 0, 0), delta);
                 return true;
-            }).Action(async (delta: number) => {
-                // Spawn old man
-                this.level.AddGameObject(this.oldMan);
-                this.timeAfterSpawn += delta;
-                return this.timeAfterSpawn > 2000;
-            }).Action(async (delta: number) => {
+            })
+            .Add(new SpawnOldMan(this.level, this.oldMan))
+            .Action(async (delta: number) => {
                 // old man moves towards the hero
                 const oldManDistanceToHero = vec3.distance(this.oldMan.CenterPosition, this.hero.CenterPosition);
                 if (oldManDistanceToHero > 3) {
                     this.oldMan.Move(vec3.fromValues(-0.005, 0, 0), delta);
                     return false;
-                } else {
-                    return true;
                 }
-            }).Action(async (delta: number) => {
-                // old man moves towards the hero
-                const oldManDistanceToHero = vec3.distance(this.oldMan.CenterPosition, this.hero.CenterPosition);
-                if (oldManDistanceToHero > 3) {
-                    this.oldMan.Move(vec3.fromValues(-0.005, 0, 0), delta);
-                    return false;
-                } else {
-                    return true;
-                }
-            }).Action(async (delta: number) => {
+                return true;
+            })
+            .Action(async (delta: number) => {
                 // Hero looks at the old man
                 this.hero.Move(vec3.fromValues(0.0025, 0, 0), delta);
                 return true;
-            }).Action(async (delta: number) => {
+            })
+            .Action(async (delta: number) => {
                 // Conversation with a lot of text
                 return await this.conversationSequence.Update(delta);
-            }).Action(async (_: number) => {
-                // Dragon roar
-                this.dragonRoar.Play(1, 1, () => this.roarFinished = true, false);
-                return this.roarFinished;
-            }).Action(async (_: number) => {
+            })
+            .Add(new DragonRoar(this.dragonRoar))
+            .Action(async (_: number) => {
                 // TODO: Slow fade out effect
                 return true;
             }).Action(async (_: number) => {
                 // go to main menu
-                await this.quitListener.Quit(); // TODO: valamiért a quit kurvasokszor meghívódik
-                // nem csak itt hívódik meg a Dispose/quit kurvasokszor, hanem ha kézzel lépek ki akkor is
+                await this.quitListener.Quit();
                 return true;
             }).Build();
     }

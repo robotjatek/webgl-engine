@@ -1,9 +1,9 @@
-import { SequenceStep } from './SequenceStep';
+import { ISequenceStep } from './ISequenceStep';
 
 export class Sequence {
-    private steps: SequenceStep[] = [];
+    private steps: ISequenceStep[] = [];
 
-    public AddStep(step: SequenceStep): Sequence {
+    public AddStep(step: ISequenceStep): Sequence {
         this.steps.push(step);
         return this;
     }

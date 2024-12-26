@@ -820,5 +820,6 @@
     "yPos": 15
   },
   "nextLevel": "levels/level1.json",
-  "events": []
+  "events": [],
+  "initialEventKey": "outro_event"
 }

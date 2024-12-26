@@ -63,10 +63,6 @@ class DragonRoar implements ISequenceStep {
 }
 
 // This is now hardcoded for the last level. In the future this event could be a scriptable event
-// TODO: start level with a pre-set event (other than free cam event)
-// TODO: load default event from level descriptor
-// TODO: when the descriptor of the event is null in the level.json fall back to freecam event
-
 // TODO: show picture boxes for the talking characters
 
 // TODO: fade-out

@@ -76,7 +76,8 @@ type LevelEntity = {
     start: StartEntity,
     nextLevel: string,
     defaultLayer: number,
-    events: EventEntity[]
+    events: EventEntity[],
+    initialEventKey: string
 }
 
 export class Level implements IDisposable {
@@ -385,7 +386,14 @@ export class Level implements IDisposable {
         const outroEvent = await OutroEvent.Create(this.hero, this.camera, this, this.quitListener, this.uiService);
         this.events.set(OutroEvent.EVENT_KEY, outroEvent);
 
-        this.activeEvent = this.events.get(OutroEvent.EVENT_KEY)!;
+        const initialEvent = this.levelDescriptor.initialEventKey;
+        const event = this.events.get(initialEvent);
+        if (!event) {
+            this.activeEvent = this.events.get(FreeCameraEvent.EVENT_KEY)!;
+            return;
+        }
+
+        this.activeEvent = this.events.get(initialEvent)!;
     }
 
     private async CreateLevelEvent(descriptor: EventEntity): Promise<ILevelEvent> {

@@ -197,13 +197,14 @@ export class SlimeEnemy implements IEnemy {
     }
 
     /**
-     * Helper function to make frame changes seamless by immediatelly changing the spite offset when a frame change happens
+     * Helper function to make frame changes seamless by immediatelly changing the sprite offset when a frame change happens
      */
     private ChangeFrameSet(frames: vec2[]) {
         this.currentFrameSet = frames;
         this.batch.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
     }
 
+    // TODO: generic move method
     // TODO: simple move component implemented like in dragonenemy.ts. Implement it like a reusable component
     private MoveOnX(amount: number, delta: number): void {
         const nextPosition =

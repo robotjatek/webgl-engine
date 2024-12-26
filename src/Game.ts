@@ -38,7 +38,7 @@ export interface IRestartListener {
 
 // TODO: time to implement a proper state machine at least for the game object
 // TODO: check for key presses and elapsed time since state change
-// TODO: sometimes key release check is also neccessary for a state change
+// TODO: sometimes key release check is also necessary for a state change
 enum State {
   START_SCREEN = 'start_screen',
   IN_GAME = 'in_game',
@@ -62,8 +62,8 @@ export class Game implements IStartEventListener,
   IRestartListener,
   INextLevelEvent,
   IDisposable {
-  private Width: number;
-  private Height: number;
+  private readonly Width: number;
+  private readonly Height: number;
   private start: number;
 
   private projectionMatrix = mat4.ortho(
@@ -118,7 +118,7 @@ export class Game implements IStartEventListener,
     const oldLevel = this.level;
     oldLevel.StopMusic();
 
-    const nextLevel = await Level.Create(levelName, this.keyHandler, this.gamepadHandler, this.uiService, this.camera);
+    const nextLevel = await Level.Create(levelName, this.keyHandler, this.gamepadHandler, this.uiService, this.camera, this);
     await nextLevel.InitLevel();
 
     this.level = nextLevel;
@@ -150,7 +150,7 @@ export class Game implements IStartEventListener,
   }
 
   public async Start(): Promise<void> {
-    const level = await Level.Create('levels/level1.json', this.keyHandler, this.gamepadHandler, this.uiService, this.camera);
+    const level = await Level.Create('levels/outro.json', this.keyHandler, this.gamepadHandler, this.uiService, this.camera, this);
     level.SubscribeToNextLevelEvent(this);
     level.SubscribeToRestartEvent(this);
     this.level = level;
@@ -168,14 +168,7 @@ export class Game implements IStartEventListener,
     this.state = State.START_SCREEN;
     this.camera = new Camera(vec3.create());
     SoundEffectPool.GetInstance().StopAll();
-  }
-
-  public async Run(): Promise<void> {
-    const end = performance.now();
-    const elapsed = Math.min(end - this.start, 32);
-    this.start = end;
-    await this.Render(elapsed);
-    await this.Update(elapsed);
+    return Promise.resolve();
   }
 
   public Pause(): void {
@@ -196,14 +189,22 @@ export class Game implements IStartEventListener,
     this.level!.SetMusicVolume(this.musicVolumeStack.pop()!);
   }
 
-  private async Render(elapsedTime: number): Promise<void> {
+  public async Run(): Promise<void> {
+    const end = performance.now();
+    const elapsed = Math.min(end - this.start, 32);
+    this.start = end;
+    this.Render(elapsed);
+    await this.Update(elapsed);
+
+    requestAnimationFrame(this.Run.bind(this));
+  }
+
+  private Render(elapsedTime: number): void {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     if (this.state === State.START_SCREEN) {
       this.mainScreen.Draw(this.projectionMatrix);
     } else {
       this.level!.Draw(this.projectionMatrix);
-
-
       this.uiService.Draw(elapsedTime);
 
       if (this.state === State.PAUSED) {
@@ -211,8 +212,6 @@ export class Game implements IStartEventListener,
         this.pauseScreen.Draw(this.projectionMatrix);
       }
     }
-
-    requestAnimationFrame(this.Run.bind(this));
   }
 
   private async Update(elapsedTime: number): Promise<void> {
@@ -244,6 +243,7 @@ export class Game implements IStartEventListener,
         }
       })();
 
+      // TODO: only change these when the values themselves change
       this.healthTextbox
         .WithText(`Health: ${this.level.Hero.Health}`, vec2.fromValues(10, 0), 0.5)
         .WithHue(healthTextColor.hue)

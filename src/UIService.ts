@@ -1,6 +1,7 @@
 import { mat4 } from 'gl-matrix';
 import { Textbox } from './Textbox';
 import { IDisposable } from './IDisposable';
+import { Environment } from './Environment';
 
 export class UIService implements IDisposable {
 
@@ -18,6 +19,14 @@ export class UIService implements IDisposable {
 
     public get Height(): number {
         return this.screenHeight;
+    }
+
+    public get TileWidth(): number {
+        return this.screenWidth / Environment.HorizontalTiles;
+    }
+
+    public get TileHeight(): number {
+        return this.screenHeight / Environment.VerticalTiles;
     }
 
     public async AddTextbox(): Promise<Textbox> {

@@ -3,7 +3,7 @@ import { ShaderPool } from './ShaderPool';
 import { gl } from "./WebGLUtils";
 
 export class Shader {
-    private program: WebGLProgram;
+    private readonly program: WebGLProgram;
     private valid: boolean;
 
     private constructor(vertexShader: WebGLShader, fragmentShader: WebGLShader) {

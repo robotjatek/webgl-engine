@@ -11,7 +11,7 @@ export class EscapeEvent implements ILevelEvent {
     public static readonly EVENT_KEY = 'escape_event'
     private eventCameraYPos: number;
     private elapsedTime: number = 0;
-    private state: number = 0;
+    private state: number = 0; // TODO: state machine
     private started = false;
 
     private constructor(private camera: Camera,
@@ -53,7 +53,7 @@ export class EscapeEvent implements ILevelEvent {
         return new EscapeEvent(camera, eventLayer, mainLayer, hero, eventLayerStopPosition, eventLayerSpeed, cameraStopPosition, cameraSpeed, shakeSound, explosionSound, music);
     }
 
-    public Update(delta: number): void {
+    public async Update(delta: number): Promise<void> {
         if (this.started) {
             this.elapsedTime += delta;
         }

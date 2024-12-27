@@ -17258,7 +17258,7 @@
     "xPos": 4,
     "yPos": 87
   },
-  "nextLevel": "levels/level1.json",
+  "nextLevel": "levels/outro.json",
   "events": [
     {
       "type": "escape_event",
@@ -17270,5 +17270,6 @@
         "cameraSpeed": 0.002
       }
     }
-  ]
+  ],
+  "initialEventKey": null
 }

@@ -49,7 +49,7 @@ export class Hero implements IDisposable {
   // TODO: buffer jump
   // TODO: coyote time -- can jump for little time after falling
   // TODO: variable jump height
-  
+
   // BUG: Hero sometimes spawns its attack projectile in the wrong direction
   // TODO: longer range but much slower attack
   // TODO: make bb variables parametrizable
@@ -333,6 +333,11 @@ export class Hero implements IDisposable {
     this.invincible ? this.invincibleTime += delta : this.invincibleTime = 0;
   }
 
+  /**
+   * Sets the velocity to zero on collision
+   * @constructor
+   * @private
+   */
   private HandleCollisionWithCollider(): void {
     const colliding = this.collider.IsCollidingWith(this.BoundingBox, true);
     if (colliding) {

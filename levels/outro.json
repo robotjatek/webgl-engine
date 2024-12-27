@@ -811,15 +811,12 @@
   ],
   "defaultLayer": 1,
   "gameObjects": [],
-  "levelEnd": {
-    "xPos": 33,
-    "yPos": 15
-  },
+  "levelEnd": null,
   "start": {
     "xPos": 0,
     "yPos": 15
   },
-  "nextLevel": "levels/level1.json",
+  "nextLevel": "",
   "events": [],
   "initialEventKey": "outro_event"
 }

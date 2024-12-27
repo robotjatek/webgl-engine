@@ -76,8 +76,6 @@ class DragonRoar implements ISequenceStep {
 
 // This is now hardcoded for the last level. In the future this event could be a scriptable event
 // TODO: show picture boxes for the talking characters
-// TODO: support no next level in json
-// TODO: support no music in json
 export class OutroEvent implements ILevelEvent {
     public static EVENT_KEY = 'outro_event';
 

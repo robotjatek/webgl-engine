@@ -97,7 +97,7 @@ export class Level implements IDisposable {
     private nextLevelEventListeners: INextLevelEvent[] = [];
     private endConditionsMetEventListeners: IEndConditionsMetEventListener[] = [];
 
-    private constructor(private layers: Layer[], private defaultLayer: number, bgShader: Shader, bgTexture: Texture, private music: SoundEffect, private levelDescriptor: LevelEntity,
+    private constructor(private layers: Layer[], private defaultLayer: number, bgShader: Shader, bgTexture: Texture, private music: SoundEffect | null, private levelDescriptor: LevelEntity,
                         private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler, private uiService: UIService, private camera: Camera, private game: (IQuitEventListener & IFadeOut)
     ) {
         this.Background = new SpriteBatch(bgShader, [new Background()], bgTexture);
@@ -121,7 +121,9 @@ export class Level implements IDisposable {
 
         const bgShader: Shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
         const bgTexture = await TexturePool.GetInstance().GetTexture(levelDescriptor.background);
-        const music = await SoundEffectPool.GetInstance().GetAudio(levelDescriptor.music, true);
+
+        const music = levelDescriptor.music ? await SoundEffectPool.GetInstance()
+                .GetAudio(levelDescriptor.music, true) : null;
 
         return new Level(loadedLayers,
             levelDescriptor.defaultLayer,
@@ -212,28 +214,30 @@ export class Level implements IDisposable {
     }
 
     public PlayMusic(volume: number): void {
-        this.music.Play(1, volume, null, true);
+        this.music?.Play(1, volume, null, true);
     }
 
     public StopMusic(): void {
-        this.music.Stop();
+        this.music?.Stop();
     }
 
     public ChangeMusic(music: SoundEffect, volume: number): void {
         if (this.music !== music) {
-            this.music.Stop();
+            this.music?.Stop();
             this.music = music;
             music.Play(1, volume, null, true);
         }
     }
 
     public SetMusicVolume(volume: number): void {
-        volume = Math.max(0, Math.min(1, volume));
-        this.music.Volume = volume;
+        if (this.music) {
+            volume = Math.max(0, Math.min(1, volume));
+            this.music.Volume = volume;
+        }
     }
 
     public GetMusicVolume(): number {
-        return this.music.Volume;
+        return this.music?.Volume ?? 0;
     }
 
     private CheckForEndCondition(): void {
@@ -429,13 +433,17 @@ export class Level implements IDisposable {
         const objects = await Promise.all(this.levelDescriptor.gameObjects.map(async (o) => await this.CreateGameObject(o)));
         this.gameObjects.push(...objects);
 
-        // TODO: support missing level end (last level)
-        const levelEnd = await LevelEnd.Create(vec3.fromValues(this.levelDescriptor.levelEnd.xPos - 1, this.levelDescriptor.levelEnd.yPos, 0),
+        const levelEnd = this.levelDescriptor.nextLevel && this.levelDescriptor.levelEnd ?
+            await LevelEnd.Create(vec3.fromValues(this.levelDescriptor.levelEnd.xPos - 1, this.levelDescriptor.levelEnd.yPos, 0),
             () => this.nextLevelEventListeners.forEach(async l => await l.OnNextLevelEvent(this.levelDescriptor.nextLevel)),
             this
-        );
-        this.SubscribeToEndConditionsMetEvent(levelEnd);
-        this.gameObjects.push(levelEnd);
+        ) : null;
+
+        if (levelEnd) {
+            this.SubscribeToEndConditionsMetEvent(levelEnd);
+            this.gameObjects.push(levelEnd);
+        }
+
         // TODO: 2) change level format and jsons to support multiple levelends
     }
 

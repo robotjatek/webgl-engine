@@ -52,6 +52,9 @@ class DragonRoar implements ISequenceStep {
     private roarFinished = false;
     private static readonly FADE_OUT_TIME = 10000;
     private _timeSinceFadeOutStarted = 0;
+    private roarStarted = false;
+    private _timeSinceRoarStarted = 0;
+    private heroReactedToRoar = false;
     private _fadeState = 0;
 
     public constructor(private _dragonRoar: SoundEffect, private _game: IFadeOut, private _hero: Hero) {
@@ -61,13 +64,18 @@ class DragonRoar implements ISequenceStep {
         // Dragon roar
         if (this._timeSinceFadeOutStarted === 0) {
             this._dragonRoar.Play(1, 1, () => this.roarFinished = true, false);
+            this.roarStarted = true;
+        }
+
+        this._timeSinceRoarStarted += delta;
+        if (this._timeSinceRoarStarted > 500 && !this.heroReactedToRoar) {
+            this.heroReactedToRoar = true;
             this._hero.Move(vec3.fromValues(-0.005, 0, 0), delta);
         }
 
         this._timeSinceFadeOutStarted += delta;
         const fadeStep = 1.0 / (DragonRoar.FADE_OUT_TIME / delta);
         this._fadeState += fadeStep;
-
         this._game.SetFadeOut(this._fadeState);
 
         return this.roarFinished;

@@ -123,10 +123,10 @@ export class Level implements IDisposable {
         const bgTexture = await TexturePool.GetInstance().GetTexture(levelDescriptor.background);
 
         const music = levelDescriptor.music ? await SoundEffectPool.GetInstance()
-                .GetAudio(levelDescriptor.music, true) : null;
+            .GetAudio(levelDescriptor.music, true) : null;
 
         return new Level(loadedLayers,
-            levelDescriptor.defaultLayer,
+            levelDescriptor.defaultLayer ?? 0,
             bgShader,
             bgTexture,
             music,
@@ -380,7 +380,8 @@ export class Level implements IDisposable {
     }
 
     private async InitEvents(): Promise<void> {
-        const events = await Promise.all(this.levelDescriptor.events.map(async e => await this.CreateLevelEvent(e)));
+        const events = this.levelDescriptor.events ? await Promise.all(this.levelDescriptor.events.map(async e => await this.CreateLevelEvent(e)))
+            : [];
         events.forEach(e => this.events.set(e.EventKey, e));
 
         const freeCamEvent = new FreeCameraEvent(this.camera, this.MainLayer, this.hero);
@@ -435,9 +436,9 @@ export class Level implements IDisposable {
 
         const levelEnd = this.levelDescriptor.nextLevel && this.levelDescriptor.levelEnd ?
             await LevelEnd.Create(vec3.fromValues(this.levelDescriptor.levelEnd.xPos - 1, this.levelDescriptor.levelEnd.yPos, 0),
-            () => this.nextLevelEventListeners.forEach(async l => await l.OnNextLevelEvent(this.levelDescriptor.nextLevel)),
-            this
-        ) : null;
+                () => this.nextLevelEventListeners.forEach(async l => await l.OnNextLevelEvent(this.levelDescriptor.nextLevel)),
+                this
+            ) : null;
 
         if (levelEnd) {
             this.SubscribeToEndConditionsMetEvent(levelEnd);

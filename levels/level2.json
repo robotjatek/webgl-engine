@@ -599,9 +599,14 @@
           "yPos": 17,
           "texture": "textures/ground0.png"
         }
-      ]
+      ],
+      "parallaxOffsetFactorX": 0,
+      "parallaxOffsetFactorY": 0,
+      "layerOffsetX": 0,
+      "layerOffsetY": 0
     }
   ],
+  "defaultLayer": 0,
   "gameObjects": [],
   "levelEnd": {
     "xPos": 58,
@@ -611,5 +616,7 @@
     "xPos": 13,
     "yPos": 13
   },
-  "nextLevel": "levels/level1.json"
+  "nextLevel": "levels/level1.json",
+  "events": [],
+  "initialEventKey": null
 }

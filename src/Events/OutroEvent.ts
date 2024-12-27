@@ -7,7 +7,7 @@ import { Level } from '../Level';
 import { OldMan } from '../Actors/OldMan';
 import { SoundEffectPool } from '../SoundEffectPool';
 import { SoundEffect } from '../SoundEffect';
-import { IQuitEventListener } from '../Game';
+import { IFadeOut, IQuitEventListener } from '../Game';
 import { UIService } from '../UIService';
 import { Textbox } from '../Textbox';
 import { Sequence } from '../Sequence/Sequence';
@@ -50,13 +50,25 @@ class SpawnOldMan implements ISequenceStep {
 
 class DragonRoar implements ISequenceStep {
     private roarFinished = false;
+    private static readonly FADE_OUT_TIME = 10000;
+    private _timeSinceFadeOutStarted = 0;
+    private _fadeState = 0;
 
-    public constructor(private dragonRoar: SoundEffect) {
+    public constructor(private dragonRoar: SoundEffect, private _game: IFadeOut) {
     }
 
     public async Update(delta: number): Promise<boolean> {
         // Dragon roar
-        this.dragonRoar.Play(1, 1, () => this.roarFinished = true, false);
+        if (this._timeSinceFadeOutStarted === 0) {
+            this.dragonRoar.Play(1, 1, () => this.roarFinished = true, false);
+        }
+
+        this._timeSinceFadeOutStarted += delta;
+        const fadeStep = 1.0 / (DragonRoar.FADE_OUT_TIME / delta);
+        this._fadeState += fadeStep;
+
+        this._game.SetFadeOut(this._fadeState);
+
         return this.roarFinished;
     }
 
@@ -64,8 +76,6 @@ class DragonRoar implements ISequenceStep {
 
 // This is now hardcoded for the last level. In the future this event could be a scriptable event
 // TODO: show picture boxes for the talking characters
-
-// TODO: fade-out
 // TODO: support no next level in json
 // TODO: support no music in json
 export class OutroEvent implements ILevelEvent {
@@ -75,18 +85,18 @@ export class OutroEvent implements ILevelEvent {
     private conversationSequence: Sequence;
 
     private constructor(private hero: Hero, private camera: Camera, private level: Level, private oldMan: OldMan,
-                        private dragonRoar: SoundEffect, private quitListener: IQuitEventListener,
+                        private dragonRoar: SoundEffect, private game: (IQuitEventListener & IFadeOut),
                         private uiService: UIService, private textBox: Textbox) {
         this.sequence = this.CreateSequence();
         this.conversationSequence = this.ConversationSequence();
     }
 
-    public static async Create(hero: Hero, camera: Camera, level: Level, quitListener: IQuitEventListener,
+    public static async Create(hero: Hero, camera: Camera, level: Level, game: IQuitEventListener & IFadeOut,
                                uiService: UIService): Promise<OutroEvent> {
         const oldMan = await OldMan.Create(vec3.fromValues(33, 13, 0), level.MainLayer);
         const dragonRoar = await SoundEffectPool.GetInstance().GetAudio('audio/wrong_dragon.mp3', false);
         const textbox = await uiService.AddTextbox();
-        return new OutroEvent(hero, camera, level, oldMan, dragonRoar, quitListener, uiService, textbox);
+        return new OutroEvent(hero, camera, level, oldMan, dragonRoar, game, uiService, textbox);
     }
 
     public async Update(delta: number): Promise<void> {
@@ -177,13 +187,10 @@ export class OutroEvent implements ILevelEvent {
                 // Conversation with a lot of text
                 return await this.conversationSequence.Update(delta);
             })
-            .Add(new DragonRoar(this.dragonRoar))
+            .Add(new DragonRoar(this.dragonRoar, this.game))
             .Action(async (_: number) => {
-                // TODO: Slow fade out effect
-                return true;
-            }).Action(async (_: number) => {
                 // go to main menu
-                await this.quitListener.Quit();
+                await this.game.Quit();
                 return true;
             }).Build();
     }

@@ -20,7 +20,7 @@ import { Spike } from './Enemies/Spike';
 import { Cactus } from './Enemies/Cactus';
 import { CoinObject } from './Pickups/CoinObject';
 import { HealthPickup } from './Pickups/HealthPickup';
-import { INextLevelEvent, IQuitEventListener, IRestartListener } from './Game';
+import { IFadeOut, INextLevelEvent, IQuitEventListener, IRestartListener } from './Game';
 import { IDisposable } from './IDisposable';
 import { Camera } from './Camera';
 import { EscapeEvent } from './Events/EscapeEvent';
@@ -98,13 +98,13 @@ export class Level implements IDisposable {
     private endConditionsMetEventListeners: IEndConditionsMetEventListener[] = [];
 
     private constructor(private layers: Layer[], private defaultLayer: number, bgShader: Shader, bgTexture: Texture, private music: SoundEffect, private levelDescriptor: LevelEntity,
-                        private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler, private uiService: UIService, private camera: Camera, private quitListener: IQuitEventListener
+                        private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler, private uiService: UIService, private camera: Camera, private game: (IQuitEventListener & IFadeOut)
     ) {
         this.Background = new SpriteBatch(bgShader, [new Background()], bgTexture);
     }
 
     public static async Create(levelName: string, keyHandler: KeyHandler, gamepadHandler: ControllerHandler,
-                               uiService: UIService, camera: Camera, quitListener: IQuitEventListener): Promise<Level> {
+                               uiService: UIService, camera: Camera, game: IQuitEventListener & IFadeOut): Promise<Level> {
         levelName = levelName + '?version=' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 
         const texturePool = TexturePool.GetInstance();
@@ -133,7 +133,7 @@ export class Level implements IDisposable {
             gamepadHandler,
             uiService,
             camera,
-            quitListener);
+            game);
     }
 
     public get Hero(): Hero {
@@ -348,7 +348,6 @@ export class Level implements IDisposable {
                 return new LevelEventTrigger(this, vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), EscapeEvent.EVENT_KEY);
             case 'boss_trigger':
                 return new LevelEventTrigger(this, vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), BossEvent.EVENT_KEY);
-            // TODO: outro trigger
             default:
                 throw new Error('Unknown object type');
         }
@@ -383,7 +382,7 @@ export class Level implements IDisposable {
         const freeCamEvent = new FreeCameraEvent(this.camera, this.MainLayer, this.hero);
         this.events.set(FreeCameraEvent.EVENT_KEY, freeCamEvent);
 
-        const outroEvent = await OutroEvent.Create(this.hero, this.camera, this, this.quitListener, this.uiService);
+        const outroEvent = await OutroEvent.Create(this.hero, this.camera, this, this.game, this.uiService);
         this.events.set(OutroEvent.EVENT_KEY, outroEvent);
 
         const initialEvent = this.levelDescriptor.initialEventKey;
@@ -420,7 +419,7 @@ export class Level implements IDisposable {
                 return await BossEvent.Create(this, this.hero, this.uiService, bossPosition, bossHealth,
                     this.camera, enterWaypoint);
             case OutroEvent.EVENT_KEY:
-                return await OutroEvent.Create(this.hero, this.camera, this, this.quitListener, this.uiService);
+                return await OutroEvent.Create(this.hero, this.camera, this, this.game, this.uiService);
             default:
                 throw new Error('Unknown event type');
         }

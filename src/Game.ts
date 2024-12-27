@@ -15,6 +15,12 @@ import { PauseScreen } from './PauseScreen/PauseScreen';
 import { IDisposable } from './IDisposable';
 import { UIService } from './UIService';
 import { Camera } from './Camera';
+import { RenderTarget } from './BackbufferRenderer';
+import { Texture } from './Texture';
+import { SpriteBatch } from './SpriteBatch';
+import { Shader } from './Shader';
+import { Sprite } from './Sprite';
+import { Utils } from './Utils';
 
 export interface IStartEventListener {
   Start(): Promise<void>;
@@ -36,6 +42,14 @@ export interface IRestartListener {
   OnRestartEvent(): void;
 }
 
+export interface IFadeOut {
+  /**
+   * Sets the screen 'darkness' to a given level.
+   * 0 means completely visible, 1 is total darkness
+   */
+  SetFadeOut(value: number): void
+}
+
 // TODO: time to implement a proper state machine at least for the game object
 // TODO: check for key presses and elapsed time since state change
 // TODO: sometimes key release check is also necessary for a state change
@@ -47,7 +61,6 @@ enum State {
 
 // TODO: shake camera when attack hit
 // TODO: play attack sound in different pitches
-// TODO: outro level after escape sequence
 
 // TODO: resource tracker: keep track of 'alive' opengl and other resources resources the number shouldn't go up
 // TODO: ui builder framework
@@ -61,6 +74,7 @@ export class Game implements IStartEventListener,
   IQuitEventListener,
   IRestartListener,
   INextLevelEvent,
+  IFadeOut,
   IDisposable {
   private readonly Width: number;
   private readonly Height: number;
@@ -83,6 +97,11 @@ export class Game implements IStartEventListener,
   private keyWasReleased = true;
   private elapsedTimeSinceStateChange = 0;
 
+  private readonly _renderTargetTexture: Texture;
+  private _renderTarget: RenderTarget;
+  private _finalImage: SpriteBatch;
+  private readonly _fullScreenSprite: Sprite;
+
   private constructor(private keyHandler: KeyHandler,
     private gamepadHandler: ControllerHandler,
     private uiService: UIService,
@@ -90,17 +109,25 @@ export class Game implements IStartEventListener,
     private scoreTextbox: Textbox,
     private mainScreen: MainScreen,
     private pauseScreen: PauseScreen,
-    private pauseSoundEffect: SoundEffect) {
+    private pauseSoundEffect: SoundEffect,
+    private _backgroundShader: Shader) {
     this.Width = window.innerWidth;
     this.Height = window.innerHeight;
 
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.viewport(0, 0, this.Width, this.Height);
-    gl.clearColor(0, 1, 0, 1);
+    gl.clearColor(0, 0, 0, 1);
 
     mainScreen.SubscribeToStartEvent(this);
     pauseScreen.SubscribeToResumeEvent(this);
     pauseScreen.SubscribeToQuitEvent(this);
+
+    this._fullScreenSprite = new Sprite(
+        Utils.DefaultFullscreenQuadVertices,
+        Utils.DefaultFullscreenQuadTextureCoordinates);
+    this._renderTargetTexture = Texture.empty(this.Width, this.Height);
+    this._renderTarget = new RenderTarget(this._renderTargetTexture);
+    this._finalImage = new SpriteBatch(this._backgroundShader, [this._fullScreenSprite], this._renderTargetTexture);
 
     this.start = performance.now();
   }
@@ -110,6 +137,7 @@ export class Game implements IStartEventListener,
     this.pauseScreen.Dispose();
     this.level.Dispose();
     this.uiService.Dispose();
+    this._renderTarget.Dispose();
   }
 
   private camera = new Camera(vec3.create());
@@ -139,6 +167,8 @@ export class Game implements IStartEventListener,
     await SoundEffectPool.GetInstance().Preload();
     await TexturePool.GetInstance().Preload();
 
+    const bgShader: Shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
+
     const uiService = new UIService(canvas.width, canvas.height);
     const healthTextbox = await uiService.AddTextbox();
     const scoreTextBox = await uiService.AddTextbox();
@@ -146,7 +176,8 @@ export class Game implements IStartEventListener,
     const pauseSoundEffect = await SoundEffectPool.GetInstance().GetAudio('audio/pause.mp3');
     const mainScreen = await MainScreen.Create(keyHandler, controllerHandler, canvas.width, canvas.height);
     const pauseScreen = await PauseScreen.Create(canvas.width, canvas.height, keyHandler, controllerHandler);
-    return new Game(keyHandler, controllerHandler, uiService, healthTextbox, scoreTextBox, mainScreen, pauseScreen, pauseSoundEffect);
+    return new Game(keyHandler, controllerHandler, uiService, healthTextbox,
+        scoreTextBox, mainScreen, pauseScreen, pauseSoundEffect, bgShader);
   }
 
   public async Start(): Promise<void> {
@@ -168,6 +199,7 @@ export class Game implements IStartEventListener,
     this.state = State.START_SCREEN;
     this.camera = new Camera(vec3.create());
     SoundEffectPool.GetInstance().StopAll();
+    this.SetFadeOut(0);
     return Promise.resolve();
   }
 
@@ -189,6 +221,10 @@ export class Game implements IStartEventListener,
     this.level!.SetMusicVolume(this.musicVolumeStack.pop()!);
   }
 
+  public SetFadeOut(value: number) {
+    this._backgroundShader.SetFloatUniform('fadeFactor', value);
+  }
+
   public async Run(): Promise<void> {
     const end = performance.now();
     const elapsed = Math.min(end - this.start, 32);
@@ -199,19 +235,25 @@ export class Game implements IStartEventListener,
     requestAnimationFrame(this.Run.bind(this));
   }
 
+  // TODO: ctrl + alt + shift + L commit után egy full fájl reformathoz...
   private Render(elapsedTime: number): void {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    if (this.state === State.START_SCREEN) {
-      this.mainScreen.Draw(this.projectionMatrix);
-    } else {
-      this.level!.Draw(this.projectionMatrix);
-      this.uiService.Draw(elapsedTime);
 
-      if (this.state === State.PAUSED) {
-        // Draw the pause screen over the other rendered elements
-        this.pauseScreen.Draw(this.projectionMatrix);
+    this._renderTarget.Render(() => {
+      if (this.state === State.START_SCREEN) {
+        this.mainScreen.Draw(this.projectionMatrix);
+      } else {
+        this.level!.Draw(this.projectionMatrix);
+        this.uiService.Draw(elapsedTime);
+
+        if (this.state === State.PAUSED) {
+          // Draw the pause screen over the other rendered elements
+          this.pauseScreen.Draw(this.projectionMatrix);
+        }
       }
-    }
+    });
+
+    this._finalImage.Draw(this.projectionMatrix, mat4.create());
   }
 
   private async Update(elapsedTime: number): Promise<void> {

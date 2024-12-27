@@ -1,4 +1,5 @@
 import { vec2 } from 'gl-matrix';
+import { Environment } from './Environment';
 
 export class Utils {
     public static readonly DefaultSpriteVertices: number[] = [
@@ -8,7 +9,7 @@ export class Utils {
 
         0, 1.0, 0.0,
         1.0, 0.0, 0.0,
-        1.0, 1.0, 0.0,
+        1.0, 1.0, 0.0
     ];
 
     public static readonly DefaultSpriteTextureCoordinates: number[] = [
@@ -17,7 +18,26 @@ export class Utils {
         0, 1,
         0, 1,
         1, 0,
+        1, 1
+    ];
+
+    public static readonly DefaultFullscreenQuadVertices: number[] = [
+        0.0, 0.0, 0.0,
+        Environment.HorizontalTiles, 0.0, 0.0,
+        0, Environment.VerticalTiles, 0.0,
+
+        0, Environment.VerticalTiles, 0.0,
+        Environment.HorizontalTiles, 0, 0.0,
+        Environment.HorizontalTiles, Environment.VerticalTiles, 0.0
+    ]
+
+    public static readonly DefaultFullscreenQuadTextureCoordinates: number[] = [
+        0, 1,
         1, 1,
+        0, 0,
+        0, 0,
+        1, 1,
+        1, 0
     ];
 
     public static CreateSpriteVertices(positionX: number, positionY: number): number[] {
@@ -28,7 +48,7 @@ export class Utils {
 
             positionX, positionY + 1.0, 0.0,
             positionX + 1.0, positionY, 0.0,
-            positionX + 1.0, positionY + 1.0, 0.0,
+            positionX + 1.0, positionY + 1.0, 0.0
         ];
     }
 
@@ -50,13 +70,13 @@ export class Utils {
             positionX, positionY + height,
             positionX, positionY + height,
             positionX + width, positionY,
-            positionX + width, positionY + height,
+            positionX + width, positionY + height
         ];
     }
 
-    public static Partition<T>(array: Array<T>, criteria: (e: T) => boolean): {matching: T[], nonMatching: T[]} {
+    public static Partition<T>(array: Array<T>, criteria: (e: T) => boolean): { matching: T[], nonMatching: T[] } {
         const matching = array.filter(e => criteria(e));
         const nonMatching = array.filter(e => !criteria(e));
-        return { matching, nonMatching };
-      }
+        return {matching, nonMatching};
+    }
 }

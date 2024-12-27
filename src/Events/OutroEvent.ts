@@ -54,13 +54,14 @@ class DragonRoar implements ISequenceStep {
     private _timeSinceFadeOutStarted = 0;
     private _fadeState = 0;
 
-    public constructor(private dragonRoar: SoundEffect, private _game: IFadeOut) {
+    public constructor(private _dragonRoar: SoundEffect, private _game: IFadeOut, private _hero: Hero) {
     }
 
     public async Update(delta: number): Promise<boolean> {
         // Dragon roar
         if (this._timeSinceFadeOutStarted === 0) {
-            this.dragonRoar.Play(1, 1, () => this.roarFinished = true, false);
+            this._dragonRoar.Play(1, 1, () => this.roarFinished = true, false);
+            this._hero.Move(vec3.fromValues(-0.005, 0, 0), delta);
         }
 
         this._timeSinceFadeOutStarted += delta;
@@ -185,7 +186,7 @@ export class OutroEvent implements ILevelEvent {
                 // Conversation with a lot of text
                 return await this.conversationSequence.Update(delta);
             })
-            .Add(new DragonRoar(this.dragonRoar, this.game))
+            .Add(new DragonRoar(this.dragonRoar, this.game, this.hero))
             .Action(async (_: number) => {
                 // go to main menu
                 await this.game.Quit();

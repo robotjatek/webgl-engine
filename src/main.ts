@@ -11,7 +11,8 @@ domready(async () => {
   const game = await Game.Create(keyHandler, controllerHandler);
 
   const isSpecialKey = (code: string) => {
-    const specialKeys = [Keys.LEFT_CONTROL, Keys.RIGHT_CONTROL, Keys.SPACE];
+    const specialKeys = [Keys.LEFT_CONTROL, Keys.RIGHT_CONTROL, Keys.SPACE, Keys.LEFT_SHIFT, Keys.RIGHT_SHIFT,
+      Keys.LEFT_ARROW, Keys.RIGHT_ARROW, Keys.UP_ARROW, Keys.DOWN_ARROW];
     return specialKeys.indexOf(code) > -1;
   }
 

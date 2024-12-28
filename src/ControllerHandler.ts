@@ -8,7 +8,7 @@ export class ControllerHandler {
   }
 
   public IsPressed(keyId: number): boolean {
-    if (!this.activeControllerId) {
+    if (this.activeControllerId === null) {
       return false;
     }
 
@@ -21,7 +21,7 @@ export class ControllerHandler {
   }
 
   public get LeftStick(): vec2 {
-    if (!this.activeControllerId) {
+    if (this.activeControllerId === null) {
       return vec2.create();
     }
 

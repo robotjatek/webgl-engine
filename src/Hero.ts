@@ -126,7 +126,6 @@ export class Hero implements IDisposable {
     private collider: ICollider,
     private onDeath: () => void,
     private spawnProjectile: (sender: Hero, projectile: IProjectile) => void,
-    private despawnProjectile: (projectile: IProjectile) => void,
     private shader: Shader,
     private bbShader: Shader,
     private jumpSound: SoundEffect,
@@ -162,7 +161,6 @@ export class Hero implements IDisposable {
   public static async Create(
     position: vec3, visualScale: vec2, collider: ICollider, onDeath: () => void,
     spawnProjectile: (sender: Hero, projectile: IProjectile) => void,
-    despawnProjectile: (projectile: IProjectile) => void,
     keyHandler: KeyHandler, gamepadHandler: ControllerHandler): Promise<Hero> {
 
     const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
@@ -176,11 +174,9 @@ export class Hero implements IDisposable {
     const dieSound = await SoundEffectPool.GetInstance().GetAudio('audio/hero_die.wav', false);
     const texture = await TexturePool.GetInstance().GetTexture('textures/hero1.png');
 
-    const hero = new Hero(position, visualScale, collider, onDeath, spawnProjectile, despawnProjectile,
-      shader, bbShader, jumpSound, landSound, walkSound, stompSound, damageSound, dieSound, texture,
-      keyHandler, gamepadHandler);
-
-    return hero;
+    return new Hero(position, visualScale, collider, onDeath, spawnProjectile,
+        shader, bbShader, jumpSound, landSound, walkSound, stompSound, damageSound, dieSound, texture,
+        keyHandler, gamepadHandler);
   }
 
   public Draw(proj: mat4, view: mat4): void {
@@ -298,12 +294,12 @@ export class Hero implements IDisposable {
 
       if (this.keyHandler.IsPressed(Keys.E) || this.gamepadHandler.IsPressed(XBoxControllerKeys.X)) {
         const attackPosition = this.FacingDirection[0] > 0 ?
-          vec3.add(vec3.create(), this.Position, vec3.fromValues(1.5, 0, 0)) :
-          vec3.add(vec3.create(), this.Position, vec3.fromValues(-2.5, 0, 0));
+          vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(1.5, 0, 0)) :
+          vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-1.5, 0, 0));
 
         this.Attack(async () => {
           // TODO: creating an attack instance on every attack is wasteful.
-          this.spawnProjectile(this, await MeleeAttack.Create(attackPosition, this.FacingDirection, this.despawnProjectile));
+          this.spawnProjectile(this, await MeleeAttack.Create(attackPosition, this.FacingDirection));
         });
       }
     }
@@ -557,7 +553,7 @@ export class Hero implements IDisposable {
   private Damage(pushbackForce: vec3): void {
     // TODO: This is almost a 1:1 copy from the Collide method
 
-    // Damage method should not consider the invincible flag because I dont want to cancel damage with projectiles when stomping
+    // Damage method should not consider the invincible flag because I don't want to cancel damage with projectiles when stomping
     if (this.state !== State.DEAD) {
       this.invincible = true;
       this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));

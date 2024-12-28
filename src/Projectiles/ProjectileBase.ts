@@ -9,15 +9,17 @@ import { Sprite } from '../Sprite';
 import { SoundEffect } from '../SoundEffect';
 import { ICollider } from '../ICollider';
 import { Utils } from '../Utils';
+import { IProjectileHitListener } from '../Level';
+
 
 export abstract class ProjectileBase implements IProjectile {
     protected alreadyHit = false;
+    protected animationMustComplete = false;
     protected batch: SpriteBatch;
+    protected OnHitListeners: IProjectileHitListener[] = [];
 
     private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
-    private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], null);
-
-    OnHitListeners: ((sender: IProjectile) => void)[] = [];
+    protected bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], null);
 
     protected constructor(protected shader: Shader,
                           protected texture: Texture,
@@ -26,16 +28,16 @@ export abstract class ProjectileBase implements IProjectile {
                           protected visualScale: vec2,
                           protected bbOffset: vec3,
                           protected bbSize: vec2,
-                          protected hitSound: SoundEffect,
-                          private collider: ICollider,
-                          private bbShader: Shader,) {
+                          protected hitSound: SoundEffect | null,
+                          private collider: ICollider | null,
+                          protected bbShader: Shader) {
         this.batch = new SpriteBatch(this.shader, [this.sprite], this.texture);
     }
 
     public Draw(proj: mat4, view: mat4): void {
-        if (!this.AlreadyHit) {
-            const topleft = vec3.sub(vec3.create(), this.centerPosition, vec3.fromValues(this.visualScale[0] / 2, this.visualScale[1] / 2, 0));
-            mat4.translate(this.batch.ModelMatrix, mat4.create(), topleft);
+        if (!this.AlreadyHit || this.animationMustComplete) {
+            const topLeft = vec3.sub(vec3.create(), this.centerPosition, vec3.fromValues(this.visualScale[0] / 2, this.visualScale[1] / 2, 0));
+            mat4.translate(this.batch.ModelMatrix, mat4.create(), topLeft);
             mat4.scale(this.batch.ModelMatrix,
                 this.batch.ModelMatrix,
                 vec3.fromValues(this.visualScale[0], this.visualScale[1], 1));
@@ -59,7 +61,7 @@ export abstract class ProjectileBase implements IProjectile {
         return false;
     }
 
-    get BoundingBox(): BoundingBox {
+    public get BoundingBox(): BoundingBox {
         const topLeftCorner = vec3.sub(vec3.create(), this.centerPosition, vec3.fromValues(this.bbSize[0] / 2, this.bbSize[1] / 2, 0));
         const bbPos = vec3.add(vec3.create(), topLeftCorner, this.bbOffset); // Adjust bb position with the offset
         return new BoundingBox(bbPos, this.bbSize);
@@ -74,9 +76,13 @@ export abstract class ProjectileBase implements IProjectile {
         this.alreadyHit = true;
     }
 
+    public SubscribeToHitEvent(onHitListener: IProjectileHitListener) {
+        this.OnHitListeners.push(onHitListener);
+    }
+
     public Dispose(): void {
         this.batch.Dispose();
-        this.shader.Delete();
+        this.bbBatch.Dispose();
     }
 
     public IsCollidingWith(boundingBox: BoundingBox): boolean {
@@ -95,7 +101,7 @@ export abstract class ProjectileBase implements IProjectile {
         if (!this.CheckCollisionWithCollider(nextPosition)) {
             this.centerPosition = nextPosition;
         } else {
-            this.hitSound.Play();
+            this.hitSound?.Play();
             this.alreadyHit = true;
         }
     }
@@ -105,7 +111,7 @@ export abstract class ProjectileBase implements IProjectile {
         const topleft = vec3.sub(vec3.create(), nextPosition, vec3.fromValues(this.bbSize[0] / 2, this.bbSize[1] / 2, 0));
         const bbPos = vec3.add(vec3.create(), topleft, this.bbOffset);
         const nextBoundingBox = new BoundingBox(bbPos, this.bbSize);
-        return this.collider.IsCollidingWith(nextBoundingBox, false);
+        return this.collider?.IsCollidingWith(nextBoundingBox, false) ?? false;
     }
 
     public abstract Update(delta: number): Promise<void>;

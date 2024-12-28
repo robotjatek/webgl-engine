@@ -167,7 +167,7 @@ export class OutroEvent implements ILevelEvent {
             this.uiService.TileHeight * actorPosition[1] - this.uiService.TileHeight);
     }
 
-    private CreateSequence() {
+    private CreateSequence(): Sequence {
         return new SequenceBuilder()
             .Add(new MoveToWaypoint(this.hero, vec3.fromValues(10, 15, 0)))
             .Action(async (delta: number) => {

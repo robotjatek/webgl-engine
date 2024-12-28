@@ -11,7 +11,8 @@ export class EscapeEvent implements ILevelEvent {
     public static readonly EVENT_KEY = 'escape_event'
     private eventCameraYPos: number;
     private elapsedTime: number = 0;
-    private state: number = 0; // TODO: state machine
+    // Using the sequence of event pattern here (like in the outro conversation) made the code less readable than this state so this will remain as is
+    private state: number = 0;
     private started = false;
 
     private constructor(private camera: Camera,

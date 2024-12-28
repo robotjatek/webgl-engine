@@ -1,23 +1,21 @@
 import { ICollider } from '../ICollider';
-import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
+import { vec2, vec3, vec4 } from 'gl-matrix';
 import { Sprite } from '../Sprite';
 import { Utils } from '../Utils';
-import { SpriteBatch } from '../SpriteBatch';
 import { Shader } from '../Shader';
 import { Texture } from '../Texture';
 import { TexturePool } from '../TexturePool';
 import { BoundingBox } from '../BoundingBox';
 import { SoundEffectPool } from '../SoundEffectPool';
 import { Waypoint } from '../Waypoint';
-import { IEnemy } from './IEnemy';
+import { EnemyBase } from './IEnemy';
 import { Hero } from '../Hero';
 import { SoundEffect } from 'src/SoundEffect';
-import { IProjectile } from 'src/Projectiles/IProjectile';
 
 /**
  * Slime enemy is a passive enemy, meaning it does not actively attack the player, but it hurts when contacted directly
  */
-export class SlimeEnemy implements IEnemy {
+export class SlimeEnemy extends EnemyBase {
 
     private targetWaypoint: Waypoint;
     // A little variation in movement speed;
@@ -40,43 +38,43 @@ export class SlimeEnemy implements IEnemy {
     private currentFrameSet = this.leftFacingAnimationFrames;
 
     private velocity: vec3 = vec3.fromValues(0, 0, 0);
-    private lastPosition: vec3;
-    private sprite: Sprite = new Sprite(
-        Utils.DefaultSpriteVertices,
-        Utils.CreateTextureCoordinates(
-            0.0 / 12.0, // These constants are hardcoded with "monster1.png" in mind
-            0.0 / 8.0,
-            1.0 / 12.0,
-            1.0 / 8.0
-        ));
-    private batch: SpriteBatch = new SpriteBatch(this.shader, [this.sprite], this.texture);
-    private health = 3;
+    private readonly lastPosition: vec3;
+
     private damagedTime = 0;
     private damaged = false;
 
-    private bbOffset = vec3.fromValues(1.2, 1.8, 0);
-    private bbSize = vec2.fromValues(0.8, 1.0);
-    private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
-    private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], null);
-
     private constructor(
-        private position: vec3,
-        private shader: Shader,
-        private bbShader: Shader,
-        private visualScale: vec2,
+        position: vec3,
+        shader: Shader,
+        bbShader: Shader,
+        visualScale: vec2,
         private collider: ICollider,
         private onDeath: (sender: SlimeEnemy) => void,
         private enemyDamageSound: SoundEffect,
         private enemyDeathSound: SoundEffect,
-        private texture: Texture
+        texture: Texture
     ) {
+        const sprite: Sprite = new Sprite(
+            Utils.DefaultSpriteVertices,
+            Utils.CreateTextureCoordinates(
+                0.0 / 12.0, // These constants are hardcoded with "monster1.png" in mind
+                0.0 / 8.0,
+                1.0 / 12.0,
+                1.0 / 8.0
+            ));
+        const bbSize = vec2.fromValues(0.8, 1.0);
+        const bbOffset = vec3.fromValues(1.2, 1.8, 0);
+        const health = 3;
+        super(shader, sprite, texture, bbShader, bbSize, bbOffset, position, visualScale, health);
         this.lastPosition = vec3.create(); // If lastPosition is the same as position at initialization, the entity slowly falls through the floor
 
-        // For now slimes walk between their start position and an other position with some constant offset
+        // For now, slimes walk between their start position and another position with some constant offset
         const originalWaypoint = new Waypoint(this.position, null);
         const targetPosition = vec3.add(vec3.create(), this.position, vec3.fromValues(-6, 0, 0));
         this.targetWaypoint = new Waypoint(targetPosition, originalWaypoint);
         originalWaypoint.next = this.targetWaypoint;
+
+       //this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.3));
     }
 
     public static async Create(position: vec3,
@@ -97,29 +95,8 @@ export class SlimeEnemy implements IEnemy {
         hero.CollideWithSlime(this);
     }
 
-    public CollideWithAttack(attack: IProjectile): void {
-        this.Damage(attack.PushbackForce);
-    }
-
-    public get Position(): vec3 {
-        return this.position;
-    }
-
-    public get BoundingBox(): BoundingBox {
-        return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize);
-    }
-
     public get EndCondition(): boolean {
         return false;
-    }
-
-    public get Health(): number {
-        return this.health;
-    }
-
-    // TODO: this is also duplicated in the code
-    public IsCollidingWith(boundingBox: BoundingBox): boolean {
-        return this.BoundingBox.IsCollidingWith(boundingBox);
     }
 
     // TODO: damage amount
@@ -137,23 +114,6 @@ export class SlimeEnemy implements IEnemy {
                 this.onDeath(this);
             }
         }
-    }
-
-    public Draw(proj: mat4, view: mat4): void {
-        this.batch.Draw(proj, view);
-        this.batch.ModelMatrix = mat4.create();
-
-        mat4.translate(this.batch.ModelMatrix, this.batch.ModelMatrix, this.position);
-        mat4.scale(this.batch.ModelMatrix,
-            this.batch.ModelMatrix,
-            vec3.fromValues(this.visualScale[0], this.visualScale[1], 1));
-
-        this.bbBatch.Draw(proj, view);
-        mat4.translate(this.bbBatch.ModelMatrix, mat4.create(), this.BoundingBox.position);
-        mat4.scale(
-            this.bbBatch.ModelMatrix,
-            this.bbBatch.ModelMatrix,
-            vec3.fromValues(this.bbSize[0], this.bbSize[1], 1));
     }
 
     public async Update(delta: number): Promise<void> {
@@ -197,7 +157,7 @@ export class SlimeEnemy implements IEnemy {
     }
 
     /**
-     * Helper function to make frame changes seamless by immediatelly changing the sprite offset when a frame change happens
+     * Helper function to make frame changes seamless by immediately changing the sprite offset when a frame change happens
      */
     private ChangeFrameSet(frames: vec2[]) {
         this.currentFrameSet = frames;
@@ -228,8 +188,7 @@ export class SlimeEnemy implements IEnemy {
                 this.currentAnimationFrame = 0;
             }
 
-            const currentFrame = this.currentFrameSet[this.currentAnimationFrame];
-            this.batch.TextureOffset = currentFrame;
+            this.batch.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
             this.currentFrameTime = 0;
         }
     }
@@ -259,9 +218,8 @@ export class SlimeEnemy implements IEnemy {
     }
 
     public Dispose(): void {
-        this.batch.Dispose();
+        super.Dispose();
         this.shader.Delete();
-        this.bbBatch.Dispose();
         this.bbShader.Delete();
     }
 }

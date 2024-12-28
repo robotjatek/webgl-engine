@@ -52,7 +52,8 @@ export class TexturePool {
             this.GetTexture('textures/spike.png'),
             this.GetTexture('textures/cactus1.png'),
             this.GetTexture('textures/potion.png'),
-            this.GetTexture('textures/title.jpeg')
+            this.GetTexture('textures/title.jpeg'),
+            this.GetTexture('textures/firebomb.png')
         ]);
     }
 

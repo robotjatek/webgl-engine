@@ -9,4 +9,8 @@ export class Keys {
   public static readonly LEFT_CONTROL = 'ControlLeft';
   public static readonly LEFT_SHIFT = 'ShiftLeft';
   public static readonly ENTER = 'Enter';
+  public static readonly LEFT_ARROW = 'ArrowLeft';
+  public static readonly RIGHT_ARROW = 'ArrowRight';
+  public static readonly UP_ARROW = 'ArrowUp';
+  public static readonly DOWN_ARROW = 'ArrowDown';
 }

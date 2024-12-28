@@ -268,21 +268,26 @@ export class Hero implements IDisposable {
   private HandleInput(delta: number): void {
     if (this.acceptInput) {
       if (this.keyHandler.IsPressed(Keys.A) ||
+          this.keyHandler.IsPressed(Keys.LEFT_ARROW) ||
         this.gamepadHandler.LeftStick[0] < -0.5 ||
         this.gamepadHandler.IsPressed(XBoxControllerKeys.LEFT)) {
         this.Move(vec3.fromValues(-0.01, 0, 0), delta);
       } else if (this.keyHandler.IsPressed(Keys.D) ||
+          this.keyHandler.IsPressed(Keys.RIGHT_ARROW) ||
         this.gamepadHandler.LeftStick[0] > 0.5 ||
         this.gamepadHandler.IsPressed(XBoxControllerKeys.RIGHT)) {
         this.Move(vec3.fromValues(0.01, 0, 0), delta);
       }
 
       if (this.keyHandler.IsPressed(Keys.SPACE) ||
+          this.keyHandler.IsPressed(Keys.UP_ARROW) ||
+          this.keyHandler.IsPressed(Keys.W) ||
         this.gamepadHandler.IsPressed(XBoxControllerKeys.A)) {
         this.Jump();
       }
 
       if (this.keyHandler.IsPressed(Keys.S) ||
+          this.keyHandler.IsPressed(Keys.DOWN_ARROW) ||
         this.gamepadHandler.LeftStick[1] > 0.8 ||
         this.gamepadHandler.IsPressed(XBoxControllerKeys.DOWN)) {
         this.Stomp();
@@ -292,7 +297,8 @@ export class Hero implements IDisposable {
         this.Dash();
       }
 
-      if (this.keyHandler.IsPressed(Keys.E) || this.gamepadHandler.IsPressed(XBoxControllerKeys.X)) {
+      if (this.keyHandler.IsPressed(Keys.E) || this.gamepadHandler.IsPressed(XBoxControllerKeys.X) ||
+          this.keyHandler.IsPressed(Keys.LEFT_CONTROL)) {
         const attackPosition = this.FacingDirection[0] > 0 ?
           vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(1.5, 0, 0)) :
           vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-1.5, 0, 0));

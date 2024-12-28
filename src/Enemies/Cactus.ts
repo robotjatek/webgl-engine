@@ -1,37 +1,20 @@
-import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
-import { BoundingBox } from 'src/BoundingBox';
+import { vec2, vec3, vec4 } from 'gl-matrix';
 import { Hero } from 'src/Hero';
-import { IEnemy } from './IEnemy';
+import { EnemyBase } from './IEnemy';
 import { Texture } from 'src/Texture';
 import { TexturePool } from 'src/TexturePool';
 import { Shader } from 'src/Shader';
 import { Sprite } from 'src/Sprite';
 import { Utils } from 'src/Utils';
-import { SpriteBatch } from 'src/SpriteBatch';
 import { SoundEffectPool } from 'src/SoundEffectPool';
 import { SoundEffect } from 'src/SoundEffect';
-import { IProjectile } from 'src/Projectiles/IProjectile';
 
 /**
  * Stationary enemy that cannot be stomped on (like spikes), but it can be damaged with a sword attack
  */
-export class Cactus implements IEnemy {
-
-    private health = 3;
+export class Cactus extends EnemyBase {
     private damagedTime = 0;
     private damaged = false;
-
-    private sprite: Sprite = new Sprite(
-        Utils.DefaultSpriteVertices,
-        Utils.CreateTextureCoordinates(
-            0 / 6,
-            0 / 8,
-            1 / 6,
-            1 / 8
-        ));
-
-    private batch: SpriteBatch = new SpriteBatch(this.shader, [this.sprite], this.texture);
-    private visualScale: vec2 = vec2.fromValues(3, 3);
 
     private currentFrameTime = 0;
     private currentAnimationFrame = 0;
@@ -89,57 +72,39 @@ export class Cactus implements IEnemy {
         vec2.fromValues(1 / 6, 7 / 8),
     ]
 
-    private bbOffset: vec3 = vec3.fromValues(0.35, 0.5, 0);
-    private bbSize: vec2 = vec2.fromValues(2.3, 2.5);
-
-    private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
-    private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], null);
-
     private constructor(
-        private position: vec3,
-        private onDeath: (sender: IEnemy) => void,
-        private shader: Shader,
-        private bbShader: Shader,
-        private texture: Texture,
+        position: vec3,
+        private onDeath: (sender: Cactus) => void,
+        shader: Shader,
+        bbShader: Shader,
+        texture: Texture,
         private enemyDamageSound: SoundEffect,
         private enemyDeathSound: SoundEffect
     ) {
-       // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
+        const sprite: Sprite = new Sprite(
+            Utils.DefaultSpriteVertices,
+            Utils.CreateTextureCoordinates(
+                0 / 6,
+                0 / 8,
+                1 / 6,
+                1 / 8
+            ));
+        const bbSize: vec2 = vec2.fromValues(2.3, 2.5);
+        const bbOffset: vec3 = vec3.fromValues(0.35, 0.5, 0);
+        const visualScale: vec2 = vec2.fromValues(3, 3);
+        const health = 3;
+
+        super(shader, sprite, texture, bbShader, bbSize, bbOffset, position, visualScale, health);
     }
 
-    public static async Create(position: vec3, onDeath: (sender: IEnemy) => void): Promise<Cactus> {
+    public static async Create(position: vec3, onDeath: (sender: Cactus) => void): Promise<Cactus> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
-        const damegeSound = await SoundEffectPool.GetInstance().GetAudio('audio/enemy_damage.wav');
+        const damageSound = await SoundEffectPool.GetInstance().GetAudio('audio/enemy_damage.wav');
         const deathSound = await SoundEffectPool.GetInstance().GetAudio('audio/enemy_death.wav');
         const texture = await TexturePool.GetInstance().GetTexture('textures/cactus1.png');
 
-        return new Cactus(position, onDeath, shader, bbShader, texture, damegeSound, deathSound);
-    }
-
-    public get Health(): number {
-        return this.health;
-    }
-
-    public CollideWithAttack(attack: IProjectile): void {
-        this.Damage(attack.PushbackForce);
-    }
-
-    public Draw(proj: mat4, view: mat4): void {
-        this.batch.Draw(proj, view);
-        this.batch.ModelMatrix = mat4.create();
-
-        mat4.translate(this.batch.ModelMatrix, this.batch.ModelMatrix, this.position);
-        mat4.scale(this.batch.ModelMatrix,
-            this.batch.ModelMatrix,
-            vec3.fromValues(this.visualScale[0], this.visualScale[1], 1));
-
-        this.bbBatch.Draw(proj, view);
-        mat4.translate(this.bbBatch.ModelMatrix, mat4.create(), this.BoundingBox.position);
-        mat4.scale(
-            this.bbBatch.ModelMatrix,
-            this.bbBatch.ModelMatrix,
-            vec3.fromValues(this.bbSize[0], this.bbSize[1], 1));
+        return new Cactus(position, onDeath, shader, bbShader, texture, damageSound, deathSound);
     }
 
     public async Update(delta: number): Promise<void> {
@@ -156,13 +121,12 @@ export class Cactus implements IEnemy {
                 this.currentAnimationFrame = 0;
             }
 
-            const currentFrame = this.currentFrameSet[this.currentAnimationFrame];
-            this.batch.TextureOffset = currentFrame;
+            this.batch.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
             this.currentFrameTime = 0;
         }
     }
 
-    public Damage(pushbackForce: vec3) {
+    public override Damage(pushbackForce: vec3) {
         this.enemyDamageSound.Play();
         this.health--;
         this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
@@ -178,24 +142,12 @@ export class Cactus implements IEnemy {
         }
     }
 
-    public get Position(): vec3 {
-        return this.position;
-    }
-
-    public get BoundingBox(): BoundingBox {
-        return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize);
-    }
-
     public get EndCondition(): boolean {
         return false;
     }
 
     public Visit(hero: Hero): void {
         hero.CollideWithCactus(this);
-    }
-
-    public IsCollidingWith(boundingBox: BoundingBox, _: boolean): boolean {
-        return boundingBox.IsCollidingWith(this.BoundingBox);
     }
 
     private RemoveDamageOverlayAfter(delta: number, showOverlayTime: number) {
@@ -211,8 +163,7 @@ export class Cactus implements IEnemy {
     }
 
     public Dispose(): void {
-        this.batch.Dispose();
-        this.bbBatch.Dispose();
+        super.Dispose();
         this.shader.Delete();
         this.bbShader.Delete();
     }

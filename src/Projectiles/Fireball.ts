@@ -11,7 +11,6 @@ import { SoundEffect } from 'src/SoundEffect';
 import { ProjectileBase } from './ProjectileBase';
 
 export class Fireball extends ProjectileBase{
-    public OnHitListeners: ((sender: IProjectile) => void)[] = [];
     private spawnSoundPlayed = false;
 
     // Animation related
@@ -82,6 +81,8 @@ export class Fireball extends ProjectileBase{
 
     public override Dispose(): void {
         super.Dispose();
+        this.shader.Delete();
+        this.bbShader.Delete();
     }
 
     public async Update(delta: number): Promise<void> {
@@ -98,7 +99,7 @@ export class Fireball extends ProjectileBase{
         this.Move(this.moveDirection, delta);
 
         if (this.AlreadyHit) {
-            this.OnHitListeners.forEach(l => l(this));
+            this.OnHitListeners.forEach(l => l.RemoveGameObject(this));
         }
     }
 
@@ -119,8 +120,7 @@ export class Fireball extends ProjectileBase{
                 this.currentAnimationFrameIndex = 0;
             }
 
-            const currentFrame = this.currentFrameSet[this.currentAnimationFrameIndex];
-            this.batch.TextureOffset = currentFrame;
+            this.batch.TextureOffset = this.currentFrameSet[this.currentAnimationFrameIndex];
             this.currentFrameTime = 0;
         }
     }

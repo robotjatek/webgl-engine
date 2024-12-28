@@ -59,12 +59,14 @@ export class Firebomb extends ProjectileBase {
 
         this.Move(this.moveDirection, delta);
         if (this.AlreadyHit) {
-            this.OnHitListeners.forEach(l => l(this));
+            this.OnHitListeners.forEach(l => l.RemoveGameObject(this));
         }
     }
 
     public override Dispose() {
         super.Dispose();
+        this.shader.Delete();
+        this.bbShader.Delete();
     }
 
     public override CollideWithAttack(attack: IProjectile) {

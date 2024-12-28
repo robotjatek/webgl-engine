@@ -31,6 +31,7 @@ import { BossEvent } from './Events/Boss/BossEvent';
 import { UIService } from './UIService';
 import { Point } from './Point';
 import { OutroEvent } from './Events/OutroEvent';
+import { EnemyBase } from './Enemies/IEnemy';
 
 type TileEntity = {
     xPos: number,
@@ -80,7 +81,12 @@ type LevelEntity = {
     initialEventKey: string
 }
 
-export class Level implements IDisposable {
+export interface IProjectileHitListener {
+    RemoveGameObject(toRemove: IGameobject): void,
+    DespawnAttack(attack: IProjectile): void
+}
+
+export class Level implements IProjectileHitListener, IDisposable {
 
     private events: Map<string, ILevelEvent> = new Map<string, ILevelEvent>();
     private activeEvent!: ILevelEvent;
@@ -176,11 +182,14 @@ export class Level implements IDisposable {
             await this.attack?.Update(delta);
             if (this.attack && !this.attack.AlreadyHit) {
                 const attack = this.attack;
+                // Do not collide with any other game objects, only with enemies
                 const enemiesCollidingWithProjectile = this.gameObjects.filter(
-                    e => e.IsCollidingWith(attack.BoundingBox, false));
+                    e => e.IsCollidingWith(attack.BoundingBox, false) && e instanceof EnemyBase);
                 // Pushback force does not necessarily mean the amount of pushback. A big enemy can ignore a sword attack for example
                 enemiesCollidingWithProjectile.forEach(e => e.CollideWithAttack(attack));
-                attack.OnHit();
+                if (enemiesCollidingWithProjectile.length) {
+                    attack.OnHit();
+                }
             }
 
             // TODO: it may not be safe to remove elements while iterating over them
@@ -190,7 +199,7 @@ export class Level implements IDisposable {
                     this.hero.CollideWithGameObject(gameObject);
                 }
 
-                // Despawn out-of-bounds gameobjects. These will be projectiles most of the time.
+                // Despawn out-of-bounds game objects. These will be projectiles most of the time.
                 if (this.MainLayer.IsOutsideBoundary(gameObject.BoundingBox)) {
                     this.gameObjects = this.gameObjects.filter(item => item !== gameObject);
                     gameObject.Dispose();
@@ -285,6 +294,7 @@ export class Level implements IDisposable {
         await this.InitEvents();
         this.updateDisabled = false;
         this.levelEndSoundPlayed = false;
+        this.camera.LookAtPosition(vec3.clone(this.hero.Position), this.MainLayer);
     }
 
     public SubscribeToRestartEvent(listener: IRestartListener): void {
@@ -305,8 +315,10 @@ export class Level implements IDisposable {
             vec2.fromValues(3, 3),
             this.MainLayer,
             async () => await this.RestartLevel(),
-            (sender: Hero, projectile: IProjectile) => this.attack = projectile,
-            (attack: IProjectile) => this.DespawnAttack(attack),
+            (sender: Hero, projectile: IProjectile) => {
+                this.attack = projectile;
+                projectile.SubscribeToHitEvent(this)
+            },
             this.keyHandler,
             this.gamepadHandler
         );
@@ -369,14 +381,15 @@ export class Level implements IDisposable {
 
     public SpawnProjectile(projectile: IProjectile) {
         this.gameObjects.push(projectile);
-        // Despawn projectile that hit
-        // TODO: instead of accessing a public array, projectiles should have a subscribe method
-        projectile.OnHitListeners.push(s => this.RemoveGameObject(s)); // TODO: despawning hero attack should be like this
+        // Subscribe to the hit event of a projectile to be able to despawn the projectile that hit
+        projectile.SubscribeToHitEvent(this);
     }
 
-    private DespawnAttack(attack: IProjectile): void {
-        attack?.Dispose();
-        this.attack = null;
+    public DespawnAttack(attack: IProjectile): void {
+        if (attack === this.attack) {
+            this.attack = null;
+            attack?.Dispose();
+        }
     }
 
     private async InitEvents(): Promise<void> {

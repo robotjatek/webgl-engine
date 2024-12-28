@@ -1,15 +1,14 @@
-import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
+import { vec2, vec3, vec4 } from 'gl-matrix';
 import { BoundingBox } from '../../BoundingBox';
 import { Shader } from '../../Shader';
 import { Sprite } from '../../Sprite';
-import { SpriteBatch } from '../../SpriteBatch';
 import { Texture } from '../../Texture';
 import { TexturePool } from '../../TexturePool';
 import { Utils } from '../../Utils';
 import { Hero } from '../../Hero';
 import { SoundEffectPool } from '../../SoundEffectPool';
 import { IProjectile } from '../../Projectiles/IProjectile';
-import { IEnemy } from '../IEnemy';
+import { EnemyBase } from '../IEnemy';
 import { SoundEffect } from 'src/SoundEffect';
 import { IState } from '../IState';
 import { SharedDragonStateVariables } from './States/SharedDragonStateVariables';
@@ -21,7 +20,7 @@ import { GroundAttackState } from './States/GroundAttackStates/GroundAttackState
 import { Layer } from '../../Layer';
 import { Point } from '../../Point';
 
-export class DragonEnemy implements IEnemy {
+export class DragonEnemy extends EnemyBase {
 
     public ChangeState(state: IState): void {
         this.state.Exit();
@@ -69,13 +68,6 @@ export class DragonEnemy implements IEnemy {
     ];
     private currentFrameSet = this.leftFacingAnimationFrames;
 
-    // Rendering related
-    private sprite: Sprite = new Sprite(
-        Utils.DefaultSpriteVertices,
-        Utils.CreateTextureCoordinates(0.0 / 12.0, 0.0 / 8.0,
-            1.0 / 12.0, 1.0 / 8.0)
-    );
-    private batch: SpriteBatch = new SpriteBatch(this.shader, [this.sprite], this.texture);
 
     // Behaviour related
     private shared: SharedDragonStateVariables = {
@@ -94,18 +86,12 @@ export class DragonEnemy implements IEnemy {
     private signaling = false;
     private attackSignalTime = 0;
 
-    private bbSize = vec2.fromValues(4.8, 3);
-    private bbOffset = vec3.fromValues(0.1, 1.5, 0);
-
-    private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
-    private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], null);
-
     private constructor(
-        private position: vec3,
-        private health: number,
-        private shader: Shader,
-        private bbShader: Shader,
-        private visualScale: vec2, // TODO: this should not be a parameter but hardcoded
+        position: vec3,
+        health: number,
+        shader: Shader,
+        bbShader: Shader,
+        visualScale: vec2, // TODO: this should not be a parameter but hardcoded
         private collider: Layer,
         private hero: Hero,
         private onDeath: (sender: DragonEnemy) => void,
@@ -115,11 +101,18 @@ export class DragonEnemy implements IEnemy {
         private biteAttackSound: SoundEffect,
         private rushSound: SoundEffect,
         private backingStartSound: SoundEffect,
-        private texture: Texture,
+        texture: Texture,
         private enterWaypoint: Point | null
     ) {
+        const sprite: Sprite = new Sprite(
+            Utils.DefaultSpriteVertices,
+            Utils.CreateTextureCoordinates(0.0 / 12.0, 0.0 / 8.0,
+                1.0 / 12.0, 1.0 / 8.0)
+        );
+        const bbSize = vec2.fromValues(4.8, 3);
+        const bbOffset = vec3.fromValues(0.1, 1.5, 0);
+        super(shader, sprite, texture, bbShader, bbSize, bbOffset, position, visualScale, health);
         this.batch.TextureOffset = this.leftFacingAnimationFrames[0];
-        // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
     }
 
     public static async Create(position: vec3,
@@ -146,20 +139,8 @@ export class DragonEnemy implements IEnemy {
             enemyDamageSound, enemyDeathSound, biteAttackSound, rushSound, backingStartSound, texture, enterWaypoint);
     }
 
-    public get Health(): number {
-        return this.health;
-    }
-
     public Visit(hero: Hero): void {
         hero.CollideWithDragon(this);
-    }
-
-    public CollideWithAttack(attack: IProjectile): void {
-        this.Damage(attack.PushbackForce);
-    }
-
-    public get Position(): vec3 {
-        return this.position;
     }
 
     public get CenterPosition(): vec3 {
@@ -187,20 +168,12 @@ export class DragonEnemy implements IEnemy {
             vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(3, 1, 0));
     }
 
-    public get BoundingBox(): BoundingBox {
-        return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize);
-    }
-
     public get EndCondition(): boolean {
         return true;
     }
 
-    public IsCollidingWith(boundingBox: BoundingBox): boolean {
-        return boundingBox.IsCollidingWith(this.BoundingBox);
-    }
-
     // TODO: az egész damage method duplikálva van a cactusban
-    public Damage(pushbackForce: vec3): void {
+    public override Damage(pushbackForce: vec3): void {
         // Dragon ignores pushback at the moment
 
         if (this.invincible) {
@@ -233,22 +206,6 @@ export class DragonEnemy implements IEnemy {
         this.signaling = true;
         this.attackSignalTime = 0;
         this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0.65, 0.65, 0.65, 0));
-    }
-
-    public Draw(proj: mat4, view: mat4): void {
-        this.batch.Draw(proj, view);
-        mat4.translate(this.batch.ModelMatrix, mat4.create(), this.position);
-        mat4.scale(this.batch.ModelMatrix,
-            this.batch.ModelMatrix,
-            vec3.fromValues(this.visualScale[0], this.visualScale[1], 1));
-
-        // Bounding box drawing
-        this.bbBatch.Draw(proj, view);
-        mat4.translate(this.bbBatch.ModelMatrix, mat4.create(), this.BoundingBox.position);
-        mat4.scale(
-            this.bbBatch.ModelMatrix,
-            this.bbBatch.ModelMatrix,
-            vec3.fromValues(this.bbSize[0], this.bbSize[1], 1));
     }
 
     public async Update(delta: number): Promise<void> {
@@ -350,8 +307,7 @@ export class DragonEnemy implements IEnemy {
     }
 
     public Dispose(): void {
-        this.batch.Dispose();
-        this.bbBatch.Dispose();
+        super.Dispose();
         this.shader.Delete();
         this.bbShader.Delete();
     }

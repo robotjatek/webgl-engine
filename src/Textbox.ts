@@ -79,30 +79,44 @@ class Character {
 }
 
 export class Textbox implements IDisposable {
+    private previousText: string | null = null;
+    private previousScale: number | null = null;
+    private previousPosition: vec2 = vec2.create();
+
     private text: Character[] = [];
     private cursorX: number = 0;
     private maxCharacterHeight = 0;
     private position: vec2 = vec2.create();
 
+    private batch: SpriteBatch | null = null;
+
     private constructor(private fontMap: Texture, private shader: Shader, private fontConfig: FontConfig) {
     }
 
-    public static async Create(fontname: string): Promise<Textbox> {
+    public static async Create(fontName: string): Promise<Textbox> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Font.frag');
-        const fontMap = await TexturePool.GetInstance().GetTexture(`textures/Fonts/${fontname}/font.png`);
-        const fontConfig = await FontConfigPool.GetInstance().GetFontConfig(`textures/Fonts/${fontname}/font.json`);
+        const fontMap = await TexturePool.GetInstance().GetTexture(`textures/Fonts/${fontName}/font.png`);
+        const fontConfig = await FontConfigPool.GetInstance().GetFontConfig(`textures/Fonts/${fontName}/font.json`);
 
         return new Textbox(fontMap, shader, fontConfig)
             .WithHue(1).WithSaturation(0).WithValue(1);
     }
 
     public WithText(text: string, position: vec2, scale: number = 1.0): Textbox {
+        if (this.previousText === text && this.previousScale === scale && vec2.equals(this.previousPosition, position)) {
+            // Nothing has changed we can skip all processing
+            return this;
+        }
+
+        this.previousText = text;
+        this.previousScale = scale;
+        this.previousPosition = position;
+
         this.text = [];
         this.cursorX = 0;
         this.position = position;
 
-        const heights = [...this.fontConfig.characters.values()]
-            .map(c => c.height);
+        const heights = [...this.fontConfig.characters.values()].map(c => c.height);
         this.maxCharacterHeight = Math.max(...heights) * scale;
 
         for (const character of text) {
@@ -112,6 +126,11 @@ export class Textbox implements IDisposable {
             this.text.push(renderableChar);
             this.cursorX += renderableChar.Advance;
         }
+
+        // Recreate the texture batch on change
+        this.batch?.Dispose();
+        const sprites = this.text.map(t => t.Sprite);
+        this.batch = new SpriteBatch(this.shader, sprites, this.fontMap);
 
         return this;
     }
@@ -135,11 +154,7 @@ export class Textbox implements IDisposable {
         gl.enable(gl.BLEND);
 
         if (this.text.length > 0) {
-            const sprites = this.text.map(t => t.Sprite);
-            const batch = new SpriteBatch(this.shader, sprites, this.fontMap); // TODO: recreating & destroying the batch in every frame seems very wasteful
-
-            batch.Draw(proj, mat4.create());
-            batch.Dispose();
+            this.batch?.Draw(proj, mat4.create());
         }
 
         gl.disable(gl.BLEND);
@@ -177,5 +192,6 @@ export class Textbox implements IDisposable {
 
     public Dispose(): void {
         this.shader.Delete();
+        this.batch?.Dispose();
     }
 }

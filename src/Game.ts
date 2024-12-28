@@ -284,7 +284,6 @@ export class Game implements IStartEventListener,
                 }
             })();
 
-            // TODO: only change these when the values themselves change
             this.healthTextbox
                 .WithText(`Health: ${this.level.Hero.Health}`, vec2.fromValues(10, 0), 0.5)
                 .WithHue(healthTextColor.hue)

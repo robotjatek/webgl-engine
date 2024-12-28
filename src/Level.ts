@@ -192,7 +192,7 @@ export class Level implements IProjectileHitListener, IDisposable {
                 }
             }
 
-            // TODO: it may not be safe to remove elements while iterating over them
+            const outsideObjects: IGameobject[] = [];
             for (const gameObject of this.gameObjects) {
                 await gameObject.Update(delta);
                 if (gameObject.IsCollidingWith(this.hero.BoundingBox, false)) {
@@ -200,11 +200,13 @@ export class Level implements IProjectileHitListener, IDisposable {
                 }
 
                 // Despawn out-of-bounds game objects. These will be projectiles most of the time.
+                // Modify the array only after the loop
                 if (this.MainLayer.IsOutsideBoundary(gameObject.BoundingBox)) {
-                    this.gameObjects = this.gameObjects.filter(item => item !== gameObject);
-                    gameObject.Dispose();
+                    outsideObjects.push(gameObject);
+                    gameObject.Dispose()
                 }
             }
+            this.gameObjects = this.gameObjects.filter(o => !outsideObjects.includes(o));
 
             await this.activeEvent.Update(delta);
             this.CheckForEndCondition();

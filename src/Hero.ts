@@ -441,7 +441,8 @@ export class Hero implements IDisposable {
             this.velocity[1] = 0.04;
             this.invincible = true;
             this.timeSinceLastStomp = 0;
-            this.stompSound.Play();
+            const pitch = 0.8 + Math.random() * (1.25 - 0.8);
+            this.stompSound.Play(pitch);
         }
     }
 
@@ -456,7 +457,8 @@ export class Hero implements IDisposable {
             vec3.subtract(dir, this.position, this.lastPosition);
             this.velocity[0] = 0.7 * dir[0];
             this.velocity[1] = -0.0001; // TODO: yet another little hack to make dash play nicely with collision detection
-            this.stompSound.Play();
+            const pitch = 0.8 + Math.random() * (1.25 - 0.8);
+            this.stompSound.Play(pitch);
             this.timeSinceLastDash = 0;
             this.dashAvailable = false;
         }

@@ -69,7 +69,8 @@ export class MeleeAttack extends ProjectileBase {
 
     public async Update(delta: number): Promise<void> {
         if (!this.attackSoundPlayed) {
-            this.attackSound.Play();
+            const pitch = 0.8 + Math.random() * (1.4 - 0.8);
+            this.attackSound.Play(pitch);
             this.attackSoundPlayed = true;
         }
         this.Animate(delta);

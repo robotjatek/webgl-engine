@@ -60,7 +60,6 @@ enum State {
 }
 
 // TODO: shake camera when attack hit
-// TODO: play attack sound in different pitches
 
 // TODO: resource tracker: keep track of 'alive' opengl and other resources resources the number shouldn't go up
 // TODO: ui builder framework

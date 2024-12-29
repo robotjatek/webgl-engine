@@ -91,7 +91,7 @@ export abstract class ProjectileBase implements IProjectile {
 
     public abstract get PushbackForce(): vec3;
 
-    public Visit(hero: Hero): void {
+    public async Visit(hero: Hero): Promise<void> {
         hero.InteractWithProjectile(this);
     }
 

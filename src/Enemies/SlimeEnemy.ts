@@ -91,7 +91,7 @@ export class SlimeEnemy extends EnemyBase {
         return new SlimeEnemy(position, shader, bbShader, visualScale, collider, onDeath, enemyDamageSound, enemyDeathSound, texture);
     }
 
-    public Visit(hero: Hero): void {
+    public async Visit(hero: Hero): Promise<void> {
         hero.CollideWithSlime(this);
     }
 

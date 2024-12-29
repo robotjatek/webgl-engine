@@ -73,14 +73,6 @@ export class ResourceTracker {
         this._batches.delete(batch);
     }
 
-    public get AliveShaderNumber(): number {
-        return this._shaders.size;
-    }
-
-    public get AliveTextureNumber(): number {
-        return  this._textures.size;
-    }
-
     public get AliveShaderStackTrace(): string[] {
         const aliveShadersStackTrace: string[] = [];
         this._shaders.forEach(shader => {

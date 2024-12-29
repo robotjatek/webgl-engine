@@ -74,7 +74,7 @@ export class HealthPickup implements IPickup {
         // No-op
     }
 
-    public Visit(hero: Hero): void {
+    public async Visit(hero: Hero): Promise<void> {
         this.pickupSound.Play();
         hero.CollideWithHealth(this);
         this.onPickup(this); // Despawning is handled by the Game object, so we need no notify it that it can now despawn the object

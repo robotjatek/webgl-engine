@@ -136,7 +136,6 @@ export class Level implements IProjectileHitListener, IDisposable {
         }));
 
         const bgShader: Shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
-        // TODO: ez itt örökre lefoglalva marad
         const bgTexture = await TexturePool.GetInstance().GetTexture(levelDescriptor.background);
 
         const music = levelDescriptor.music ? await SoundEffectPool.GetInstance()
@@ -207,7 +206,7 @@ export class Level implements IProjectileHitListener, IDisposable {
             for (const gameObject of this.gameObjects) {
                 await gameObject.Update(delta);
                 if (gameObject.IsCollidingWith(this.hero.BoundingBox, false)) {
-                    this.hero.CollideWithGameObject(gameObject);
+                    await this.hero.CollideWithGameObject(gameObject);
                 }
 
                 // Despawn out-of-bounds game objects. These will be projectiles most of the time.
@@ -380,13 +379,14 @@ export class Level implements IProjectileHitListener, IDisposable {
             case 'end': {
                 const end = await LevelEnd.Create(
                     vec3.fromValues(descriptor.xPos - 1, descriptor.yPos, 0),
-                    () => this.nextLevelEventListeners.forEach(
-                        async (listener) => {
+                    async () => {
+                        for (const listener of this.nextLevelEventListeners) {
                             // Disable all exits when after interacting any of them
                             const allEnds = this.gameObjects.filter(o => o instanceof LevelEnd) as LevelEnd[];
                             allEnds.forEach(e => e.Interacted = true);
                             await listener.OnNextLevelEvent(this.levelDescriptor.nextLevel);
-                        }),
+                        }
+                    },
                     this);
 
                 this.SubscribeToEndConditionsMetEvent(end);

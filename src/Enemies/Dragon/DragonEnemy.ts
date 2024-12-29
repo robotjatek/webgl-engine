@@ -139,7 +139,7 @@ export class DragonEnemy extends EnemyBase {
             enemyDamageSound, enemyDeathSound, biteAttackSound, rushSound, backingStartSound, texture, enterWaypoint);
     }
 
-    public Visit(hero: Hero): void {
+    public async Visit(hero: Hero): Promise<void> {
         hero.CollideWithDragon(this);
     }
 

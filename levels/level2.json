@@ -607,11 +607,13 @@
     }
   ],
   "defaultLayer": 0,
-  "gameObjects": [],
-  "levelEnd": {
-    "xPos": 58,
-    "yPos": 14
-  },
+  "gameObjects": [
+    {
+      "type": "end",
+      "xPos": 58,
+      "yPos": 14
+    }
+  ],
   "start": {
     "xPos": 13,
     "yPos": 13

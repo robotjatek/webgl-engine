@@ -2923,12 +2923,13 @@
       "type": "boss_trigger",
       "xPos": 3,
       "yPos": 14
+    },
+    {
+      "type": "end",
+      "xPos": 34,
+      "yPos": 14
     }
   ],
-  "levelEnd": {
-    "xPos": 34,
-    "yPos": 14
-  },
   "start": {
     "xPos": 1,
     "yPos": 14

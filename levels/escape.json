@@ -17248,12 +17248,13 @@
       "type": "escape_trigger",
       "xPos": 18,
       "yPos": 87
+    },
+    {
+      "type": "end",
+      "xPos": 28,
+      "yPos": 4
     }
   ],
-  "levelEnd": {
-    "xPos": 28,
-    "yPos": 4
-  },
   "start": {
     "xPos": 4,
     "yPos": 87

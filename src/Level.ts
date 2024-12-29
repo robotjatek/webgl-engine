@@ -83,6 +83,7 @@ type LevelEntity = {
 
 export interface IProjectileHitListener {
     RemoveGameObject(toRemove: IGameobject): void,
+
     DespawnAttack(attack: IProjectile): void
 }
 
@@ -366,6 +367,21 @@ export class Level implements IProjectileHitListener, IDisposable {
                 return new LevelEventTrigger(this, vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), EscapeEvent.EVENT_KEY);
             case 'boss_trigger':
                 return new LevelEventTrigger(this, vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), BossEvent.EVENT_KEY);
+            case 'end': {
+                const end = await LevelEnd.Create(
+                    vec3.fromValues(descriptor.xPos - 1, descriptor.yPos, 0),
+                    () => this.nextLevelEventListeners.forEach(
+                        async (listener) => {
+                            // Disable all exits when after interacting any of them
+                            const allEnds = this.gameObjects.filter(o => o instanceof LevelEnd) as LevelEnd[];
+                            allEnds.forEach(e => e.Interacted = true);
+                            await listener.OnNextLevelEvent(this.levelDescriptor.nextLevel);
+                        }),
+                    this);
+
+                this.SubscribeToEndConditionsMetEvent(end);
+                return end;
+            }
             default:
                 throw new Error('Unknown object type');
         }
@@ -448,19 +464,6 @@ export class Level implements IProjectileHitListener, IDisposable {
     private async InitGameObjects(): Promise<void> {
         const objects = await Promise.all(this.levelDescriptor.gameObjects.map(async (o) => await this.CreateGameObject(o)));
         this.gameObjects.push(...objects);
-
-        const levelEnd = this.levelDescriptor.nextLevel && this.levelDescriptor.levelEnd ?
-            await LevelEnd.Create(vec3.fromValues(this.levelDescriptor.levelEnd.xPos - 1, this.levelDescriptor.levelEnd.yPos, 0),
-                () => this.nextLevelEventListeners.forEach(async l => await l.OnNextLevelEvent(this.levelDescriptor.nextLevel)),
-                this
-            ) : null;
-
-        if (levelEnd) {
-            this.SubscribeToEndConditionsMetEvent(levelEnd);
-            this.gameObjects.push(levelEnd);
-        }
-
-        // TODO: 2) change level format and jsons to support multiple levelends
     }
 
     public Dispose(): void {

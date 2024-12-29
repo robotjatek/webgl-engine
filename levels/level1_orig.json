@@ -727,12 +727,13 @@
       "type": "spike",
       "xPos": 54,
       "yPos": 16
+    },
+    {
+      "type": "end",
+      "xPos": 58,
+      "yPos": 14
     }
   ],
-  "levelEnd": {
-    "xPos": 58,
-    "yPos": 14
-  },
   "start": {
     "xPos": 0,
     "yPos": 13

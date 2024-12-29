@@ -180,7 +180,6 @@
   ],
   "defaultLayer": 2,
   "gameObjects": [],
-  "levelEnd": null,
   "start": null,
   "nextLevel": "levels/level1.json"
 }

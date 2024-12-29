@@ -21,11 +21,11 @@ export interface IEndConditionsMetEventListener {
 
 export class LevelEnd implements IGameobject, IEndConditionsMetEventListener, IDisposable {
 
-    private sprite: Sprite;
-    private batch: SpriteBatch;
+    private readonly sprite: Sprite;
+    private readonly batch: SpriteBatch;
     private enabled: boolean = false;
     private static readonly transparentValue: number = 0.5;
-    private size: vec3 = vec3.fromValues(2, 1, 0);
+    private readonly size: vec3 = vec3.fromValues(2, 1, 0);
     private interacted: boolean = false;
 
     private constructor(private position: vec3, private shader: Shader, private endReachedEffect: SoundEffect, texture: Texture,
@@ -48,6 +48,10 @@ export class LevelEnd implements IGameobject, IEndConditionsMetEventListener, ID
 
     public get EndCondition(): boolean {
         return false;
+    }
+
+    public set Interacted(interacted: boolean) {
+        this.interacted = interacted;
     }
 
     public CollideWithAttack(attack: IProjectile): void {
@@ -85,7 +89,7 @@ export class LevelEnd implements IGameobject, IEndConditionsMetEventListener, ID
             this.level.updateDisabled = true; // pause level updates
             this.endReachedEffect.Play(1, 1, () => {
                 /** 
-                 * Wait for the soundeffect to play then restart level update loop.
+                 * Wait for the sound effect to play then restart level update loop.
                 */
                 this.interacted = true;
                 this.level.updateDisabled = false;

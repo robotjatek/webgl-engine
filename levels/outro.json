@@ -811,7 +811,6 @@
   ],
   "defaultLayer": 1,
   "gameObjects": [],
-  "levelEnd": null,
   "start": {
     "xPos": 0,
     "yPos": 15

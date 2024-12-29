@@ -1,6 +1,7 @@
 import { vec2, vec4 } from 'gl-matrix';
 import { ShaderPool } from './ShaderPool';
 import { gl } from "./WebGLUtils";
+import { ResourceTracker } from './ResourceTracker';
 
 export class Shader {
     private readonly program: WebGLProgram;
@@ -9,6 +10,7 @@ export class Shader {
     private constructor(vertexShader: WebGLShader, fragmentShader: WebGLShader) {
         this.program = this.createProgram(vertexShader, fragmentShader);
         this.valid = true;
+        ResourceTracker.GetInstance().TrackShader(this);
     }
 
     public static async Create(vertexPath: string, fragmentPath: string): Promise<Shader> {
@@ -37,6 +39,7 @@ export class Shader {
     }
 
     public Delete(): void {
+        ResourceTracker.GetInstance().UnTrackShader(this);
         this.valid = false;
         gl.deleteProgram(this.program);
     }

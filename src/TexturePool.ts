@@ -29,6 +29,9 @@ export class TexturePool {
         return texture;
     }
 
+    /**
+     * Empties the texture cache AND frees any OpenGL resources
+     */
     public ClearPool(): void {
         this.textures.forEach((value) => {
             value.Delete();
@@ -57,14 +60,4 @@ export class TexturePool {
         ]);
     }
 
-    /**
-     * Empties the texture cache AND frees any OpenGL resources
-     */
-    public UnloadAll(): void {
-        for (const [_, texture] of this.textures) {
-            texture.Delete();
-        }
-
-        this.textures.clear();
-    }
 }

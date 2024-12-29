@@ -21,6 +21,7 @@ import { SpriteBatch } from './SpriteBatch';
 import { Shader } from './Shader';
 import { Sprite } from './Sprite';
 import { Utils } from './Utils';
+import { ResourceTracker } from './ResourceTracker';
 
 export interface IStartEventListener {
     Start(): Promise<void>;
@@ -142,6 +143,8 @@ export class Game implements IStartEventListener,
     private camera = new Camera(vec3.create());
 
     public async OnNextLevelEvent(levelName: string): Promise<void> {
+        const tracker = ResourceTracker.GetInstance();
+
         const oldLevel = this.level;
         oldLevel.StopMusic();
 
@@ -190,6 +193,8 @@ export class Game implements IStartEventListener,
             this.state = State.IN_GAME;
             this.elapsedTimeSinceStateChange = 0;
         }
+
+        ResourceTracker.GetInstance().StartTracking();
     }
 
     public async Quit(): Promise<void> {
@@ -199,6 +204,8 @@ export class Game implements IStartEventListener,
         this.camera = new Camera(vec3.create());
         SoundEffectPool.GetInstance().StopAll();
         this.SetFadeOut(0);
+
+        const aliveResourceStack = ResourceTracker.GetInstance().AliveResourceStackTrace;
         return Promise.resolve();
     }
 

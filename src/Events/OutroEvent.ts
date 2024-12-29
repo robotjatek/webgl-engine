@@ -122,7 +122,7 @@ export class OutroEvent implements ILevelEvent {
     }
 
     public Dispose(): void {
-        // old man shouldn't be disposed as it is added to the game objects, so it will be automatically disposed
+        this.level.RemoveGameObject(this.oldMan);
         this.uiService.RemoveTextbox(this.textBox);
     }
 

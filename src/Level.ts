@@ -104,8 +104,17 @@ export class Level implements IProjectileHitListener, IDisposable {
     private nextLevelEventListeners: INextLevelEvent[] = [];
     private endConditionsMetEventListeners: IEndConditionsMetEventListener[] = [];
 
-    private constructor(private layers: Layer[], private defaultLayer: number, bgShader: Shader, bgTexture: Texture, private music: SoundEffect | null, private levelDescriptor: LevelEntity,
-                        private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler, private uiService: UIService, private camera: Camera, private game: (IQuitEventListener & IFadeOut)
+    private constructor(private layers: Layer[],
+                        private defaultLayer: number,
+                        private bgShader: Shader,
+                        bgTexture: Texture,
+                        private music: SoundEffect | null,
+                        private levelDescriptor: LevelEntity,
+                        private keyHandler: KeyHandler,
+                        private gamepadHandler: ControllerHandler,
+                        private uiService: UIService,
+                        private camera: Camera,
+                        private game: (IQuitEventListener & IFadeOut)
     ) {
         this.Background = new SpriteBatch(bgShader, [new Background()], bgTexture);
     }
@@ -127,6 +136,7 @@ export class Level implements IProjectileHitListener, IDisposable {
         }));
 
         const bgShader: Shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
+        // TODO: ez itt örökre lefoglalva marad
         const bgTexture = await TexturePool.GetInstance().GetTexture(levelDescriptor.background);
 
         const music = levelDescriptor.music ? await SoundEffectPool.GetInstance()
@@ -467,6 +477,13 @@ export class Level implements IProjectileHitListener, IDisposable {
     }
 
     public Dispose(): void {
+        // Events can spawn and de-spawn entities.
+        // Generally to avoid double Dispose events if an event spawned an entity the event should release it.
+        // To make sure that happens events should be disposed first and the generic game objects later
+        this.events.forEach(e => e.Dispose());
+        this.events.clear();
+
+        this.bgShader.Delete();
         this.layers.forEach(l => l.Dispose());
         this.layers = [];
         this.Background.Dispose();
@@ -477,8 +494,6 @@ export class Level implements IProjectileHitListener, IDisposable {
         this.restartEventListeners = [];
         this.nextLevelEventListeners = [];
         this.endConditionsMetEventListeners = [];
-        this.events.forEach(e => e.Dispose());
-        this.events.clear();
         this.StopMusic();
     }
 }

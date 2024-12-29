@@ -101,6 +101,7 @@ export class MeleeAttack extends ProjectileBase {
     public Dispose(): void {
         this.batch.Dispose();
         this.shader.Delete();
+        this.bbShader.Delete();
     }
 
 }

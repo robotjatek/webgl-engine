@@ -420,6 +420,7 @@ export class Level implements IProjectileHitListener, IDisposable {
         }
     }
 
+    // TODO: only create events that are needed by the current level
     private async InitEvents(): Promise<void> {
         const events = this.levelDescriptor.events ? await Promise.all(this.levelDescriptor.events.map(async e => await this.CreateLevelEvent(e)))
             : [];

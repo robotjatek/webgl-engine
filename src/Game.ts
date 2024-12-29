@@ -205,7 +205,7 @@ export class Game implements IStartEventListener,
         SoundEffectPool.GetInstance().StopAll();
         this.SetFadeOut(0);
 
-        const aliveResourceStack = ResourceTracker.GetInstance().AliveResourceStackTrace;
+        const aliveResourceStack = ResourceTracker.GetInstance().AliveTextureStackTrace;
         return Promise.resolve();
     }
 

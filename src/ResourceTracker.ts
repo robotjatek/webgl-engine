@@ -1,6 +1,7 @@
 import { Shader } from './Shader';
 import { Texture } from './Texture';
 import { SpriteBatch } from './SpriteBatch';
+import { Environment } from './Environment';
 
 export class ResourceTracker {
     private static instance: ResourceTracker | null = null;
@@ -13,7 +14,7 @@ export class ResourceTracker {
         return this.instance;
     }
 
-    private _tracking = false;
+    private _tracking = Environment.TrackResources;
     private _shaders: Map<Shader, string> = new Map<Shader, string>();
     private _textures: Map<Texture, string> = new Map<Texture, string>();
     private _batches: Map<SpriteBatch, string> = new Map<SpriteBatch, string>();
@@ -58,6 +59,20 @@ export class ResourceTracker {
         this._textures.delete(texture);
     }
 
+    public TrackSpriteBatch(batch: SpriteBatch): void {
+        if (!this._tracking) {
+            return;
+        }
+        this._batches.set(batch, new Error().stack!);
+    }
+
+    public UnTrackSpriteBatch(batch: SpriteBatch): void {
+        if (!this._tracking) {
+            return;
+        }
+        this._batches.delete(batch);
+    }
+
     public get AliveShaderNumber(): number {
         return this._shaders.size;
     }
@@ -82,9 +97,17 @@ export class ResourceTracker {
         return aliveTextureStackTrace;
     }
 
+    public get AliveSpriteBatchStackTrace(): string[] {
+        const aliveSpriteBatchStackTrace: string[] = [];
+        this._batches.forEach(batch => {
+            aliveSpriteBatchStackTrace.push(batch);
+        });
+        return aliveSpriteBatchStackTrace;
+    }
+
     public get AliveResourceStackTrace(): string[] {
-        const shaderStackTrace = this.AliveShaderStackTrace;
-        const textureStacktrace = this.AliveTextureStackTrace;
-        return textureStacktrace.concat(shaderStackTrace);
+        return this.AliveTextureStackTrace
+            .concat(this.AliveShaderStackTrace)
+            .concat(this.AliveSpriteBatchStackTrace);
     }
 }

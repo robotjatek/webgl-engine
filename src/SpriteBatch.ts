@@ -4,6 +4,7 @@ import { Shader } from "./Shader";
 import { Sprite } from "./Sprite";
 import { Texture } from "./Texture";
 import { gl } from "./WebGLUtils";
+import { ResourceTracker } from './ResourceTracker';
 
 export class SpriteBatch implements IDisposable {
     private BatchShader: Shader;
@@ -33,6 +34,8 @@ export class SpriteBatch implements IDisposable {
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.TextureCoordinates), gl.STATIC_DRAW);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+        ResourceTracker.GetInstance().TrackSpriteBatch(this);
     }
 
     public set TextureOffset(value: vec2) {
@@ -50,6 +53,7 @@ export class SpriteBatch implements IDisposable {
         gl.deleteBuffer(this.VertexBuffer);
         gl.deleteBuffer(this.TextureCoordinateBuffer);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        ResourceTracker.GetInstance().UnTrackSpriteBatch(this);
     }
 
     public Draw(projectionMatrix: mat4, viewMatrix: mat4): void {

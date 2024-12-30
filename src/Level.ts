@@ -104,10 +104,22 @@ export class Level implements IProjectileHitListener, IDisposable {
     private nextLevelEventListeners: INextLevelEvent[] = [];
     private endConditionsMetEventListeners: IEndConditionsMetEventListener[] = [];
 
-    private constructor(private layers: Layer[], private defaultLayer: number, bgShader: Shader, bgTexture: Texture, private music: SoundEffect | null, private levelDescriptor: LevelEntity,
-                        private keyHandler: KeyHandler, private gamepadHandler: ControllerHandler, private uiService: UIService, private camera: Camera, private game: (IQuitEventListener & IFadeOut)
+    private constructor(private layers: Layer[],
+                        private defaultLayer: number,
+                        private loadedTexturePaths: Set<string>,
+                        private bgShader: Shader,
+                        bgTexture: Texture,
+                        private music: SoundEffect | null,
+                        private levelDescriptor: LevelEntity,
+                        private keyHandler: KeyHandler,
+                        private gamepadHandler: ControllerHandler,
+                        private uiService: UIService,
+                        private camera: Camera,
+                        private game: (IQuitEventListener & IFadeOut)
     ) {
         this.Background = new SpriteBatch(bgShader, [new Background()], bgTexture);
+        this.loadedTexturePaths.add(bgTexture.Path!)
+
     }
 
     public static async Create(levelName: string, keyHandler: KeyHandler, gamepadHandler: ControllerHandler,
@@ -117,9 +129,11 @@ export class Level implements IProjectileHitListener, IDisposable {
         const texturePool = TexturePool.GetInstance();
         const levelJsonString = await (await fetch(levelName)).text();
         const levelDescriptor = JSON.parse(levelJsonString) as LevelEntity;
-        const loadedLayers = await Promise.all(levelDescriptor.layers.map(async layer => {
+        const texturePaths = new Set<string>();
+        const layers = await Promise.all(levelDescriptor.layers.map(async layer => {
             const loadedTiles = await Promise.all(layer.tiles.map(async tile => {
                 const texture = await texturePool.GetTexture(tile.texture);
+                texturePaths.add(tile.texture);
                 return new Tile(tile.xPos, tile.yPos, texture);
             }));
 
@@ -132,8 +146,9 @@ export class Level implements IProjectileHitListener, IDisposable {
         const music = levelDescriptor.music ? await SoundEffectPool.GetInstance()
             .GetAudio(levelDescriptor.music, true) : null;
 
-        return new Level(loadedLayers,
+        return new Level(layers,
             levelDescriptor.defaultLayer ?? 0,
+            texturePaths,
             bgShader,
             bgTexture,
             music,
@@ -197,7 +212,7 @@ export class Level implements IProjectileHitListener, IDisposable {
             for (const gameObject of this.gameObjects) {
                 await gameObject.Update(delta);
                 if (gameObject.IsCollidingWith(this.hero.BoundingBox, false)) {
-                    this.hero.CollideWithGameObject(gameObject);
+                    await this.hero.CollideWithGameObject(gameObject);
                 }
 
                 // Despawn out-of-bounds game objects. These will be projectiles most of the time.
@@ -370,13 +385,14 @@ export class Level implements IProjectileHitListener, IDisposable {
             case 'end': {
                 const end = await LevelEnd.Create(
                     vec3.fromValues(descriptor.xPos - 1, descriptor.yPos, 0),
-                    () => this.nextLevelEventListeners.forEach(
-                        async (listener) => {
+                    async () => {
+                        for (const listener of this.nextLevelEventListeners) {
                             // Disable all exits when after interacting any of them
                             const allEnds = this.gameObjects.filter(o => o instanceof LevelEnd) as LevelEnd[];
                             allEnds.forEach(e => e.Interacted = true);
                             await listener.OnNextLevelEvent(this.levelDescriptor.nextLevel);
-                        }),
+                        }
+                    },
                     this);
 
                 this.SubscribeToEndConditionsMetEvent(end);
@@ -410,6 +426,7 @@ export class Level implements IProjectileHitListener, IDisposable {
         }
     }
 
+    // TODO: only create events that are needed by the current level
     private async InitEvents(): Promise<void> {
         const events = this.levelDescriptor.events ? await Promise.all(this.levelDescriptor.events.map(async e => await this.CreateLevelEvent(e)))
             : [];
@@ -467,6 +484,13 @@ export class Level implements IProjectileHitListener, IDisposable {
     }
 
     public Dispose(): void {
+        // Events can spawn and de-spawn entities.
+        // Generally to avoid double Dispose events if an event spawned an entity the event should release it.
+        // To make sure that happens events should be disposed first and the generic game objects later
+        this.events.forEach(e => e.Dispose());
+        this.events.clear();
+
+        this.bgShader.Delete();
         this.layers.forEach(l => l.Dispose());
         this.layers = [];
         this.Background.Dispose();
@@ -477,8 +501,7 @@ export class Level implements IProjectileHitListener, IDisposable {
         this.restartEventListeners = [];
         this.nextLevelEventListeners = [];
         this.endConditionsMetEventListeners = [];
-        this.events.forEach(e => e.Dispose());
-        this.events.clear();
         this.StopMusic();
+        TexturePool.GetInstance().RemoveAllIn([...this.loadedTexturePaths]);
     }
 }

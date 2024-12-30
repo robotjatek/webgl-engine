@@ -67,7 +67,7 @@ export abstract class EnemyBase implements IEnemy {
 
     public abstract get EndCondition(): boolean;
 
-    public abstract Visit(hero: Hero): void;
+    public abstract Visit(hero: Hero): Promise<void>;
 
     public get Health(): number {
         return this.health;

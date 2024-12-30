@@ -29,7 +29,7 @@ export class LevelEnd implements IGameobject, IEndConditionsMetEventListener, ID
     private interacted: boolean = false;
 
     private constructor(private position: vec3, private shader: Shader, private endReachedEffect: SoundEffect, texture: Texture,
-        private interactCallback: () => void, private level: Level
+        private interactCallback: () => Promise<void>, private level: Level
     ) {
         this.sprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
         this.batch = new SpriteBatch(this.shader, [this.sprite], texture);
@@ -62,7 +62,7 @@ export class LevelEnd implements IGameobject, IEndConditionsMetEventListener, ID
         return new BoundingBox(this.position, vec2.fromValues(this.size[0], this.size[1]));
     }
 
-    public static async Create(position: vec3, interactCallback: () => void, level: Level): Promise<LevelEnd> {
+    public static async Create(position: vec3, interactCallback: () => Promise<void>, level: Level): Promise<LevelEnd> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Transparent.frag');
         const endReachedEffect = await SoundEffectPool.GetInstance().GetAudio('audio/ding.wav', false);
         const texture = await TexturePool.GetInstance().GetTexture('textures/exit.png');
@@ -84,16 +84,15 @@ export class LevelEnd implements IGameobject, IEndConditionsMetEventListener, ID
         return boundingBox.IsCollidingWith(this.BoundingBox);
     }
 
-    public Visit(hero: Hero): void {
+    public async Visit(hero: Hero): Promise<void> {
         if (this.enabled && !this.interacted) {
             this.level.updateDisabled = true; // pause level updates
-            this.endReachedEffect.Play(1, 1, () => {
+            await this.endReachedEffect.Play(1, 1, async () => {
                 /** 
                  * Wait for the sound effect to play then restart level update loop.
                 */
                 this.interacted = true;
-                this.level.updateDisabled = false;
-                this.interactCallback();
+                await this.interactCallback();
             });
         }
     }

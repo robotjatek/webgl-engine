@@ -474,8 +474,8 @@ export class Hero implements IDisposable {
         }
     }
 
-    public CollideWithGameObject(object: IGameobject): void {
-        object.Visit(this);
+    public async CollideWithGameObject(object: IGameobject): Promise<void> {
+        await object.Visit(this);
     }
 
     public InteractWithProjectile(projectile: IProjectile): void {

@@ -62,7 +62,7 @@ export class MeleeAttack extends ProjectileBase {
         // no hit sound here for the moment as it can differ on every enemy type
     }
 
-    public Visit(hero: Hero): void {
+    public async Visit(hero: Hero): Promise<void> {
         // this shouldn't happen as melee attack is an attack by the hero. In the future enemies could use it too...
         throw new Error('Method not implemented.');
     }
@@ -99,8 +99,9 @@ export class MeleeAttack extends ProjectileBase {
     }
 
     public Dispose(): void {
-        this.batch.Dispose();
+        super.Dispose();
         this.shader.Delete();
+        this.bbShader.Delete();
     }
 
 }

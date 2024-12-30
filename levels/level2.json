@@ -1,6 +1,6 @@
 {
   "background": "textures/bg.jpg",
-  "music": "audio/level.mp3",
+  "music": "",
   "layers": [
     {
       "tiles": [
@@ -612,10 +612,15 @@
       "type": "end",
       "xPos": 58,
       "yPos": 14
+    },
+    {
+      "type": "end",
+      "xPos": 20,
+      "yPos": 15
     }
   ],
   "start": {
-    "xPos": 13,
+    "xPos": 2,
     "yPos": 13
   },
   "nextLevel": "levels/level1.json",

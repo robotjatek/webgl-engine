@@ -43,7 +43,7 @@ export class Spike extends EnemyBase {
         return false;
     }
 
-    public Visit(hero: Hero): void {
+    public async Visit(hero: Hero): Promise<void> {
         hero.CollideWithSpike(this);
     }
 

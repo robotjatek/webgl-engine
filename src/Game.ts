@@ -15,12 +15,13 @@ import { PauseScreen } from './PauseScreen/PauseScreen';
 import { IDisposable } from './IDisposable';
 import { UIService } from './UIService';
 import { Camera } from './Camera';
-import { RenderTarget } from './BackbufferRenderer';
+import { RenderTarget } from './RenderTarget';
 import { Texture } from './Texture';
 import { SpriteBatch } from './SpriteBatch';
 import { Shader } from './Shader';
 import { Sprite } from './Sprite';
 import { Utils } from './Utils';
+import { ResourceTracker } from './ResourceTracker';
 
 export interface IStartEventListener {
     Start(): Promise<void>;
@@ -50,6 +51,7 @@ export interface IFadeOut {
     SetFadeOut(value: number): void
 }
 
+// TODO: soundeffect.ts warning
 // TODO: time to implement a proper state machine at least for the game object
 // TODO: check for key presses and elapsed time since state change
 // TODO: sometimes key release check is also necessary for a state change
@@ -61,7 +63,6 @@ enum State {
 
 // TODO: shake camera when attack hit
 
-// TODO: resource tracker: keep track of 'alive' opengl and other resources resources the number shouldn't go up
 // TODO: ui builder framework
 // TODO: flip sprite
 // TODO: recheck every vector passing. Sometimes vectors need to be cloned
@@ -90,7 +91,7 @@ export class Game implements IStartEventListener,
     );
 
     private state: State = State.START_SCREEN;
-    private level!: Level;
+    private level: Level | null = null;
     private musicVolumeStack: number[] = [];
 
     private keyWasReleased = true;
@@ -117,9 +118,9 @@ export class Game implements IStartEventListener,
         gl.viewport(0, 0, this.Width, this.Height);
         gl.clearColor(0, 0, 0, 1);
 
-        mainScreen.SubscribeToStartEvent(this);
-        pauseScreen.SubscribeToResumeEvent(this);
-        pauseScreen.SubscribeToQuitEvent(this);
+        mainScreen?.SubscribeToStartEvent(this);
+        pauseScreen?.SubscribeToResumeEvent(this);
+        pauseScreen?.SubscribeToQuitEvent(this);
 
         this._fullScreenSprite = new Sprite(
             Utils.DefaultFullscreenQuadVertices,
@@ -134,7 +135,7 @@ export class Game implements IStartEventListener,
     public Dispose(): void {
         this.mainScreen.Dispose();
         this.pauseScreen.Dispose();
-        this.level.Dispose();
+        this.level?.Dispose();
         this.uiService.Dispose();
         this._renderTarget.Dispose();
     }
@@ -143,16 +144,16 @@ export class Game implements IStartEventListener,
 
     public async OnNextLevelEvent(levelName: string): Promise<void> {
         const oldLevel = this.level;
-        oldLevel.StopMusic();
+        oldLevel?.StopMusic();
+        oldLevel?.Dispose();
+        this.level = null;
 
         const nextLevel = await Level.Create(levelName, this.keyHandler, this.gamepadHandler, this.uiService, this.camera, this);
+        nextLevel.SubscribeToNextLevelEvent(this);
+        nextLevel.SubscribeToRestartEvent(this);
         await nextLevel.InitLevel();
 
         this.level = nextLevel;
-        oldLevel.Dispose();
-
-        nextLevel.SubscribeToNextLevelEvent(this);
-        nextLevel.SubscribeToRestartEvent(this);
     }
 
     public OnRestartEvent(): void {
@@ -190,11 +191,13 @@ export class Game implements IStartEventListener,
             this.state = State.IN_GAME;
             this.elapsedTimeSinceStateChange = 0;
         }
+        ResourceTracker.GetInstance().StartTracking();
     }
 
     public async Quit(): Promise<void> {
-        this.level.StopMusic();
-        this.level.Dispose();
+        this.level?.StopMusic();
+        this.level?.Dispose();
+        this.level = null;
         this.state = State.START_SCREEN;
         this.camera = new Camera(vec3.create());
         SoundEffectPool.GetInstance().StopAll();
@@ -237,16 +240,16 @@ export class Game implements IStartEventListener,
     private Render(elapsedTime: number): void {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        this._renderTarget.Render(() => {
+        this._renderTarget?.Render(() => {
             if (this.state === State.START_SCREEN) {
-                this.mainScreen.Draw(this.projectionMatrix);
+                this.mainScreen?.Draw(this.projectionMatrix);
             } else {
-                this.level!.Draw(this.projectionMatrix);
+                this.level?.Draw(this.projectionMatrix);
                 this.uiService.Draw(elapsedTime);
 
                 if (this.state === State.PAUSED) {
                     // Draw the pause screen over the other rendered elements
-                    this.pauseScreen.Draw(this.projectionMatrix);
+                    this.pauseScreen?.Draw(this.projectionMatrix);
                 }
             }
         });
@@ -259,9 +262,7 @@ export class Game implements IStartEventListener,
 
         if (this.state === State.START_SCREEN) {
             await this.mainScreen.Update(elapsedTime);
-        } else if (this.state === State.IN_GAME && this.elapsedTimeSinceStateChange > 150) {
-            await this.level!.Update(elapsedTime);
-
+        } else if (this.state === State.IN_GAME && this.elapsedTimeSinceStateChange > 150 && this.level) {
             if (!this.keyHandler.IsPressed(Keys.ENTER) && !this.gamepadHandler.IsPressed(XBoxControllerKeys.START)
                 && !this.keyWasReleased && this.elapsedTimeSinceStateChange > 100) {
                 this.keyWasReleased = true;
@@ -274,9 +275,9 @@ export class Game implements IStartEventListener,
             }
 
             const healthTextColor = (() => {
-                if (this.level.Hero.Health < 35) {
+                if (this.level!.Hero.Health < 35) {
                     return {hue: 0, saturation: 100 / 100, value: 100 / 100};
-                } else if (this.level.Hero.Health > 100) {
+                } else if (this.level!.Hero.Health > 100) {
                     return {hue: 120 / 360, saturation: 100 / 100, value: 100 / 100};
                 } else {
                     return {hue: 0, saturation: 0, value: 100 / 100};
@@ -284,13 +285,15 @@ export class Game implements IStartEventListener,
             })();
 
             this.healthTextbox
-                .WithText(`Health: ${this.level.Hero.Health}`, vec2.fromValues(10, 0), 0.5)
+                .WithText(`Health: ${this.level!.Hero.Health}`, vec2.fromValues(10, 0), 0.5)
                 .WithHue(healthTextColor.hue)
                 .WithSaturation(healthTextColor.saturation)
                 .WithValue(healthTextColor.value);
 
             this.scoreTextbox
-                .WithText(`Coins: ${this.level.Hero.CollectedCoins}`, vec2.fromValues(10, this.healthTextbox.Height), 0.5);
+                .WithText(`Coins: ${this.level!.Hero.CollectedCoins}`, vec2.fromValues(10, this.healthTextbox.Height), 0.5);
+
+            await this.level.Update(elapsedTime);
         } else if (this.state === State.PAUSED) {
             await this.pauseScreen.Update(elapsedTime);
         }

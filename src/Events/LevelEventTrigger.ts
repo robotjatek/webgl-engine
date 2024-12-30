@@ -20,7 +20,7 @@ export class LevelEventTrigger implements IGameobject {
         return Promise.resolve();
     }
 
-    public Visit(hero: Hero): void {
+    public async Visit(hero: Hero): Promise<void> {
         this.level.ChangeEvent(this.eventName);
     }
 

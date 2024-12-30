@@ -5,7 +5,7 @@ import { Environment } from './Environment';
 
 export class UIService implements IDisposable {
 
-    private textProjectionMatrix: mat4;
+    private readonly textProjectionMatrix: mat4;
     private textboxes: Textbox[] = [];
 
     // TODO: resize event?
@@ -38,6 +38,7 @@ export class UIService implements IDisposable {
 
     public RemoveTextbox(textbox: Textbox): void {
         this.textboxes = this.textboxes.filter(t => t !== textbox);
+        textbox.Dispose();
     }
 
     public Draw(_: number): void {

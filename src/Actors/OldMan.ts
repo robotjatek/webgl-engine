@@ -166,7 +166,7 @@ export class OldMan implements IGameobject {
         return boundingBox.IsCollidingWith(this.BoundingBox);
     }
 
-    public Visit(hero: Hero): void {
+    public async Visit(hero: Hero): Promise<void> {
     }
 
     public get BoundingBox(): BoundingBox {

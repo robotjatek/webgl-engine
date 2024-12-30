@@ -1,4 +1,5 @@
 import { gl } from './WebGLUtils';
+import { ResourceTracker } from './ResourceTracker';
 
 export class Texture {
     private readonly texture: WebGLTexture;
@@ -6,17 +7,18 @@ export class Texture {
     private height!: number;
     private width!: number;
 
-    private constructor() {
+    private constructor(private path: string | null = null) {
         this.texture = gl.createTexture()!;
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        ResourceTracker.GetInstance().TrackTexture(this);
     }
 
-    public static fromImage(image: ImageBitmap): Texture {
-        const texture = new Texture();
+    public static fromImage(path: string, image: ImageBitmap): Texture {
+        const texture = new Texture(path);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
         texture.height = image.height;
         texture.width = image.width;
@@ -41,7 +43,7 @@ export class Texture {
 
     public static async Create(path: string): Promise<Texture> {
         const image = await this.LoadImage(path);
-        return Texture.fromImage(image);
+        return Texture.fromImage(path, image);
     }
 
     public GetTexture(): WebGLTexture {
@@ -52,6 +54,8 @@ export class Texture {
     }
 
     public Delete(): void {
+        ResourceTracker.GetInstance().UnTrackTexture(this);
+        this.valid = false;
         gl.deleteTexture(this.texture);
     }
 
@@ -61,6 +65,10 @@ export class Texture {
 
     public get Height(): number {
         return this.height;
+    }
+
+    public get Path(): string | null {
+        return this.path;
     }
 
     private static async LoadImage(path: string): Promise<ImageBitmap> {

@@ -50,7 +50,7 @@ export class CoinObject implements IPickup {
         // No-op
     }
 
-    public Visit(hero: Hero): void {
+    public async Visit(hero: Hero): Promise<void> {
         this.pickupSound.Play();
         hero.CollideWithCoin(this);
         this.onPickup(this);

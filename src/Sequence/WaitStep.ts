@@ -26,7 +26,6 @@ export class WaitStep implements ISequenceStep {
      *  - `false` if the step is still waiting.
      */
     public async Update(delta: number): Promise<boolean> {
-        return true;
         this.elapsedTime += delta;
         return this.elapsedTime > this.waitTime;
     }

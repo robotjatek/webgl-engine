@@ -187,7 +187,7 @@ export class Level implements IProjectileHitListener, IDisposable {
 
     public async Update(delta: number): Promise<void> {
         if (!this.updateDisabled) {
-            this.hero.Update(delta);
+            await this.hero.Update(delta);
 
             // Kill the hero if fallen into a pit
             if (this.MainLayer.IsUnder(this.hero.BoundingBox)) {
@@ -204,7 +204,7 @@ export class Level implements IProjectileHitListener, IDisposable {
                 // Pushback force does not necessarily mean the amount of pushback. A big enemy can ignore a sword attack for example
                 enemiesCollidingWithProjectile.forEach(e => e.CollideWithAttack(attack));
                 if (enemiesCollidingWithProjectile.length) {
-                    attack.OnHit();
+                    await attack.OnHit();
                 }
             }
 
@@ -240,19 +240,19 @@ export class Level implements IProjectileHitListener, IDisposable {
         }
     }
 
-    public PlayMusic(volume: number): void {
-        this.music?.Play(1, volume, null, true);
+    public async PlayMusic(volume: number): Promise<void> {
+        await this.music?.Play(1, volume, null, true);
     }
 
     public StopMusic(): void {
         this.music?.Stop();
     }
 
-    public ChangeMusic(music: SoundEffect, volume: number): void {
+    public async ChangeMusic(music: SoundEffect, volume: number): Promise<void> {
         if (this.music !== music) {
             this.music?.Stop();
             this.music = music;
-            music.Play(1, volume, null, true);
+            await music.Play(1, volume, null, true);
         }
     }
 
@@ -302,7 +302,7 @@ export class Level implements IProjectileHitListener, IDisposable {
 
     public async InitLevel(): Promise<void> {
         this.restartEventListeners.forEach(l => l.OnRestartEvent());
-        this.PlayMusic(0.6);
+        await this.PlayMusic(0.6);
 
         await this.InitHero();
 
@@ -368,7 +368,7 @@ export class Level implements IProjectileHitListener, IDisposable {
                     vec2.fromValues(5, 5),
                     this.MainLayer,
                     this.hero, // To track where the hero is, I want to move as much of the game logic from the update loop as possible
-                    (sender: DragonEnemy) => {
+                    async (sender: DragonEnemy) => {
                         this.RemoveGameObject(sender)
                     }, // onDeath
                     // Spawn projectile

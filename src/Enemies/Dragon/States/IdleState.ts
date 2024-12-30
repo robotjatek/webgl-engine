@@ -36,7 +36,7 @@ export class IdleState extends DragonStateBase implements IState {
             if (distance < 5) {
                 const projectileCenter = this.dragon.BiteProjectilePosition;
                 const bite = await BiteProjectile.Create(projectileCenter, this.dragon.FacingDirection);
-                this.biteAttackSound.Play();
+                await this.biteAttackSound.Play();
                 this.spawnProjectile(this.dragon, bite);
             }
         }
@@ -45,23 +45,23 @@ export class IdleState extends DragonStateBase implements IState {
         const chance = Math.random();
         if (chance > 0.25 && chance < 0.30) {
             // Idle => fly state
-            this.dragon.ChangeState(this.dragon.FLY_ATTACK_STATE());
+            await this.dragon.ChangeState(this.dragon.FLY_ATTACK_STATE());
             return;
         } else if (chance > 0.30 && chance < 0.35) {
             // idle => rush state
-            this.dragon.ChangeState(this.dragon.RUSH_STATE());
+            await this.dragon.ChangeState(this.dragon.RUSH_STATE());
             return;
         } else if (chance > 0.35) {
-            this.dragon.ChangeState(this.dragon.GROUND_ATTACK_STATE());
+            await this.dragon.ChangeState(this.dragon.GROUND_ATTACK_STATE());
             return;
         }
     }
 
-    public Enter(): void {
+    public async Enter(): Promise<void> {
         // Do nothing
     }
 
-    public Exit(): void {
+    public async Exit(): Promise<void> {
         // Do nothing
     }
 }

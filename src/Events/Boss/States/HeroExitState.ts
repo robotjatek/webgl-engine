@@ -19,9 +19,9 @@ export class HeroExitState implements IState {
         this.hero.Move(vec3.fromValues(0.01, 0, 0), delta);
     }
 
-    public Enter(): void {
+    public async Enter(): Promise<void> {
     }
 
-    public Exit(): void {
+    public async Exit(): Promise<void> {
     }
 }

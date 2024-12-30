@@ -16,14 +16,14 @@ export class ReachAltitudeState implements IState {
         if (verticalDistance < -0.01) {
             this.dragon.Move(vec3.fromValues(0, -0.01, 0), delta);
         } else {
-            this.context.ChangeState(this.context.SWEEPING_STATE());
+            await this.context.ChangeState(this.context.SWEEPING_STATE());
         }
     }
 
-    public Enter(): void {
+    public async Enter(): Promise<void> {
     }
 
-    public Exit(): void {
+    public async Exit(): Promise<void> {
     }
 
 }

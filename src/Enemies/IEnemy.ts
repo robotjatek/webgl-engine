@@ -12,7 +12,7 @@ import { Texture } from '../Texture';
 import { Utils } from '../Utils';
 
 export interface IEnemy extends ICollider, IDisposable, IGameobject {
-    Damage(pushbackForce: vec3): void;
+    Damage(pushbackForce: vec3): Promise<void>;
     get Position(): vec3;
     get Health(): number;
 }
@@ -54,11 +54,11 @@ export abstract class EnemyBase implements IEnemy {
         return new BoundingBox(vec3.add(vec3.create(), this.position, this.bbOffset), this.bbSize)
     }
 
-    public CollideWithAttack(attack: IProjectile): void {
-        this.Damage(attack.PushbackForce);
+    public async CollideWithAttack(attack: IProjectile): Promise<void> {
+        await this.Damage(attack.PushbackForce);
     }
 
-    public abstract Damage(pushbackForce: vec3): void;
+    public abstract Damage(pushbackForce: vec3): Promise<void>;
 
     public Dispose(): void {
         this.batch.Dispose();

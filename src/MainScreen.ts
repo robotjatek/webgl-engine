@@ -59,7 +59,7 @@ export class MainScreen implements IDisposable {
         this.pressStartTextbox.WithValue(value);
 
         if ((this.gamepadHandler.IsPressed(XBoxControllerKeys.START) || this.keyHandler.IsPressed(Keys.ENTER)) && this.currentTime > 500) {
-            this.sound.Play();
+            await this.sound.Play();
             this.currentTime = 0;
             for (const startListener of this.startEventListeners) {
                 await startListener.Start();

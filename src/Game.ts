@@ -51,7 +51,6 @@ export interface IFadeOut {
     SetFadeOut(value: number): void
 }
 
-// TODO: soundeffect.ts warning
 // TODO: time to implement a proper state machine at least for the game object
 // TODO: check for key presses and elapsed time since state change
 // TODO: sometimes key release check is also necessary for a state change
@@ -205,11 +204,11 @@ export class Game implements IStartEventListener,
         return Promise.resolve();
     }
 
-    public Pause(): void {
+    public async Pause(): Promise<void> {
         // TODO: state machine: Only can go to paused from ingame
         if (this.state === State.IN_GAME) {
             this.state = State.PAUSED;
-            this.pauseSoundEffect.Play();
+            await this.pauseSoundEffect.Play();
             this.elapsedTimeSinceStateChange = 0;
             this.musicVolumeStack.push(this.level!.GetMusicVolume());
             this.level!.SetMusicVolume(this.musicVolumeStack.slice(-1)[0] * 0.15);
@@ -270,7 +269,7 @@ export class Game implements IStartEventListener,
 
             if ((this.keyHandler.IsPressed(Keys.ENTER) || this.gamepadHandler.IsPressed(XBoxControllerKeys.START))
                 && this.keyWasReleased && this.elapsedTimeSinceStateChange > 100) {
-                this.Pause();
+                await this.Pause();
                 this.keyWasReleased = false;
             }
 

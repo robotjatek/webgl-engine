@@ -55,21 +55,21 @@ export class SweepingState implements IState {
             }
 
             if (distance < 6) {
-                this.context.ChangeState(this.context.ATTACK_STATE());
+                await this.context.ChangeState(this.context.ATTACK_STATE());
             }
         }
 
         // Random change back to "idle" to be able to change into different states
         const chance = Math.random();
         if (chance < 0.01) {
-            this.dragon.ChangeState(this.dragon.IDLE_STATE());
+            await this.dragon.ChangeState(this.dragon.IDLE_STATE());
             return;
         }
     }
 
-    public Enter(): void {
+    public async Enter(): Promise<void> {
     }
 
-    public Exit(): void {
+    public async Exit(): Promise<void> {
     }
 }

@@ -25,15 +25,15 @@ export class AttackState implements IState {
 
         const distanceToRushPosition = vec3.distance(this.shared.savedHeroPosition, this.dragon.CenterPosition);
         if (distanceToRushPosition < 2.0 || this.dragon.WillCollide(attackDirection, delta)) {
-            this.dragon.ChangeState(this.dragon.IDLE_STATE());
+            await this.dragon.ChangeState(this.dragon.IDLE_STATE());
             return;
         }
     }
 
-    public Enter(): void {
+    public async Enter(): Promise<void> {
     }
 
-    public Exit(): void {
+    public async Exit(): Promise<void> {
     }
 
 }

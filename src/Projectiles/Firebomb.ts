@@ -53,26 +53,26 @@ export class Firebomb extends ProjectileBase {
 
     public async Update(delta: number): Promise<void> {
         if (!this.spawnSoundPlayed) {
-            this.spawnSound.Play(1, 0.5);
+            await this.spawnSound.Play(1, 0.5);
             this.spawnSoundPlayed = true;
         }
 
-        this.Move(this.moveDirection, delta);
+        await this.Move(this.moveDirection, delta);
         if (this.AlreadyHit) {
             this.OnHitListeners.forEach(l => l.RemoveGameObject(this));
         }
     }
 
-    public override Dispose() {
+    public override Dispose(): void {
         super.Dispose();
         this.shader.Delete();
         this.bbShader.Delete();
     }
 
-    public override CollideWithAttack(attack: IProjectile) {
+    public override async CollideWithAttack(attack: IProjectile): Promise<void> {
         if (!this.AlreadyHit) {
-            this.despawnSound.Play();
-            this.OnHit();
+            await this.despawnSound.Play();
+            await this.OnHit();
         }
     }
 }

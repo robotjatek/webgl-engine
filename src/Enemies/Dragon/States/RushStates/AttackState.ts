@@ -26,19 +26,19 @@ export class AttackState extends DragonStateBase implements IState {
             vec3.add(vec3.create(), this.dragon.CenterPosition, vec3.fromValues(-2.5, 1, 0)) :
             vec3.add(vec3.create(), this.dragon.CenterPosition, vec3.fromValues(2.5, 1, 0));
         const bite = await BiteProjectile.Create(projectileCenter, vec3.clone(this.dragon.FacingDirection));
-        this.biteAttackSound.Play();
+        await this.biteAttackSound.Play();
         this.spawnProjectile(this.dragon, bite);
 
-        this.dragon.ChangeState(this.dragon.IDLE_STATE());
+        await this.dragon.ChangeState(this.dragon.IDLE_STATE());
         this.shared.timeSinceLastAttack = 0;
         return;
     }
 
-    public Enter(): void {
+    public async Enter(): Promise<void> {
         // Do nothing
     }
 
-    public Exit(): void {
+    public async Exit(): Promise<void> {
         // Do nothing
     }
 }

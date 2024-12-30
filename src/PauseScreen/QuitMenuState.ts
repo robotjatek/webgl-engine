@@ -34,7 +34,7 @@ export class QuitMenuState extends PauseStateBase {
 
         if ((this.keyHandler.IsPressed(Keys.A) || this.gamepadHandler.IsPressed(XBoxControllerKeys.LEFT))
             && shared.elapsedTimeSinceKeypress > this.keyPressWaitTime) {
-            this.menuSound.Play(1, 0.5);
+            await this.menuSound.Play(1, 0.5);
             shared.elapsedTimeSinceKeypress = 0;
             this.selectedIndex--;
             if (this.selectedIndex < 0) {
@@ -42,7 +42,7 @@ export class QuitMenuState extends PauseStateBase {
             }
         } else if ((this.keyHandler.IsPressed(Keys.D) || this.gamepadHandler.IsPressed(XBoxControllerKeys.RIGHT))
             && shared.elapsedTimeSinceKeypress > this.keyPressWaitTime) {
-            this.menuSound.Play(1, 0.5);
+            await this.menuSound.Play(1, 0.5);
             shared.elapsedTimeSinceKeypress = 0;
             this.selectedIndex++;
             if (this.selectedIndex >= this.numberOfItems) {
@@ -54,7 +54,7 @@ export class QuitMenuState extends PauseStateBase {
                 || this.gamepadHandler.IsPressed(XBoxControllerKeys.START))
             && shared.elapsedTimeSinceKeypress > this.keyPressWaitTime && shared.keyWasReleased) {
             shared.elapsedTimeSinceKeypress = 0;
-            this.selectSound.Play();
+            await this.selectSound.Play();
             shared.keyWasReleased = false;
             if (this.selectedIndex === 0) { // yes
                 this.context.SelectedIndex = 0;

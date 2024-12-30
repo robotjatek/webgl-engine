@@ -60,7 +60,7 @@ export class EscapeEvent implements ILevelEvent {
         }
 
         if (this.state === 0) {
-            this.shakeSound.Play(1, 1, null, true);
+            await this.shakeSound.Play(1, 1, null, true);
             this.camera.Shake = true;
             
             if (!this.started) {
@@ -69,10 +69,10 @@ export class EscapeEvent implements ILevelEvent {
                 this.state++;
             }
         } else if (this.state === 1) {
-            this.explosionSound.Play(1, 1, null, false);
+            await this.explosionSound.Play(1, 1, null, false);
             this.state++;
         } else if (this.state === 2) {
-            this.music.Play(1, 0.4, null, false);
+            await this.music.Play(1, 0.4, null, false);
 
             // max offset
             if (this.eventLayer.MinY + this.eventLayer.LayerOffsetY > this.eventLayerStopPosition) {
@@ -83,7 +83,7 @@ export class EscapeEvent implements ILevelEvent {
             }
 
             if (this.eventLayer.IsCollidingWith(this.hero.BoundingBox, true)) {
-                this.hero.DamageWithInvincibilityConsidered(vec3.fromValues(0, -0.02, 0));
+                await this.hero.DamageWithInvincibilityConsidered(vec3.fromValues(0, -0.02, 0));
             }
 
             if (this.eventCameraYPos > this.cameraStopPos) {

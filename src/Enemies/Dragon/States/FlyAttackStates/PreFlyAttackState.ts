@@ -25,15 +25,15 @@ export class PreFlyAttackState implements IState {
             this.sharedFlyAttackVariables.savedHeroPosition = this.hero.CenterPosition;
             // move to fly attack
             this.timeSignalingAttack = 0;
-            this.context.ChangeState(this.context.FLY_ATTACK_STATE());
+            await this.context.ChangeState(this.context.FLY_ATTACK_STATE());
         }
     }
 
-    public Enter(): void {
+    public async Enter(): Promise<void> {
         this.dragon.SignalAttack();
     }
 
-    public Exit(): void {
-        this.attackSignal.Play();
+    public async Exit(): Promise<void> {
+        await this.attackSignal.Play();
     }
 }

@@ -1,12 +1,10 @@
-import { mat4, vec3 } from 'gl-matrix';
+import { vec3 } from 'gl-matrix';
 import { IGameobject } from 'src/IGameobject';
-import { Level, IProjectileHitListener } from '../Level';
-import { BoundingBox } from '../BoundingBox';
-import { Hero } from '../Hero';
+import { IProjectileHitListener } from '../Level';
 
 export interface IProjectile extends IGameobject {
     get AlreadyHit(): boolean;
-    OnHit(): void;
+    OnHit(): Promise<void>;
     SubscribeToHitEvent(onHitListener: IProjectileHitListener): void;
     get PushbackForce(): vec3;
 }

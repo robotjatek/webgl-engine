@@ -38,13 +38,13 @@ export class SweepingState implements IState {
 
         const randomTrigger = Math.random();
         if (randomTrigger < 0.01) {
-            this.context.ChangeState(this.context.PRE_FLY_ATTACK_STATE());
+            await this.context.ChangeState(this.context.PRE_FLY_ATTACK_STATE());
         }
     }
 
-    public Enter(): void {
+    public async Enter(): Promise<void> {
     }
 
-    public Exit(): void {
+    public async Exit(): Promise<void> {
     }
 }

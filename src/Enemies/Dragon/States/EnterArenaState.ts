@@ -15,11 +15,11 @@ export class EnterArenaState extends DragonStateBase implements IState {
         super(hero, dragon);
     }
 
-    public Enter(): void { }
+    public async Enter(): Promise<void> { }
 
     public async Update(delta: number): Promise<void> {
         if (this.enterWaypoint === null) {
-            this.dragon.ChangeState(this.dragon.IDLE_STATE());
+            await this.dragon.ChangeState(this.dragon.IDLE_STATE());
             return;
         }
 
@@ -40,11 +40,11 @@ export class EnterArenaState extends DragonStateBase implements IState {
             this.layer.SetCollision(29, 12, true);
             this.layer.SetCollision(29, 13, true);
             this.layer.SetCollision(29, 14, true);
-            this.dragon.ChangeState(this.dragon.IDLE_STATE());
+            await this.dragon.ChangeState(this.dragon.IDLE_STATE());
             return;
         }
     }
 
-    public Exit(): void { }
+    public async Exit(): Promise<void> { }
 
 }

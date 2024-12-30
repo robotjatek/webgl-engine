@@ -34,10 +34,10 @@ export class RushState extends DragonStateBase implements IState {
         super(hero, dragon);
     }
 
-    public ChangeState(state: IState): void {
-        this.internalState.Exit();
+    public async ChangeState(state: IState): Promise<void> {
+        await this.internalState.Exit();
         this.internalState = state;
-        this.internalState.Enter();
+        await this.internalState.Enter();
     }
 
     public async Update(delta: number): Promise<void> {
@@ -54,11 +54,11 @@ export class RushState extends DragonStateBase implements IState {
         }
     }
 
-    public Enter(): void {
+    public async Enter(): Promise<void> {
         this.internalState = this.START_STATE();
     }
 
-    public Exit(): void {
+    public async Exit(): Promise<void> {
         // Do nothing
     }
 }

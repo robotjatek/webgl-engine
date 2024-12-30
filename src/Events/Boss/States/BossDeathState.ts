@@ -29,13 +29,13 @@ export class BossDeathState implements IState {
 
         // wait for some time before moving the hero
         if (this.timeSinceBossDied > 3000) {
-            this.context.ChangeState(this.context.HERO_EXIT_STATE());
+            await this.context.ChangeState(this.context.HERO_EXIT_STATE());
         }
     }
 
-    public Enter(): void {
+    public async Enter(): Promise<void> {
     }
 
-    public Exit(): void {
+    public async Exit(): Promise<void> {
     }
 }

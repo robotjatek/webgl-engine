@@ -213,13 +213,13 @@ export class Hero implements IDisposable {
         mat4.translate(modelMat, modelMat, vec3.fromValues(-centerX, -centerY, 0));
     }
 
-    public Update(delta: number) {
+    public async Update(delta: number): Promise<void> {
         if (this.state !== State.DEAD) {
             this.Animate(delta);
-            this.PlayWalkSounds();
-            this.HandleLanding();
+            await this.PlayWalkSounds();
+            await this.HandleLanding();
             this.DisableInvincibleStateAfter(delta, 15); // ~15 frame (1/60*1000*15)
-            this.HandleDeath();
+            await this.HandleDeath();
 
             // Slowly drain health when overhealed
             if (this.Health > 100) {
@@ -262,10 +262,10 @@ export class Hero implements IDisposable {
         this.ReduceHorizontalVelocityWhenDashing();
         this.ApplyVelocityToPosition(delta);
         this.HandleCollisionWithCollider();
-        this.HandleInput(delta);
+        await this.HandleInput(delta);
     }
 
-    private HandleInput(delta: number): void {
+    private async HandleInput(delta: number): Promise<void> {
         if (this.acceptInput) {
             if (this.keyHandler.IsPressed(Keys.A) ||
                 this.keyHandler.IsPressed(Keys.LEFT_ARROW) ||
@@ -283,18 +283,18 @@ export class Hero implements IDisposable {
                 this.keyHandler.IsPressed(Keys.UP_ARROW) ||
                 this.keyHandler.IsPressed(Keys.W) ||
                 this.gamepadHandler.IsPressed(XBoxControllerKeys.A)) {
-                this.Jump();
+                await this.Jump();
             }
 
             if (this.keyHandler.IsPressed(Keys.S) ||
                 this.keyHandler.IsPressed(Keys.DOWN_ARROW) ||
                 this.gamepadHandler.LeftStick[1] > 0.8 ||
                 this.gamepadHandler.IsPressed(XBoxControllerKeys.DOWN)) {
-                this.Stomp();
+                await this.Stomp();
             }
 
             if (this.keyHandler.IsPressed(Keys.LEFT_SHIFT) || this.gamepadHandler.IsPressed(XBoxControllerKeys.RB)) {
-                this.Dash();
+                await this.Dash();
             }
 
             if (this.keyHandler.IsPressed(Keys.E) || this.gamepadHandler.IsPressed(XBoxControllerKeys.X) ||
@@ -311,10 +311,10 @@ export class Hero implements IDisposable {
         }
     }
 
-    private HandleDeath(): void {
+    private async HandleDeath(): Promise<void> {
         if (this.Health <= 0) {
             this.state = State.DEAD;
-            this.dieSound.Play();
+            await this.dieSound.Play();
             const dir = vec3.create();
             vec3.subtract(dir, this.position, this.lastPosition);
             this.dirOnDeath = dir;
@@ -389,9 +389,9 @@ export class Hero implements IDisposable {
         }
     }
 
-    private PlayWalkSounds(): void {
+    private async PlayWalkSounds(): Promise<void> {
         if (this.state === State.WALK && this.position !== this.lastPosition && !this.jumping && this.onGround) {
-            this.walkSound.Play(1.8, 0.8);
+            await this.walkSound.Play(1.8, 0.8);
         }
 
         if (this.state === State.IDLE) {
@@ -399,10 +399,10 @@ export class Hero implements IDisposable {
         }
     }
 
-    private HandleLanding(): void {
+    private async HandleLanding(): Promise<void> {
         const isOnGround = this.velocity[1] === 0 && !this.jumping;
         if (this.wasInAir && isOnGround) {
-            this.landSound.Play(1.8, 0.5);
+            await this.landSound.Play(1.8, 0.5);
             this.dashAvailable = true;
         }
         this.wasInAir = !isOnGround;
@@ -425,28 +425,28 @@ export class Hero implements IDisposable {
         }
     }
 
-    private Jump(): void {
+    private async Jump(): Promise<void> {
         // TODO: all these dead checks are getting ridiculous. Something really needs to be done...
         if (!this.jumping && this.onGround && this.state !== State.DEAD) {
             this.velocity[1] = -0.02;
             this.jumping = true;
-            this.jumpSound.Play();
+            await this.jumpSound.Play();
             this.state = State.JUMP
         }
     }
 
-    private Stomp(): void {
+    private async Stomp(): Promise<void> {
         if (this.jumping && !this.onGround && this.state !== State.DEAD && this.state !== State.STOMP && this.timeSinceLastStomp > 480) {
             this.state = State.STOMP;
             this.velocity[1] = 0.04;
             this.invincible = true;
             this.timeSinceLastStomp = 0;
             const pitch = 0.8 + Math.random() * (1.25 - 0.8);
-            this.stompSound.Play(pitch);
+            await this.stompSound.Play(pitch);
         }
     }
 
-    private Dash(): void {
+    private async Dash(): Promise<void> {
         if (this.state !== State.DEAD
             && this.state !== State.IDLE
             && this.timeSinceLastDash > 300
@@ -458,7 +458,7 @@ export class Hero implements IDisposable {
             this.velocity[0] = 0.7 * dir[0];
             this.velocity[1] = -0.0001; // TODO: yet another little hack to make dash play nicely with collision detection
             const pitch = 0.8 + Math.random() * (1.25 - 0.8);
-            this.stompSound.Play(pitch);
+            await this.stompSound.Play(pitch);
             this.timeSinceLastDash = 0;
             this.dashAvailable = false;
         }
@@ -478,11 +478,11 @@ export class Hero implements IDisposable {
         await object.Visit(this);
     }
 
-    public InteractWithProjectile(projectile: IProjectile): void {
+    public async InteractWithProjectile(projectile: IProjectile): Promise<void> {
         if (!projectile.AlreadyHit && this.state !== State.DEAD) {
             const pushbackForce = projectile.PushbackForce;
-            this.Damage(pushbackForce);
-            projectile.OnHit();
+            await this.Damage(pushbackForce);
+            await projectile.OnHit();
         }
     }
 
@@ -494,23 +494,23 @@ export class Hero implements IDisposable {
         this.collectedCoins++;
     }
 
-    public CollideWithDragon(enemy: DragonEnemy): void {
+    public async CollideWithDragon(enemy: DragonEnemy): Promise<void> {
         if (this.state === State.STOMP) {
             // TODO: HandleStomp() method
             vec3.set(this.velocity, 0, -0.025, 0);
             this.state = State.JUMP;
             this.jumping = true;
-            enemy.Damage(vec3.create()); // Damage the enemy without pushing it to any direction
+            await enemy.Damage(vec3.create()); // Damage the enemy without pushing it to any direction
         }
     }
 
-    public CollideWithSlime(enemy: SlimeEnemy): void {
+    public async CollideWithSlime(enemy: SlimeEnemy): Promise<void> {
         if (this.state !== State.STOMP) {
             if (!this.invincible) {
                 // Damage and pushback hero on collision.
                 this.invincible = true;
                 this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
-                this.damageSound.Play();
+                await this.damageSound.Play();
                 this.Health -= 34;
 
                 const dir = vec3.subtract(vec3.create(), this.position, enemy.Position);
@@ -524,48 +524,48 @@ export class Hero implements IDisposable {
             vec3.set(this.velocity, 0, -0.025, 0);
             this.state = State.JUMP;
             this.jumping = true;
-            enemy.Damage(vec3.create()); // Damage the enemy without pushing it to any direction
+            await enemy.Damage(vec3.create()); // Damage the enemy without pushing it to any direction
         }
     }
 
-    public CollideWithSpike(enemy: Spike): void {
+    public async CollideWithSpike(enemy: Spike): Promise<void> {
         const pushback = vec3.fromValues(0, -0.018, 0);
         if (!this.invincible) {
-            this.Damage(pushback);
+            await this.Damage(pushback);
         }
     }
 
-    public CollideWithCactus(enemy: Cactus): void {
+    public async CollideWithCactus(enemy: Cactus): Promise<void> {
         if (this.state !== State.STOMP) {
             const dir = vec3.subtract(vec3.create(), this.position, enemy.Position);
             vec3.normalize(dir, dir);
             const pushback = vec3.scale(vec3.create(), dir, 0.01);
             pushback[1] -= 0.01;
             if (!this.invincible) {
-                this.Damage(pushback);
+                await this.Damage(pushback);
             }
         } else {
             const pushback = vec3.fromValues(0, -0.025, 0);
-            this.Damage(pushback);
+            await this.Damage(pushback);
             this.state = State.JUMP;
             this.jumping = true;
         }
     }
 
-    public DamageWithInvincibilityConsidered(pushbackForce: vec3): void {
+    public async DamageWithInvincibilityConsidered(pushbackForce: vec3): Promise<void> {
         if (!this.invincible) {
-            this.Damage(pushbackForce);
+            await this.Damage(pushbackForce);
         }
     }
 
-    private Damage(pushbackForce: vec3): void {
+    private async Damage(pushbackForce: vec3): Promise<void> {
         // TODO: This is almost a 1:1 copy from the Collide method
 
         // Damage method should not consider the invincible flag because I don't want to cancel damage with projectiles when stomping
         if (this.state !== State.DEAD) {
             this.invincible = true;
             this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
-            this.damageSound.Play();
+            await this.damageSound.Play();
             this.Health -= 20;
 
             vec3.set(this.velocity, pushbackForce[0], pushbackForce[1], 0);

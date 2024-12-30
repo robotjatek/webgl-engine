@@ -8,14 +8,14 @@ export class AttackState implements IState {
 
     public async Update(delta: number): Promise<void> {
         // Bite attack is handled in the "idle" state
-        this.dragon.ChangeState(this.dragon.IDLE_STATE());
+        await this.dragon.ChangeState(this.dragon.IDLE_STATE());
         return;
     }
 
-    public Enter(): void {
+    public async Enter(): Promise<void> {
     }
 
-    public Exit(): void {
+    public async Exit(): Promise<void> {
     }
 
 }

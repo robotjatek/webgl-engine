@@ -372,8 +372,7 @@ export class Level implements IProjectileHitListener, IDisposable {
                         this.RemoveGameObject(sender)
                     }, // onDeath
                     // Spawn projectile
-                    // TODO: unused sender
-                    (sender: DragonEnemy, projectile: IProjectile) => {
+                    (_, projectile: IProjectile) => {
                         this.SpawnProjectile(projectile);
                     },
                     null

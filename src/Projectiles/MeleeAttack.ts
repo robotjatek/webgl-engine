@@ -33,9 +33,10 @@ export class MeleeAttack extends ProjectileBase {
                 1 / 2.0));
 
 
-        super(shader, texture, sprite, centerPosition, spriteVisualScale, bbOffset, bbSize, null, null, bbShader)
-        this.animationMustComplete = true;
-        //  this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0, 0, 1, 0.5));
+        const animationMustComplete = true;
+        super(shader, texture, sprite, centerPosition, spriteVisualScale, bbOffset, bbSize, null, animationMustComplete,
+            null, bbShader)
+        //this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0, 0, 1, 0.5));
         //bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.5));
     }
 

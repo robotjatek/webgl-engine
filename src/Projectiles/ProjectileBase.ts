@@ -14,7 +14,6 @@ import { IProjectileHitListener } from '../Level';
 
 export abstract class ProjectileBase implements IProjectile {
     protected alreadyHit = false;
-    protected animationMustComplete = false;
     protected batch: SpriteBatch;
     protected OnHitListeners: IProjectileHitListener[] = [];
 
@@ -29,6 +28,7 @@ export abstract class ProjectileBase implements IProjectile {
                           protected bbOffset: vec3,
                           protected bbSize: vec2,
                           protected hitSound: SoundEffect | null,
+                          protected animationMustComplete: boolean,
                           private collider: ICollider | null,
                           protected bbShader: Shader) {
         this.batch = new SpriteBatch(this.shader, [this.sprite], this.texture);

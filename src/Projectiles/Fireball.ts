@@ -57,7 +57,8 @@ export class Fireball extends ProjectileBase{
             Utils.DefaultSpriteVertices,
             Utils.CreateTextureCoordinates(0, 0, 1 / 8, 1 / 8));
 
-        super(shader, texture, sprite, centerPosition, visualScale, bbOffset, bbSize, hitSound, collider, bbShader);
+        super(shader, texture, sprite, centerPosition, visualScale, bbOffset, bbSize, hitSound,
+            false, collider, bbShader);
 
         shader.SetVec4Uniform('clr', vec4.fromValues(0, 1, 0, 0.4));
         //bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));

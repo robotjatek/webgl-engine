@@ -32,7 +32,8 @@ export class Firebomb extends ProjectileBase {
         const bbOffset = vec3.fromValues(0, 0, 0);
         const bbSize = vec2.fromValues(1.0, 1.0);
 
-        super(shader, texture, sprite, centerPosition, visualScale, bbOffset, bbSize, hitSound, collider, bbShader);
+        super(shader, texture, sprite, centerPosition, visualScale, bbOffset, bbSize, hitSound, false,
+            collider, bbShader);
       //  bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.5));
     }
 

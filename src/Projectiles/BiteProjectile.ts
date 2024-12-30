@@ -42,7 +42,9 @@ export class BiteProjectile extends ProjectileBase {
                     0 / 2,
                     1 / 5,
                     1 / 2));
-        super(shader, texture, sprite, centerPosition, spriteVisualScale, bbOffset, bbSize, null, null, bbShader)
+        const animationMustComplete = true;
+        super(shader, texture, sprite, centerPosition, spriteVisualScale, bbOffset, bbSize, null, animationMustComplete,
+            null, bbShader);
         this.batch.TextureOffset = this.currentFrameSet[0];
         // this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0, 0, 0, 1));
         // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));

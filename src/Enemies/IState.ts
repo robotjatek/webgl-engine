@@ -1,5 +1,5 @@
 export interface IState {
-    Enter(): void;
+    Enter(): Promise<void>;
     Update(delta: number): Promise<void>;
-    Exit(): void;
+    Exit(): Promise<void>;
 }

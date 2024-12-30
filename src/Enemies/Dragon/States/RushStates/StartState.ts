@@ -10,16 +10,16 @@ export class StartState extends DragonStateBase implements IState {
         super(hero, dragon);
     }
 
-    public Enter(): void {
+    public async Enter(): Promise<void> {
         // do nothing
     }
 
-    public Exit(): void {
+    public async Exit(): Promise<void> {
         // do nothing
     }
 
     public override async Update(delta: number): Promise<void> {
-        this.context.ChangeState(this.context.BACKING_STATE());
+        await this.context.ChangeState(this.context.BACKING_STATE());
         this.MatchHeroHeight(delta);
     }
 }

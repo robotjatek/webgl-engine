@@ -27,15 +27,15 @@ export class ChargeState extends DragonStateBase implements IState {
         // Move out of charge state when distance on the Y axis is close enough
         const distanceOnX = Math.abs(this.dragon.CenterPosition[0] - this.hero.CenterPosition[0]);
         if (distanceOnX < 3) {
-            this.context.ChangeState(this.context.PREATTACK_STATE());
+            await this.context.ChangeState(this.context.PREATTACK_STATE());
         }
     }
 
-    public Enter(): void {
-        this.rushSound.Play();
+    public async Enter(): Promise<void> {
+        await this.rushSound.Play();
     }
 
-    public Exit(): void {
+    public async Exit(): Promise<void> {
         // Do nothing
     }
 }

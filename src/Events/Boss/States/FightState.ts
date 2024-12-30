@@ -20,7 +20,7 @@ export class FightState implements IState {
             .WithSaturation(1);
     }
 
-    public Enter(): void { }
+    public async Enter(): Promise<void> { }
 
-    public Exit(): void { }
+    public async Exit(): Promise<void> { }
 }

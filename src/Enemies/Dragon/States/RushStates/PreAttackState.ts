@@ -17,17 +17,17 @@ export class PreAttackState extends DragonStateBase implements IState {
 
         if (this.timeInPreAttack > 96) {
             this.timeInPreAttack = 0;
-            this.context.ChangeState(this.context.ATTACK_STATE());
+            await this.context.ChangeState(this.context.ATTACK_STATE());
         }
 
         this.MatchHeroHeight(delta);
     }
 
-    public Enter(): void {
+    public async Enter(): Promise<void> {
         this.timeInPreAttack = 0;
     }
 
-    public Exit(): void {
+    public async Exit(): Promise<void> {
         // Do nothing
     }
 }

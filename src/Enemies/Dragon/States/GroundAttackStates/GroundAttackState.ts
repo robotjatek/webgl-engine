@@ -19,10 +19,10 @@ export class GroundAttackState extends DragonStateBase implements IState {
         return new AttackState(this.dragon);
     }
 
-    public ChangeState(state: IState): void {
-        this.internalState.Exit();
+    public async ChangeState(state: IState): Promise<void> {
+        await this.internalState.Exit();
         this.internalState = state;
-        this.internalState.Enter();
+        await this.internalState.Enter();
     }
 
     private internalState: IState = this.SWEEPING_STATE();
@@ -47,9 +47,9 @@ export class GroundAttackState extends DragonStateBase implements IState {
         await this.internalState.Update(delta);
     }
 
-    public Enter(): void {
+    public async Enter(): Promise<void> {
     }
 
-    public Exit(): void {
+    public async Exit(): Promise<void> {
     }
 }

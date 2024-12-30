@@ -37,8 +37,8 @@ export class SpawnState implements IState {
     public async Update(delta: number): Promise<void> {
         this.shared.started = true;
         // Spawn
-        this.roar.Play();
-        this.level.ChangeMusic(this.music, 0.5);
+        await this.roar.Play();
+        await this.level.ChangeMusic(this.music, 0.5);
         this.shared.musicVolume = this.level.GetMusicVolume();
         this.shared.startMusicVolume = this.shared.musicVolume;
 
@@ -48,25 +48,25 @@ export class SpawnState implements IState {
             vec2.fromValues(5, 5),
             this.level.MainLayer,
             this.hero,
-            () => this.OnBossDeath(),
+            async () => await this.OnBossDeath(),
             (sender, projectile) => {
                 this.level.SpawnProjectile(projectile);
             },
             this.enterWaypoint);
 
         this.context.SpawnBoss(this.boss);
-        this.context.ChangeState(this.context.FIGHT_STATE())
+        await this.context.ChangeState(this.context.FIGHT_STATE())
     }
 
-    public Enter(): void { }
+    public async Enter(): Promise<void> { }
 
-    public Exit(): void { }
+    public async Exit(): Promise<void> { }
 
-    private OnBossDeath(): void {
+    private async OnBossDeath(): Promise<void> {
         this.uiService.RemoveTextbox(this.bossHealthText);
         this.level.RemoveGameObject(this.boss!);
-        this.shakeSound.Play(1, 1, null, true);
+        await this.shakeSound.Play(1, 1, null, true);
         this.camera.Shake = true;
-        this.context.ChangeState(this.context.BOSS_DEATH_STATE());
+        await this.context.ChangeState(this.context.BOSS_DEATH_STATE());
     }
 }

@@ -32,10 +32,10 @@ export class FlyAttackState extends DragonStateBase implements IState {
         return new AttackState(this, this.dragon, this.sharedFlyAttackVariables);
     }
 
-    public ChangeState(state: IState): void {
-        this.internalState.Exit();
+    public async ChangeState(state: IState): Promise<void> {
+        await this.internalState.Exit();
         this.internalState = state;
-        this.internalState.Enter();
+        await this.internalState.Enter();
     }
 
     private internalState: IState = this.REACH_ALTITUDE_STATE();
@@ -61,10 +61,10 @@ export class FlyAttackState extends DragonStateBase implements IState {
         await this.internalState.Update(delta);
     }
 
-    public Enter(): void {
+    public async Enter(): Promise<void> {
     }
 
-    public Exit(): void {
+    public async Exit(): Promise<void> {
     }
 
 }

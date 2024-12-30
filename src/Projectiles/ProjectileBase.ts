@@ -72,7 +72,7 @@ export abstract class ProjectileBase implements IProjectile {
         // NOTE: overriding this could be used to cancel a projectile with an attack
     }
 
-    public OnHit(): void {
+    public async OnHit(): Promise<void> {
         this.alreadyHit = true;
     }
 
@@ -92,16 +92,16 @@ export abstract class ProjectileBase implements IProjectile {
     public abstract get PushbackForce(): vec3;
 
     public async Visit(hero: Hero): Promise<void> {
-        hero.InteractWithProjectile(this);
+        await hero.InteractWithProjectile(this);
     }
 
     // TODO: generic move function as a component
-    protected Move(direction: vec3, delta: number): void {
+    protected async Move(direction: vec3, delta: number): Promise<void> {
         const nextPosition = vec3.scaleAndAdd(vec3.create(), this.centerPosition, direction, delta);
         if (!this.CheckCollisionWithCollider(nextPosition)) {
             this.centerPosition = nextPosition;
         } else {
-            this.hitSound?.Play();
+            await this.hitSound?.Play();
             this.alreadyHit = true;
         }
     }

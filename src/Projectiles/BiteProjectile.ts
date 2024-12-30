@@ -57,8 +57,8 @@ export class BiteProjectile extends ProjectileBase {
         return new BiteProjectile(centerPosition, facingDirection, shader, bbShader, biteDamageSound, texture);
     }
 
-    public OnHit(): void {
-        this.biteDamageSound.Play();
+    public async OnHit(): Promise<void> {
+        await this.biteDamageSound.Play();
         this.alreadyHit = true;
     }
 

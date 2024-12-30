@@ -1,7 +1,7 @@
 export class SoundEffect {
     private playing: boolean = false;
     private loop: boolean = false;
-    
+
     private constructor(private buffer: AudioBuffer,
                         private context: AudioContext,
                         private gainNode: GainNode,
@@ -20,7 +20,10 @@ export class SoundEffect {
         return new SoundEffect(buffer, context, gainNode, source, allowMultiple, path);
     }
 
-    public Play(playbackRate: number = 1, volume: number = 1, onEndCallback: (() => void) | null = null, loop: boolean = false): void {
+    public async Play(playbackRate: number = 1,
+                      volume: number = 1,
+                      onEndCallback: (() => void) | null = null,
+                      loop: boolean = false): Promise<void> {
         if ((!this.playing || this.allowMultiple) && this.buffer) {
             this.gainNode = this.context.createGain();
             this.gainNode.gain.value = volume;
@@ -39,7 +42,7 @@ export class SoundEffect {
             }
             this.loop = loop;
             this.source.loop = loop;
-            this.context.resume();
+            await this.context.resume();
             this.source.start();
         }
 

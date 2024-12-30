@@ -29,19 +29,19 @@ export class BackingState extends DragonStateBase implements IState {
         ) {
             this.timeInBacking = 0;
 
-            this.context.ChangeState(this.context.CHARGE_STATE());
+            await this.context.ChangeState(this.context.CHARGE_STATE());
         }
 
         this.MatchHeroHeight(delta);
     }
 
-    public Enter(): void {
+    public async Enter(): Promise<void> {
         this.dragon.SignalAttack();
         this.timeInBacking = 0;
-        this.backingStartSound.Play(1.0, 0.3);
+        await this.backingStartSound.Play(1.0, 0.3);
     }
 
-    public Exit(): void {
+    public async Exit(): Promise<void> {
         this.timeInBacking = 0;
     }
 }

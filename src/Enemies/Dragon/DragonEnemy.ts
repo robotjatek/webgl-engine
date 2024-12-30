@@ -22,10 +22,10 @@ import { Point } from '../../Point';
 
 export class DragonEnemy extends EnemyBase {
 
-    public ChangeState(state: IState): void {
-        this.state.Exit();
+    public async ChangeState(state: IState): Promise<void> {
+        await this.state.Exit();
         this.state = state;
-        this.state.Enter();
+        await this.state.Enter();
     }
 
     public IDLE_STATE(): IState {
@@ -94,7 +94,7 @@ export class DragonEnemy extends EnemyBase {
         visualScale: vec2, // TODO: this should not be a parameter but hardcoded
         private collider: Layer,
         private hero: Hero,
-        private onDeath: (sender: DragonEnemy) => void,
+        private onDeath: (sender: DragonEnemy) => Promise<void>,
         private spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void,
         private enemyDamageSound: SoundEffect,
         private enemyDeathSound: SoundEffect,
@@ -120,7 +120,7 @@ export class DragonEnemy extends EnemyBase {
                                visualScale: vec2,
                                collider: Layer,
                                hero: Hero,
-                               onDeath: (enemy: DragonEnemy) => void,
+                               onDeath: (enemy: DragonEnemy) => Promise<void>,
                                spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void,
                                enterWaypoint: Point | null
     ): Promise<DragonEnemy> {
@@ -140,7 +140,7 @@ export class DragonEnemy extends EnemyBase {
     }
 
     public async Visit(hero: Hero): Promise<void> {
-        hero.CollideWithDragon(this);
+        await hero.CollideWithDragon(this);
     }
 
     public get CenterPosition(): vec3 {
@@ -173,7 +173,7 @@ export class DragonEnemy extends EnemyBase {
     }
 
     // TODO: az egész damage method duplikálva van a cactusban
-    public override Damage(pushbackForce: vec3): void {
+    public override async Damage(pushbackForce: vec3): Promise<void> {
         // Dragon ignores pushback at the moment
 
         if (this.invincible) {
@@ -182,7 +182,7 @@ export class DragonEnemy extends EnemyBase {
         this.invincible = true;
         this.timeInInvincibility = 0;
 
-        this.enemyDamageSound.Play();
+        await this.enemyDamageSound.Play();
         this.health--;
         this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
         // TODO: dragon does not have velocity at the moment
@@ -191,14 +191,14 @@ export class DragonEnemy extends EnemyBase {
         this.damaged = true;
         if (this.health <= 0) {
             if (this.onDeath) {
-                this.enemyDeathSound.Play();
-                this.onDeath(this);
+                await this.enemyDeathSound.Play();
+                await this.onDeath(this);
             }
         }
 
         // force state change on damage
         if (!(this.state instanceof EnterArenaState)) {
-            this.ChangeState(this.IDLE_STATE());
+            await this.ChangeState(this.IDLE_STATE());
         }
     }
 

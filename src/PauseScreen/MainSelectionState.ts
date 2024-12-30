@@ -32,7 +32,7 @@ export class MainSelectionState extends PauseStateBase {
 
         if ((this.keyHandler.IsPressed(Keys.S) || this.gamepadHandler.IsPressed(XBoxControllerKeys.DOWN))
             && shared.elapsedTimeSinceKeypress > this.keyPressWaitTime) {
-            this.menuSound.Play(1, 0.5);
+            await this.menuSound.Play(1, 0.5);
             shared.elapsedTimeSinceKeypress = 0;
             this.selectedIndex++;
             if (this.selectedIndex >= this.numberOfItems) {
@@ -40,7 +40,7 @@ export class MainSelectionState extends PauseStateBase {
             }
         } else if ((this.keyHandler.IsPressed(Keys.W) || this.gamepadHandler.IsPressed(XBoxControllerKeys.UP))
             && shared.elapsedTimeSinceKeypress > this.keyPressWaitTime) {
-            this.menuSound.Play(1, 0.5);
+            await this.menuSound.Play(1, 0.5);
             shared.elapsedTimeSinceKeypress = 0;
             this.selectedIndex--;
             if (this.selectedIndex < 0) {
@@ -53,7 +53,7 @@ export class MainSelectionState extends PauseStateBase {
             && shared.elapsedTimeSinceKeypress > this.keyPressWaitTime && shared.keyWasReleased) {
             shared.elapsedTimeSinceKeypress = 0;
             shared.keyWasReleased = false;
-            this.selectSound.Play();
+            await this.selectSound.Play();
 
             if (this.selectedIndex === 0) { // resume
                 this.resumeListeners.forEach(l => l.Resume());

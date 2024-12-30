@@ -50,10 +50,10 @@ export class BossEvent implements ILevelEvent {
 
     private internalState: IState = this.SPAWN_STATE();
 
-    public ChangeState(state: IState): void {
-        this.internalState.Exit();
+    public async ChangeState(state: IState): Promise<void> {
+        await this.internalState.Exit();
         this.internalState = state;
-        this.internalState.Enter();
+        await this.internalState.Enter();
     }
 
     public static readonly EVENT_KEY = 'boss_event';

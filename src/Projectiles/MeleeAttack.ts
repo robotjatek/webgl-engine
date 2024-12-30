@@ -57,7 +57,7 @@ export class MeleeAttack extends ProjectileBase {
         return vec3.fromValues(this.facingDirection[0] / 10, -0.005, 0);
     }
 
-    public OnHit(): void {
+    public override async OnHit(): Promise<void> {
         this.alreadyHit = true;
         // no hit sound here for the moment as it can differ on every enemy type
     }
@@ -70,7 +70,7 @@ export class MeleeAttack extends ProjectileBase {
     public async Update(delta: number): Promise<void> {
         if (!this.attackSoundPlayed) {
             const pitch = 0.8 + Math.random() * (1.4 - 0.8);
-            this.attackSound.Play(pitch);
+            await this.attackSound.Play(pitch);
             this.attackSoundPlayed = true;
         }
         this.Animate(delta);

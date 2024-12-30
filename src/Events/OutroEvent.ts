@@ -63,7 +63,7 @@ class DragonRoar implements ISequenceStep {
     public async Update(delta: number): Promise<boolean> {
         // Dragon roar
         if (this._timeSinceFadeOutStarted === 0) {
-            this._dragonRoar.Play(1, 1, () => this.roarFinished = true, false);
+            await this._dragonRoar.Play(1, 1, () => this.roarFinished = true, false);
             this.roarStarted = true;
         }
 

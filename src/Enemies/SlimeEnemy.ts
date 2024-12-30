@@ -92,7 +92,7 @@ export class SlimeEnemy extends EnemyBase {
     }
 
     public async Visit(hero: Hero): Promise<void> {
-        hero.CollideWithSlime(this);
+        await hero.CollideWithSlime(this);
     }
 
     public get EndCondition(): boolean {
@@ -101,8 +101,8 @@ export class SlimeEnemy extends EnemyBase {
 
     // TODO: damage amount
     // TODO: multiple types of enemies can be damaged, make this a component
-    public Damage(pushbackForce: vec3) {
-        this.enemyDamageSound.Play();
+    public async Damage(pushbackForce: vec3): Promise<void> {
+        await this.enemyDamageSound.Play();
         this.health--;
         this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
         vec3.set(this.velocity, pushbackForce[0], pushbackForce[1], 0);
@@ -110,7 +110,7 @@ export class SlimeEnemy extends EnemyBase {
         this.damaged = true;
         if (this.health <= 0) {
             if (this.onDeath) {
-                this.enemyDeathSound.Play();
+                await this.enemyDeathSound.Play();
                 this.onDeath(this);
             }
         }

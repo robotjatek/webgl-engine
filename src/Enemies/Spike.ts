@@ -35,7 +35,7 @@ export class Spike extends EnemyBase {
         // No update for spike at the moment
     }
 
-    public override Damage(pushbackForce: vec3): void {
+    public override async Damage(pushbackForce: vec3): Promise<void> {
         // Cannot damage a spike
     }
 
@@ -44,7 +44,7 @@ export class Spike extends EnemyBase {
     }
 
     public async Visit(hero: Hero): Promise<void> {
-        hero.CollideWithSpike(this);
+        await hero.CollideWithSpike(this);
     }
 
     public Dispose(): void {

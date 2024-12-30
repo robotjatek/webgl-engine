@@ -126,8 +126,8 @@ export class Cactus extends EnemyBase {
         }
     }
 
-    public override Damage(pushbackForce: vec3) {
-        this.enemyDamageSound.Play();
+    public override async Damage(pushbackForce: vec3): Promise<void> {
+        await this.enemyDamageSound.Play();
         this.health--;
         this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
         // Cacti cannot move
@@ -136,7 +136,7 @@ export class Cactus extends EnemyBase {
         this.damaged = true;
         if (this.health <= 0) {
             if (this.onDeath) {
-                this.enemyDeathSound.Play();
+                await this.enemyDeathSound.Play();
                 this.onDeath(this);
             }
         }
@@ -147,7 +147,7 @@ export class Cactus extends EnemyBase {
     }
 
     public async Visit(hero: Hero): Promise<void> {
-        hero.CollideWithCactus(this);
+        await hero.CollideWithCactus(this);
     }
 
     private RemoveDamageOverlayAfter(delta: number, showOverlayTime: number) {

@@ -816,6 +816,11 @@
     "yPos": 15
   },
   "nextLevel": "",
-  "events": [],
+  "events": [
+    {
+      "type": "outro_event",
+      "props": {}
+    }
+  ],
   "initialEventKey": "outro_event"
 }

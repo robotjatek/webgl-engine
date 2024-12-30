@@ -426,7 +426,6 @@ export class Level implements IProjectileHitListener, IDisposable {
         }
     }
 
-    // TODO: only create events that are needed by the current level
     private async InitEvents(): Promise<void> {
         const events = this.levelDescriptor.events ? await Promise.all(this.levelDescriptor.events.map(async e => await this.CreateLevelEvent(e)))
             : [];
@@ -434,9 +433,6 @@ export class Level implements IProjectileHitListener, IDisposable {
 
         const freeCamEvent = new FreeCameraEvent(this.camera, this.MainLayer, this.hero);
         this.events.set(FreeCameraEvent.EVENT_KEY, freeCamEvent);
-
-        const outroEvent = await OutroEvent.Create(this.hero, this.camera, this, this.game, this.uiService);
-        this.events.set(OutroEvent.EVENT_KEY, outroEvent);
 
         const initialEvent = this.levelDescriptor.initialEventKey;
         const event = this.events.get(initialEvent);

@@ -106,6 +106,7 @@ export class Level implements IProjectileHitListener, IDisposable {
 
     private constructor(private layers: Layer[],
                         private defaultLayer: number,
+                        private loadedTexturePaths: Set<string>,
                         private bgShader: Shader,
                         bgTexture: Texture,
                         private music: SoundEffect | null,
@@ -117,6 +118,8 @@ export class Level implements IProjectileHitListener, IDisposable {
                         private game: (IQuitEventListener & IFadeOut)
     ) {
         this.Background = new SpriteBatch(bgShader, [new Background()], bgTexture);
+        this.loadedTexturePaths.add(bgTexture.Path!)
+
     }
 
     public static async Create(levelName: string, keyHandler: KeyHandler, gamepadHandler: ControllerHandler,
@@ -126,9 +129,11 @@ export class Level implements IProjectileHitListener, IDisposable {
         const texturePool = TexturePool.GetInstance();
         const levelJsonString = await (await fetch(levelName)).text();
         const levelDescriptor = JSON.parse(levelJsonString) as LevelEntity;
-        const loadedLayers = await Promise.all(levelDescriptor.layers.map(async layer => {
+        const texturePaths = new Set<string>();
+        const layers = await Promise.all(levelDescriptor.layers.map(async layer => {
             const loadedTiles = await Promise.all(layer.tiles.map(async tile => {
                 const texture = await texturePool.GetTexture(tile.texture);
+                texturePaths.add(tile.texture);
                 return new Tile(tile.xPos, tile.yPos, texture);
             }));
 
@@ -141,8 +146,9 @@ export class Level implements IProjectileHitListener, IDisposable {
         const music = levelDescriptor.music ? await SoundEffectPool.GetInstance()
             .GetAudio(levelDescriptor.music, true) : null;
 
-        return new Level(loadedLayers,
+        return new Level(layers,
             levelDescriptor.defaultLayer ?? 0,
+            texturePaths,
             bgShader,
             bgTexture,
             music,
@@ -496,5 +502,6 @@ export class Level implements IProjectileHitListener, IDisposable {
         this.nextLevelEventListeners = [];
         this.endConditionsMetEventListeners = [];
         this.StopMusic();
+        TexturePool.GetInstance().RemoveAllIn([...this.loadedTexturePaths]);
     }
 }

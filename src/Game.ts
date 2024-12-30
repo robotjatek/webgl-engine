@@ -91,7 +91,7 @@ export class Game implements IStartEventListener,
     );
 
     private state: State = State.START_SCREEN;
-    private level!: Level;
+    private level: Level | null = null;
     private musicVolumeStack: number[] = [];
 
     private keyWasReleased = true;
@@ -118,9 +118,9 @@ export class Game implements IStartEventListener,
         gl.viewport(0, 0, this.Width, this.Height);
         gl.clearColor(0, 0, 0, 1);
 
-        mainScreen.SubscribeToStartEvent(this);
-        pauseScreen.SubscribeToResumeEvent(this);
-        pauseScreen.SubscribeToQuitEvent(this);
+        mainScreen?.SubscribeToStartEvent(this);
+        pauseScreen?.SubscribeToResumeEvent(this);
+        pauseScreen?.SubscribeToQuitEvent(this);
 
         this._fullScreenSprite = new Sprite(
             Utils.DefaultFullscreenQuadVertices,
@@ -143,19 +143,17 @@ export class Game implements IStartEventListener,
     private camera = new Camera(vec3.create());
 
     public async OnNextLevelEvent(levelName: string): Promise<void> {
-        const tracker = ResourceTracker.GetInstance();
-
         const oldLevel = this.level;
-        oldLevel.StopMusic();
+        oldLevel?.StopMusic();
+        oldLevel?.Dispose();
+        this.level = null;
 
         const nextLevel = await Level.Create(levelName, this.keyHandler, this.gamepadHandler, this.uiService, this.camera, this);
+        nextLevel.SubscribeToNextLevelEvent(this);
+        nextLevel.SubscribeToRestartEvent(this);
         await nextLevel.InitLevel();
 
         this.level = nextLevel;
-        oldLevel.Dispose();
-
-        nextLevel.SubscribeToNextLevelEvent(this);
-        nextLevel.SubscribeToRestartEvent(this);
     }
 
     public OnRestartEvent(): void {
@@ -183,7 +181,7 @@ export class Game implements IStartEventListener,
     }
 
     public async Start(): Promise<void> {
-        const level = await Level.Create('levels/level2.json', this.keyHandler, this.gamepadHandler, this.uiService, this.camera, this);
+        const level = await Level.Create('levels/level1.json', this.keyHandler, this.gamepadHandler, this.uiService, this.camera, this);
         level.SubscribeToNextLevelEvent(this);
         level.SubscribeToRestartEvent(this);
         this.level = level;
@@ -197,15 +195,13 @@ export class Game implements IStartEventListener,
     }
 
     public async Quit(): Promise<void> {
-        this.level.StopMusic();
-        this.level.Dispose();
+        this.level?.StopMusic();
+        this.level?.Dispose();
+        this.level = null;
         this.state = State.START_SCREEN;
         this.camera = new Camera(vec3.create());
         SoundEffectPool.GetInstance().StopAll();
         this.SetFadeOut(0);
-
-        // TODO: level disposenál a level textúráit törölni a poolból
-        const aliveResourceStack = ResourceTracker.GetInstance().AliveTextureStackTrace;
         return Promise.resolve();
     }
 
@@ -244,16 +240,16 @@ export class Game implements IStartEventListener,
     private Render(elapsedTime: number): void {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        this._renderTarget.Render(() => {
+        this._renderTarget?.Render(() => {
             if (this.state === State.START_SCREEN) {
-                this.mainScreen.Draw(this.projectionMatrix);
+                this.mainScreen?.Draw(this.projectionMatrix);
             } else {
                 this.level?.Draw(this.projectionMatrix);
                 this.uiService.Draw(elapsedTime);
 
                 if (this.state === State.PAUSED) {
                     // Draw the pause screen over the other rendered elements
-                    this.pauseScreen.Draw(this.projectionMatrix);
+                    this.pauseScreen?.Draw(this.projectionMatrix);
                 }
             }
         });

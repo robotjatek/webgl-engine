@@ -60,4 +60,14 @@ export class TexturePool {
         ]);
     }
 
+    public RemoveAllIn(paths: string[]): void {
+        paths.forEach(path => {
+            const texture = this.textures.get(path);
+            if (texture) {
+                this.textures.delete(path);
+                texture.Delete();
+            }
+        });
+    }
+
 }

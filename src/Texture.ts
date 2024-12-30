@@ -1,6 +1,5 @@
 import { gl } from './WebGLUtils';
 import { ResourceTracker } from './ResourceTracker';
-import { TexturePool } from './TexturePool';
 
 export class Texture {
     private readonly texture: WebGLTexture;
@@ -66,6 +65,10 @@ export class Texture {
 
     public get Height(): number {
         return this.height;
+    }
+
+    public get Path(): string | null {
+        return this.path;
     }
 
     private static async LoadImage(path: string): Promise<ImageBitmap> {

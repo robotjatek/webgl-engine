@@ -122,7 +122,7 @@ export class OldMan implements IGameobject {
             this.currentFrameTime += delta;
             if (this.currentFrameTime > 1 / 60 * 16 * 1000) {
                 this.currentFrameIndex++;
-                if (this.currentFrameIndex > 2) {
+                if (this.currentFrameIndex >= this.currentFrameSet.length) {
                     this.currentFrameIndex = 0;
                 }
                 this.batch.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
@@ -148,7 +148,7 @@ export class OldMan implements IGameobject {
     }
 
     /**
-     * Helper function to make frame changes seamless by immediatelly changing the sprite offset when a frame change happens
+     * Helper function to make frame changes seamless by immediately changing the sprite offset when a frame change happens
      */
     private ChangeFrameSet(frames: vec2[]) {
         this.currentFrameSet = frames;

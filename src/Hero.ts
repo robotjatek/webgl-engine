@@ -33,24 +33,42 @@ enum State {
     DASH = 'dash'
 }
 
+enum AnimationStates {
+    IDLE,
+    WALKING
+}
+
 export class Hero implements IDisposable {
     private health: number = 100;
     private collectedCoins: number = 0;
     private state: State = State.IDLE;
-    private currentFrameTime = 0;
-    private currentAnimationFrame = 0;
+
     private readonly sprite: Sprite;
     private batch: SpriteBatch;
     private lastPosition: vec3 = vec3.fromValues(0, 0, 1);
     private velocity: vec3 = vec3.fromValues(0, 0, 0);
     private acceptInput: boolean = true;
 
+    private animationState: AnimationStates = AnimationStates.IDLE;
+    private leftFacingAnimationFrames = [
+        vec2.fromValues(0.0 / 12.0, 3.0 / 8.0),
+        vec2.fromValues(1.0 / 12.0, 3.0 / 8.0),
+        vec2.fromValues(2.0 / 12.0, 3.0 / 8.0),
+    ];
+    private rightFacingAnimationFrames = [
+        vec2.fromValues(0.0 / 12.0, 1.0 / 8.0),
+        vec2.fromValues(1.0 / 12.0, 1.0 / 8.0),
+        vec2.fromValues(2.0 / 12.0, 1.0 / 8.0),
+    ];
+    private currentFrameSet = this.rightFacingAnimationFrames;
+    private currentFrameTime = 0;
+    private currentFrameIndex = 0;
+
     // TODO: http://www.davetech.co.uk/gamedevplatformer
     // TODO: buffer jump
     // TODO: coyote time -- can jump for little time after falling
     // TODO: variable jump height
 
-    // BUG: Hero sometimes spawns its attack projectile in the wrong direction
     // TODO: longer range but much slower attack
     // TODO: make bb variables parametrizable
     // TODO: double jump
@@ -104,7 +122,6 @@ export class Hero implements IDisposable {
     }
 
     private lastFacingDirection: vec3 = vec3.fromValues(1, 0, 0);
-
     public get FacingDirection(): vec3 {
         return this.lastFacingDirection;
     }
@@ -125,7 +142,7 @@ export class Hero implements IDisposable {
         private visualScale: vec2,
         private collider: ICollider,
         private onDeath: () => void,
-        private spawnProjectile: (sender: Hero, projectile: IProjectile) => void,
+        private SpawnProjectile: (sender: Hero, projectile: IProjectile) => void,
         private shader: Shader,
         private bbShader: Shader,
         private jumpSound: SoundEffect,
@@ -154,7 +171,8 @@ export class Hero implements IDisposable {
             [this.sprite],
             this.texture
         );
-        this.batch.TextureOffset = vec2.fromValues(1 / 12.0, 1 / 8.0);
+
+        this.batch.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
         // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 1));
     }
 
@@ -216,6 +234,10 @@ export class Hero implements IDisposable {
     public async Update(delta: number): Promise<void> {
         if (this.state !== State.DEAD) {
             this.Animate(delta);
+            this.SetWalkingState();
+            this.CalculateFacingDirection();
+            this.SetAnimationByFacingDirection();
+
             await this.PlayWalkSounds();
             await this.HandleLanding();
             this.DisableInvincibleStateAfter(delta, 15); // ~15 frame (1/60*1000*15)
@@ -253,16 +275,22 @@ export class Hero implements IDisposable {
             }
         }
 
-        const dir = vec3.subtract(vec3.create(), this.position, this.lastPosition);
-        if (dir[0]) {
-            this.lastFacingDirection = dir;
-        }
+
         vec3.copy(this.lastPosition, this.position);
         this.ApplyGravityToVelocity(delta);
         this.ReduceHorizontalVelocityWhenDashing();
         this.ApplyVelocityToPosition(delta);
         this.HandleCollisionWithCollider();
         await this.HandleInput(delta);
+    }
+
+    private CalculateFacingDirection() {
+        const dir = vec3.sub(vec3.create(), this.position, this.lastPosition);
+        if (dir[0] < 0) {
+            vec3.set(this.lastFacingDirection, -1, 0, 0);
+        } else if (dir[0] > 0) {
+            vec3.set(this.lastFacingDirection, 1, 0, 0);
+        }
     }
 
     private async HandleInput(delta: number): Promise<void> {
@@ -305,7 +333,7 @@ export class Hero implements IDisposable {
 
                 this.Attack(async () => {
                     // TODO: creating an attack instance on every attack is wasteful.
-                    this.spawnProjectile(this, await MeleeAttack.Create(attackPosition, this.FacingDirection));
+                    this.SpawnProjectile(this, await MeleeAttack.Create(attackPosition, this.FacingDirection));
                 });
             }
         }
@@ -337,8 +365,6 @@ export class Hero implements IDisposable {
 
     /**
      * Sets the velocity to zero on collision
-     * @constructor
-     * @private
      */
     private HandleCollisionWithCollider(): void {
         const colliding = this.collider.IsCollidingWith(this.BoundingBox, true);
@@ -370,23 +396,42 @@ export class Hero implements IDisposable {
     }
 
     private Animate(delta: number): void {
-        this.currentFrameTime += delta;
-        if (this.currentFrameTime > 132) {
-            if (this.state === State.WALK) {
-                const dir = vec3.create();
-                vec3.subtract(dir, this.position, this.lastPosition);
-                if (vec3.squaredLength(dir) > 0) {
-                    this.batch.TextureOffset = this.calculateTextureOffset(vec2.fromValues(dir[0], dir[1]));
-                } else {
-                    // same position as last frame, so it is considered idle
-                    this.state = State.IDLE;
-                    // Reset back to the idle frame of the last movement direction
-                    // Now it is completly dependent on the currently used texture
-                    // TODO: create a texture independent configuration for animation states
-                    this.batch.TextureOffset = vec2.fromValues(1 / 12.0, this.batch.TextureOffset[1]);
+        if (this.animationState !== AnimationStates.IDLE) {
+            this.currentFrameTime += delta;
+            if (this.currentFrameTime > 1 / 60 * 8 * 1000) {
+                this.currentFrameIndex++;
+                if (this.currentFrameIndex >= this.currentFrameSet.length) {
+                    this.currentFrameIndex = 0;
                 }
+                this.batch.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
+                this.currentFrameTime = 0;
             }
         }
+    }
+
+    private SetWalkingState(): void {
+        const distanceFromLastPosition = vec3.distance(this.lastPosition, this.position);
+        if (distanceFromLastPosition > 0.001) {
+            this.animationState = AnimationStates.WALKING;
+        } else {
+            this.animationState = AnimationStates.IDLE;
+        }
+    }
+
+    private SetAnimationByFacingDirection(): void {
+        if (this.FacingDirection[0] < 0) {
+            this.ChangeFrameSet(this.leftFacingAnimationFrames);
+        } else if (this.FacingDirection[0] > 0) {
+            this.ChangeFrameSet(this.rightFacingAnimationFrames);
+        }
+    }
+
+    /**
+     * Helper function to make frame changes seamless by immediately changing the sprite offset when a frame change happens
+     */
+    private ChangeFrameSet(frames: vec2[]) {
+        this.currentFrameSet = frames;
+        this.batch.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
     }
 
     private async PlayWalkSounds(): Promise<void> {
@@ -581,27 +626,6 @@ export class Hero implements IDisposable {
     private checkCollision(nextPosition: vec3): boolean {
         const nextBoundingBox = new BoundingBox(vec3.add(vec3.create(), nextPosition, this.bbOffset), this.bbSize);
         return this.collider.IsCollidingWith(nextBoundingBox, true);
-    }
-
-    private calculateTextureOffset(direction: vec2): vec2 {
-        if (direction[0] > 0) {
-            const offset = vec2.fromValues(this.currentAnimationFrame++ / 12.0, 1.0 / 8.0);
-            if (this.currentAnimationFrame === 3) {
-                this.currentAnimationFrame = 0;
-            }
-            this.currentFrameTime = 0;
-            return offset;
-        } else if (direction[0] < 0) {
-            const offset = vec2.fromValues(this.currentAnimationFrame++ / 12.0, 3.0 / 8.0);
-            if (this.currentAnimationFrame === 3) {
-                this.currentAnimationFrame = 0;
-            }
-            this.currentFrameTime = 0;
-            return offset;
-        }
-
-        // Remain in the current animation frame if a correct frame could not be determined
-        return this.batch.TextureOffset;
     }
 
     public Dispose(): void {

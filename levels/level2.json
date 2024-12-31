@@ -60,6 +60,21 @@
           "texture": "textures/ground0.png"
         },
         {
+          "xPos": 11,
+          "yPos": 16,
+          "texture": "textures/ground0.png"
+        },
+        {
+          "xPos": 12,
+          "yPos": 16,
+          "texture": "textures/ground0.png"
+        },
+        {
+          "xPos": 13,
+          "yPos": 16,
+          "texture": "textures/ground0.png"
+        },
+        {
           "xPos": 14,
           "yPos": 16,
           "texture": "textures/ground0.png"
@@ -350,6 +365,21 @@
           "texture": "textures/ground0.png"
         },
         {
+          "xPos": 11,
+          "yPos": 17,
+          "texture": "textures/ground0.png"
+        },
+        {
+          "xPos": 12,
+          "yPos": 17,
+          "texture": "textures/ground0.png"
+        },
+        {
+          "xPos": 13,
+          "yPos": 17,
+          "texture": "textures/ground0.png"
+        },
+        {
           "xPos": 14,
           "yPos": 17,
           "texture": "textures/ground0.png"
@@ -614,14 +644,14 @@
       "yPos": 14
     },
     {
-      "type": "end",
-      "xPos": 20,
+      "type": "slime",
+      "xPos": 12,
       "yPos": 15
     }
   ],
   "start": {
     "xPos": 2,
-    "yPos": 13
+    "yPos": 15
   },
   "nextLevel": "levels/level1.json",
   "events": [],

@@ -647,6 +647,51 @@
       "type": "slime",
       "xPos": 12,
       "yPos": 15
+    },
+    {
+      "type": "slime",
+      "xPos": 14,
+      "yPos": 15
+    },
+    {
+      "type": "slime",
+      "xPos": 15,
+      "yPos": 15
+    },
+    {
+      "type": "slime",
+      "xPos": 16,
+      "yPos": 15
+    },
+    {
+      "type": "slime",
+      "xPos": 18,
+      "yPos": 15
+    },
+    {
+      "type": "slime",
+      "xPos": 19,
+      "yPos": 15
+    },
+    {
+      "type": "slime",
+      "xPos": 21,
+      "yPos": 15
+    },
+    {
+      "type": "slime",
+      "xPos": 22,
+      "yPos": 15
+    },
+    {
+      "type": "slime",
+      "xPos": 23,
+      "yPos": 15
+    },
+    {
+      "type": "slime",
+      "xPos": 24,
+      "yPos": 15
     }
   ],
   "start": {

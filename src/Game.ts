@@ -206,6 +206,7 @@ export class Game implements IStartEventListener,
         this.camera = new Camera(vec3.create());
         SoundEffectPool.GetInstance().StopAll();
         this.SetFadeOut(0);
+        ResourceTracker.GetInstance().StopTracking();
         return Promise.resolve();
     }
 

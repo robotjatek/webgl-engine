@@ -9,9 +9,7 @@ import { vec2 } from 'gl-matrix';
  */
 export class FightState implements IState {
 
-    private bossHealthTextbox!: Textbox;
-
-    public constructor(private boss: IEnemy, private uiService: UIService) { }
+    public constructor(private boss: IEnemy, private uiService: UIService, private bossHealthTextbox: Textbox) { }
 
     public async Update(delta: number): Promise<void> {
         // State change is handled in OnBossDeath
@@ -23,7 +21,6 @@ export class FightState implements IState {
     }
 
     public async Enter(): Promise<void> {
-        this.bossHealthTextbox = await this.uiService.AddTextbox();
     }
 
     public async Exit(): Promise<void> {

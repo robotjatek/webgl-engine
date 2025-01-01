@@ -16,6 +16,7 @@ import { SharedBossEventVariables } from './SharedBossEventVariables';
 import { FightState } from './States/FightState';
 import { BossDeathState } from './States/BossDeathState';
 import { HeroExitState } from './States/HeroExitState';
+import { Textbox } from '../../Textbox';
 
 export class BossEvent implements ILevelEvent {
 
@@ -35,7 +36,7 @@ export class BossEvent implements ILevelEvent {
             throw new Error('Boss cannot be null');
         }
 
-        return new FightState(this.boss, this.uiService);
+        return new FightState(this.boss, this.uiService, this.bossHealthTextbox);
     }
 
     public BOSS_DEATH_STATE(): IState {
@@ -60,6 +61,7 @@ export class BossEvent implements ILevelEvent {
     private constructor(private level: Level,
                         private hero: Hero,
                         private uiService: UIService,
+                        private bossHealthTextbox: Textbox,
                         private roar: SoundEffect,
                         private bossPosition: vec3,
                         private bossHealth: number,
@@ -79,9 +81,10 @@ export class BossEvent implements ILevelEvent {
                                enterWaypoint: Point): Promise<BossEvent> {
         const roar = await SoundEffectPool.GetInstance().GetAudio('audio/monster_small_roar.wav', false);
         const shakeSound = await SoundEffectPool.GetInstance().GetAudio('audio/shake.wav', false);
+        const bossHealthText = await uiService.AddTextbox();
         const music = await SoundEffectPool.GetInstance().GetAudio('audio/hunters_chance.mp3', false);
         return new BossEvent(
-            level, hero, uiService, roar, bossPosition, bossHealth, camera, shakeSound, enterWaypoint, music);
+            level, hero, uiService, bossHealthText, roar, bossPosition, bossHealth, camera, shakeSound, enterWaypoint, music);
     }
 
     public async Update(delta: number): Promise<void> {
@@ -107,6 +110,7 @@ export class BossEvent implements ILevelEvent {
 
     public Dispose(): void {
         // RemoveGameObject disposes the boss enemy
+        this.uiService.RemoveTextbox(this.bossHealthTextbox);
         if (this.boss) {
             this.level.RemoveGameObject(this.boss);
             this.boss = null;

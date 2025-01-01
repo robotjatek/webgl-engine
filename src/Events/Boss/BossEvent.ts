@@ -4,7 +4,6 @@ import { ILevelEvent } from '../ILevelEvent';
 import { Hero } from 'src/Hero';
 import { vec3 } from 'gl-matrix';
 import { UIService } from 'src/UIService';
-import { Textbox } from 'src/Textbox';
 import { SoundEffectPool } from 'src/SoundEffectPool';
 import { SoundEffect } from 'src/SoundEffect';
 import { FreeCameraEvent } from '../FreeCameraEvent';
@@ -36,7 +35,7 @@ export class BossEvent implements ILevelEvent {
             throw new Error('Boss cannot be null');
         }
 
-        return new FightState(this.boss, this.uiService, this.bossHealthText);
+        return new FightState(this.boss, this.uiService);
     }
 
     public BOSS_DEATH_STATE(): IState {
@@ -61,7 +60,6 @@ export class BossEvent implements ILevelEvent {
     private constructor(private level: Level,
                         private hero: Hero,
                         private uiService: UIService,
-                        private bossHealthText: Textbox,
                         private roar: SoundEffect,
                         private bossPosition: vec3,
                         private bossHealth: number,
@@ -79,12 +77,11 @@ export class BossEvent implements ILevelEvent {
                                bossHealth: number,
                                camera: Camera,
                                enterWaypoint: Point): Promise<BossEvent> {
-        const bossHealthText = await uiService.AddTextbox();
         const roar = await SoundEffectPool.GetInstance().GetAudio('audio/monster_small_roar.wav', false);
         const shakeSound = await SoundEffectPool.GetInstance().GetAudio('audio/shake.wav', false);
         const music = await SoundEffectPool.GetInstance().GetAudio('audio/hunters_chance.mp3', false);
         return new BossEvent(
-            level, hero, uiService, bossHealthText, roar, bossPosition, bossHealth, camera, shakeSound, enterWaypoint, music);
+            level, hero, uiService, roar, bossPosition, bossHealth, camera, shakeSound, enterWaypoint, music);
     }
 
     public async Update(delta: number): Promise<void> {
@@ -110,7 +107,6 @@ export class BossEvent implements ILevelEvent {
 
     public Dispose(): void {
         // RemoveGameObject disposes the boss enemy
-        this.uiService.RemoveTextbox(this.bossHealthText);
         if (this.boss) {
             this.level.RemoveGameObject(this.boss);
             this.boss = null;

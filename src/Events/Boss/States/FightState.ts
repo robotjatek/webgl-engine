@@ -9,22 +9,24 @@ import { vec2 } from 'gl-matrix';
  */
 export class FightState implements IState {
 
-    public constructor(private boss: IEnemy, private uiService: UIService, private bossHealthText: Textbox) { }
+    private bossHealthTextbox!: Textbox;
+
+    public constructor(private boss: IEnemy, private uiService: UIService) { }
 
     public async Update(delta: number): Promise<void> {
         // State change is handled in OnBossDeath
         const bossHealthText = `Liz the lizard queen: ${this.boss.Health} HP`;
         const dimensions = await Textbox.PrecalculateDimensions('Consolas', bossHealthText, 0.5);
-        this.bossHealthText.WithText(bossHealthText, vec2.fromValues(
+        this.bossHealthTextbox.WithText(bossHealthText, vec2.fromValues(
             this.uiService.Width / 2 - dimensions.width / 2, 50), 0.5)
             .WithSaturation(1);
     }
 
-    public async Enter(): Promise<void> { }
+    public async Enter(): Promise<void> {
+        this.bossHealthTextbox = await this.uiService.AddTextbox();
+    }
 
     public async Exit(): Promise<void> {
-        // After the fight ended the boss health text is no longer needed
-        // Note: make sure that this box is not referenced in future states
-        this.uiService.RemoveTextbox(this.bossHealthText);
+        this.uiService.RemoveTextbox(this.bossHealthTextbox);
     }
 }

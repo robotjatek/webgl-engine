@@ -22,5 +22,9 @@ export class FightState implements IState {
 
     public async Enter(): Promise<void> { }
 
-    public async Exit(): Promise<void> { }
+    public async Exit(): Promise<void> {
+        // After the fight ended the boss health text is no longer needed
+        // Note: make sure that this box is not referenced in future states
+        this.uiService.RemoveTextbox(this.bossHealthText);
+    }
 }

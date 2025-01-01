@@ -28,8 +28,7 @@ export class BossEvent implements ILevelEvent {
 
     public SPAWN_STATE(): IState {
         return new SpawnState(this, this.level, this.hero, this.shared, this.bossPosition, this.bossHealth,
-            this.enterWaypoint, this.roar, this.music, this.camera, this.uiService, this.shakeSound,
-            this.bossHealthText);
+            this.enterWaypoint, this.roar, this.music, this.camera, this.uiService, this.shakeSound);
     }
 
     public FIGHT_STATE(): IState {

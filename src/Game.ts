@@ -60,8 +60,6 @@ enum State {
     PAUSED = 'paused'
 }
 
-
-// BUG: dragon fight intermittent error
 // TODO: draw component for old man
 // TODO: draw component for projectile
 // TODO: Movement ECS for projectiles

@@ -7,7 +7,6 @@ import { Point } from '../../../Point';
 import { SoundEffect } from '../../../SoundEffect';
 import { Camera } from '../../../Camera';
 import { UIService } from '../../../UIService';
-import { Textbox } from '../../../Textbox';
 import { DragonEnemy } from '../../../Enemies/Dragon/DragonEnemy';
 import { BossEvent } from '../BossEvent';
 import { SharedBossEventVariables } from '../SharedBossEventVariables';
@@ -30,8 +29,7 @@ export class SpawnState implements IState {
         private music: SoundEffect,
         private camera: Camera,
         private uiService: UIService,
-        private shakeSound: SoundEffect,
-        private bossHealthText: Textbox
+        private shakeSound: SoundEffect
     ) { }
 
     public async Update(delta: number): Promise<void> {
@@ -63,7 +61,6 @@ export class SpawnState implements IState {
     public async Exit(): Promise<void> { }
 
     private async OnBossDeath(): Promise<void> {
-        this.uiService.RemoveTextbox(this.bossHealthText);
         this.level.RemoveGameObject(this.boss!);
         await this.shakeSound.Play(1, 1, null, true);
         this.camera.Shake = true;

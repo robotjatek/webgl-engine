@@ -8,14 +8,13 @@ import { SoundEffectPool } from '../SoundEffectPool';
 import { SoundEffect } from 'src/SoundEffect';
 import { Texture } from 'src/Texture';
 import { ProjectileBase } from './ProjectileBase';
+import { Animation } from '../Animation';
 
 /**
  * A stationary projectile that attacks the player
  */
 export class BiteProjectile extends ProjectileBase {
-    private animationFinished = false;
-    private currentFrameTime: number = 0;
-    private currentAnimationFrame: number = 0;
+    private animation: Animation;
     
     // TODO: flip texture, to achieve left and right facing bite attack
     private currentFrameSet: vec2[] = [
@@ -45,7 +44,7 @@ export class BiteProjectile extends ProjectileBase {
         const animationMustComplete = true;
         super(shader, texture, sprite, centerPosition, spriteVisualScale, bbOffset, bbSize, null, animationMustComplete,
             null, bbShader);
-        this.renderer.TextureOffset = this.currentFrameSet[0];
+        this.animation = new Animation(64, this.renderer, this.currentFrameSet);
     }
 
     public static async Create(centerPosition: vec3, facingDirection: vec3): Promise<BiteProjectile> {
@@ -69,8 +68,8 @@ export class BiteProjectile extends ProjectileBase {
     }
 
     public async Update(delta: number): Promise<void> {
-        this.Animate(delta);
-        if (this.animationFinished) {
+        const animationFinished = this.animation.Animate(delta);
+        if (animationFinished) {
             this.OnHitListeners.forEach(l => l.RemoveGameObject(this));
         }
         // TODO: do not damage hero right after animation has started, but wait a little (spawn bb out of bounds, then move it to the correct position)
@@ -84,19 +83,6 @@ export class BiteProjectile extends ProjectileBase {
         super.Dispose();
         this.shader.Delete();
         this.bbShader.Delete();
-    }
-
-    private Animate(delta: number): void {
-        this.currentFrameTime += delta;
-        if (this.currentFrameTime > 64) { // TODO: time spent on frame
-            this.currentAnimationFrame++;
-            if (this.currentAnimationFrame >= this.currentFrameSet.length) {
-                this.animationFinished = true;
-            }
-
-            this.renderer.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
-            this.currentFrameTime = 0;
-        }
     }
 
 }

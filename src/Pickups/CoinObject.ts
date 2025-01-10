@@ -11,12 +11,14 @@ import { SoundEffect } from '../SoundEffect';
 import { SoundEffectPool } from '../SoundEffectPool';
 import { IProjectile } from 'src/Projectiles/IProjectile';
 import { SpriteRenderer } from '../SpriteRenderer';
+import { Animation } from '../Animation';
+
 
 export class CoinObject implements IPickup {
     private readonly renderer: SpriteRenderer;
     private readonly sprite: Sprite;
-    private currentFrameTime = 0;
-    private currentFrameIndex = 0;
+    private animation: Animation;
+
     private currentFrameSet: vec2[] = [
         vec2.fromValues(0 / 10, 0),
         vec2.fromValues(1 / 10, 0),
@@ -41,6 +43,7 @@ export class CoinObject implements IPickup {
         // this is hardcoded for coin.png
         this.sprite = new Sprite(Utils.DefaultSpriteVertices, Utils.CreateTextureCoordinates(0, 0, 1.0 / 10, 1.0));
         this.renderer = new SpriteRenderer(shader, texture, this.sprite, vec2.fromValues(1, 1));
+        this.animation = new Animation(1 / 60 * 1000 * 3, this.renderer, this.currentFrameSet);
     }
 
     public static async Create(position: vec3, onPickup: (pickup: IPickup) => void): Promise<CoinObject> {
@@ -72,24 +75,12 @@ export class CoinObject implements IPickup {
         return boundingBox.IsCollidingWith(this.BoundingBox);
     }
 
-    public async Update(elapsedTime: number): Promise<void> {
-        this.Animate(elapsedTime);
+    public async Update(delta: number): Promise<void> {
+        this.animation.Animate(delta);
     }
 
     public Draw(proj: mat4, view: mat4): void {
         this.renderer.Draw(proj, view, this.position);
-    }
-
-    private Animate(delta: number): void {
-        this.currentFrameTime += delta;
-        if (this.currentFrameTime > 1 / 60 * 1000 * 3) {
-            this.currentFrameIndex++;
-            if (this.currentFrameIndex >= this.currentFrameSet.length) {
-                this.currentFrameIndex = 0;
-            }
-            this.renderer.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
-            this.currentFrameTime = 0;
-        }
     }
 
     public Dispose(): void {

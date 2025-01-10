@@ -10,6 +10,7 @@ import { Sprite } from '../Sprite';
 import { Utils } from '../Utils';
 import { ICollider } from '../ICollider';
 import { SpriteRenderer } from '../SpriteRenderer';
+import { Animation } from '../Animation';
 
 enum AnimationStates {
     IDLE,
@@ -24,7 +25,7 @@ export class OldMan implements IGameobject {
         Utils.DefaultSpriteVertices,
         Utils.CreateTextureCoordinates(0.0, 0.0, 1.0 / 12.0, 1.0 / 8.0));
 
-    private renderer: SpriteRenderer;
+    private readonly renderer: SpriteRenderer;
 
     private visualScale: vec2 = vec2.fromValues(3, 3);
     private bbOffset = vec3.fromValues(1.2, 1.1, 0);
@@ -34,6 +35,7 @@ export class OldMan implements IGameobject {
     // Last position is used in collision logic, and determining the facing direction when animating
     private lastPosition: vec3 = vec3.fromValues(0, 0, 0);
 
+    private animation: Animation;
     private leftFacingAnimationFrames = [
         vec2.fromValues(6.0 / 12.0, 7.0 / 8.0),
         vec2.fromValues(7.0 / 12.0, 7.0 / 8.0),
@@ -45,8 +47,6 @@ export class OldMan implements IGameobject {
         vec2.fromValues(8.0 / 12.0, 5.0 / 8.0)
     ];
     private currentFrameSet = this.leftFacingAnimationFrames;
-    private currentFrameTime = 0;
-    private currentFrameIndex = 0;
 
     private constructor(private position: vec3,
                         private shader: Shader,
@@ -55,7 +55,8 @@ export class OldMan implements IGameobject {
         vec3.copy(this.lastPosition, this.position);
 
         this.renderer = new SpriteRenderer(shader, texture, this.sprite, this.visualScale);
-        this.renderer.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
+        this.renderer.TextureOffset = this.currentFrameSet[0];
+        this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer, this.currentFrameSet);
     }
 
     public static async Create(position: vec3, collider: ICollider): Promise<OldMan> {
@@ -110,23 +111,15 @@ export class OldMan implements IGameobject {
     private SetAnimationByFacingDirection(): void {
         const direction = vec3.sub(vec3.create(), this.position, this.lastPosition);
         if (direction[0] < 0) {
-            this.ChangeFrameSet(this.leftFacingAnimationFrames);
+            this.animation.CurrentFrameSet = this.leftFacingAnimationFrames;
         } else if (direction[0] > 0) {
-            this.ChangeFrameSet(this.rightFacingAnimationFrames);
+            this.animation.CurrentFrameSet = this.rightFacingAnimationFrames;
         }
     }
 
     private Animate(delta: number): void {
         if (this.animationState !== AnimationStates.IDLE) {
-            this.currentFrameTime += delta;
-            if (this.currentFrameTime > 1 / 60 * 16 * 1000) {
-                this.currentFrameIndex++;
-                if (this.currentFrameIndex >= this.currentFrameSet.length) {
-                    this.currentFrameIndex = 0;
-                }
-                this.renderer.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
-                this.currentFrameTime = 0;
-            }
+            this.animation.Animate(delta);
         }
     }
 
@@ -144,14 +137,6 @@ export class OldMan implements IGameobject {
             return;
         }
         this.position = nextPosition;
-    }
-
-    /**
-     * Helper function to make frame changes seamless by immediately changing the sprite offset when a frame change happens
-     */
-    private ChangeFrameSet(frames: vec2[]) {
-        this.currentFrameSet = frames;
-        this.renderer.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
     }
 
     public CollideWithAttack(attack: IProjectile): void {

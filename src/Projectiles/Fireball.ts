@@ -9,13 +9,13 @@ import { SoundEffectPool } from '../SoundEffectPool';
 import { IProjectile } from './IProjectile';
 import { SoundEffect } from 'src/SoundEffect';
 import { ProjectileBase } from './ProjectileBase';
+import { Animation } from '../Animation';
 
 export class Fireball extends ProjectileBase {
     private spawnSoundPlayed = false;
 
     // Animation related
-    private currentFrameTime: number = 0;
-    private currentAnimationFrameIndex: number = 0;
+    private animation: Animation;
     private leftFacingAnimationFrames = [
         vec2.fromValues(0 / 8, 0 / 8),
         vec2.fromValues(1 / 8, 0 / 8),
@@ -59,6 +59,7 @@ export class Fireball extends ProjectileBase {
 
         super(shader, texture, sprite, centerPosition, visualScale, bbOffset, bbSize, hitSound,
             false, collider, bbShader);
+        this.animation = new Animation(1 / 30 * 1000, this.renderer, this.currentFrameSet);
 
         shader.SetVec4Uniform('clr', vec4.fromValues(0, 1, 0, 0.4));
     }
@@ -89,7 +90,7 @@ export class Fireball extends ProjectileBase {
         this.currentFrameSet = this.moveDirection[0] > 0 ?
             this.rightFacingAnimationFrames :
             this.leftFacingAnimationFrames;
-        this.Animate(delta);
+        this.animation.Animate(delta);
 
         if (!this.spawnSoundPlayed) {
             await this.spawnSound.Play(1, 0.5);
@@ -107,21 +108,6 @@ export class Fireball extends ProjectileBase {
         if (!this.AlreadyHit) {
             await this.despawnSound.Play();
             await this.OnHit();
-        }
-    }
-
-    private Animate(delta: number): void {
-        this.currentFrameTime += delta;
-
-        // This is ~30 fps animation
-        if (this.currentFrameTime >= 16 * 2) {
-            this.currentAnimationFrameIndex++;
-            if (this.currentAnimationFrameIndex >= this.currentFrameSet.length) {
-                this.currentAnimationFrameIndex = 0;
-            }
-
-            this.renderer.TextureOffset = this.currentFrameSet[this.currentAnimationFrameIndex];
-            this.currentFrameTime = 0;
         }
     }
 

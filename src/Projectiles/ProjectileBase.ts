@@ -21,7 +21,6 @@ export abstract class ProjectileBase implements IProjectile {
     protected alreadyHit = false;
     protected OnHitListeners: IProjectileHitListener[] = [];
 
-
     protected constructor(protected shader: Shader,
                           protected texture: Texture,
                           protected sprite: Sprite,

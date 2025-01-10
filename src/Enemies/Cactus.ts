@@ -8,6 +8,7 @@ import { Sprite } from 'src/Sprite';
 import { Utils } from 'src/Utils';
 import { SoundEffectPool } from 'src/SoundEffectPool';
 import { SoundEffect } from 'src/SoundEffect';
+import { Animation } from '../Animation';
 
 /**
  * Stationary enemy that cannot be stomped on (like spikes), but it can be damaged with a sword attack
@@ -16,8 +17,7 @@ export class Cactus extends EnemyBase {
     private damagedTime = 0;
     private damaged = false;
 
-    private currentFrameTime = 0;
-    private currentAnimationFrame = 0;
+    private animation: Animation;
     private currentFrameSet: vec2[] = [
         vec2.fromValues(0 / 6, 0 / 8),
         vec2.fromValues(1 / 6, 0 / 8),
@@ -95,6 +95,7 @@ export class Cactus extends EnemyBase {
         const health = 3;
 
         super(shader, sprite, texture, bbShader, bbSize, bbOffset, position, visualScale, health);
+        this.animation = new Animation(1 / 15 * 1000, this.renderer, this.currentFrameSet); // 15 fps animation
     }
 
     public static async Create(position: vec3, onDeath: (sender: Cactus) => void): Promise<Cactus> {
@@ -108,22 +109,8 @@ export class Cactus extends EnemyBase {
     }
 
     public async Update(delta: number): Promise<void> {
-        this.Animate(delta);
-
+        this.animation.Animate(delta);
         this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
-    }
-
-    private Animate(delta: number): void {
-        this.currentFrameTime += delta;
-        if (this.currentFrameTime > 64) { // ~15 fps
-            this.currentAnimationFrame++;
-            if (this.currentAnimationFrame >= this.currentFrameSet.length) {
-                this.currentAnimationFrame = 0;
-            }
-
-            this.renderer.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
-            this.currentFrameTime = 0;
-        }
     }
 
     public override async Damage(pushbackForce: vec3): Promise<void> {

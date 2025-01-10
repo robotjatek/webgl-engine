@@ -11,6 +11,7 @@ import { Waypoint } from '../Waypoint';
 import { EnemyBase } from './IEnemy';
 import { Hero } from '../Hero';
 import { SoundEffect } from 'src/SoundEffect';
+import { Animation } from '../Animation';
 
 /**
  * Slime enemy is a passive enemy, meaning it does not actively attack the player, but it hurts when contacted directly
@@ -23,8 +24,7 @@ export class SlimeEnemy extends EnemyBase {
     readonly maxSpeed: number = 0.004;
     private movementSpeed: number = Math.random() * (this.maxSpeed - this.minSpeed) + this.minSpeed;
 
-    private currentFrameTime: number = 0;
-    private currentAnimationFrame: number = 0;
+    private animation: Animation;
     private leftFacingAnimationFrames: vec2[] = [
         vec2.fromValues(0 / 12, 3 / 8),
         vec2.fromValues(1 / 12, 3 / 8),
@@ -67,14 +67,13 @@ export class SlimeEnemy extends EnemyBase {
         const health = 3;
         super(shader, sprite, texture, bbShader, bbSize, bbOffset, position, visualScale, health);
         this.lastPosition = vec3.create(); // If lastPosition is the same as position at initialization, the entity slowly falls through the floor
+        this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer, this.currentFrameSet);
 
         // For now, slimes walk between their start position and another position with some constant offset
         const originalWaypoint = new Waypoint(this.position, null);
         const targetPosition = vec3.add(vec3.create(), this.position, vec3.fromValues(-6, 0, 0));
         this.targetWaypoint = new Waypoint(targetPosition, originalWaypoint);
         originalWaypoint.next = this.targetWaypoint;
-
-       //this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.3));
     }
 
     public static async Create(position: vec3,
@@ -120,7 +119,7 @@ export class SlimeEnemy extends EnemyBase {
         this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
 
         this.MoveTowardsNextWaypoint(delta);
-        this.Animate(delta);
+        this.animation.Animate(delta);
 
         vec3.copy(this.lastPosition, this.position);
         this.ApplyGravityToVelocity(delta);
@@ -144,24 +143,16 @@ export class SlimeEnemy extends EnemyBase {
     private MoveTowardsNextWaypoint(delta: number): void {
         const dir = vec3.sub(vec3.create(), this.position, this.targetWaypoint.position);
         if (dir[0] < 0) {
-            this.ChangeFrameSet(this.rightFacingAnimationFrames);
+            this.animation.CurrentFrameSet = this.rightFacingAnimationFrames;
             this.MoveOnX(this.movementSpeed, delta);
         } else if (dir[0] > 0) {
-            this.ChangeFrameSet(this.leftFacingAnimationFrames);
+            this.animation.CurrentFrameSet = this.leftFacingAnimationFrames;
             this.MoveOnX(-this.movementSpeed, delta);
         }
 
         if (vec3.distance(this.position, this.targetWaypoint.position) < 0.25 && this.targetWaypoint.next) {
             this.targetWaypoint = this.targetWaypoint.next;
         }
-    }
-
-    /**
-     * Helper function to make frame changes seamless by immediately changing the sprite offset when a frame change happens
-     */
-    private ChangeFrameSet(frames: vec2[]) {
-        this.currentFrameSet = frames;
-        this.renderer.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
     }
 
     // TODO: generic move method
@@ -178,19 +169,6 @@ export class SlimeEnemy extends EnemyBase {
         const nextBbPos = vec3.add(vec3.create(), nextPosition, this.bbOffset);
         const nextBoundingBox = new BoundingBox(nextBbPos, this.bbSize);
         return this.collider.IsCollidingWith(nextBoundingBox, true);
-    }
-
-    private Animate(delta: number): void {
-        this.currentFrameTime += delta;
-        if (this.currentFrameTime > 264) {
-            this.currentAnimationFrame++;
-            if (this.currentAnimationFrame > 2) {
-                this.currentAnimationFrame = 0;
-            }
-
-            this.renderer.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
-            this.currentFrameTime = 0;
-        }
     }
 
     // TODO: should make this a component system

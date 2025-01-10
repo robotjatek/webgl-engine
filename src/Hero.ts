@@ -24,6 +24,7 @@ import { MeleeAttack } from './Projectiles/MeleeAttack';
 import { IDisposable } from './IDisposable';
 import { SpriteRenderer } from './SpriteRenderer';
 import { Environment } from './Environment';
+import { Animation } from './Animation';
 
 enum State {
     IDLE = 'idle',
@@ -45,8 +46,8 @@ export class Hero implements IDisposable {
     private state: State = State.IDLE;
 
     private readonly sprite: Sprite;
-    private renderer: SpriteRenderer;
-    private bbRenderer: SpriteRenderer;
+    private readonly renderer: SpriteRenderer;
+    private readonly bbRenderer: SpriteRenderer;
 
     private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
 
@@ -55,19 +56,18 @@ export class Hero implements IDisposable {
     private acceptInput: boolean = true;
 
     private animationState: AnimationStates = AnimationStates.IDLE;
+    private readonly animation: Animation;
     private leftFacingAnimationFrames = [
         vec2.fromValues(0.0 / 12.0, 3.0 / 8.0),
         vec2.fromValues(1.0 / 12.0, 3.0 / 8.0),
-        vec2.fromValues(2.0 / 12.0, 3.0 / 8.0),
+        vec2.fromValues(2.0 / 12.0, 3.0 / 8.0)
     ];
     private rightFacingAnimationFrames = [
         vec2.fromValues(0.0 / 12.0, 1.0 / 8.0),
         vec2.fromValues(1.0 / 12.0, 1.0 / 8.0),
-        vec2.fromValues(2.0 / 12.0, 1.0 / 8.0),
+        vec2.fromValues(2.0 / 12.0, 1.0 / 8.0)
     ];
     private currentFrameSet = this.rightFacingAnimationFrames;
-    private currentFrameTime = 0;
-    private currentFrameIndex = 0;
 
     // TODO: http://www.davetech.co.uk/gamedevplatformer
     // TODO: buffer jump
@@ -124,6 +124,7 @@ export class Hero implements IDisposable {
     }
 
     private lastFacingDirection: vec3 = vec3.fromValues(1, 0, 0);
+
     public get FacingDirection(): vec3 {
         return this.lastFacingDirection;
     }
@@ -169,7 +170,8 @@ export class Hero implements IDisposable {
         );
 
         this.renderer = new SpriteRenderer(shader, texture, this.sprite, visualScale);
-        this.renderer.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
+        this.renderer.TextureOffset = this.currentFrameSet[0];
+        this.animation = new Animation(1 / 60 * 8 * 1000, this.renderer, this.currentFrameSet);
 
         this.bbRenderer = new SpriteRenderer(bbShader, null, this.bbSprite, this.bbSize);
         this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
@@ -386,15 +388,7 @@ export class Hero implements IDisposable {
 
     private Animate(delta: number): void {
         if (this.animationState !== AnimationStates.IDLE) {
-            this.currentFrameTime += delta;
-            if (this.currentFrameTime > 1 / 60 * 8 * 1000) {
-                this.currentFrameIndex++;
-                if (this.currentFrameIndex >= this.currentFrameSet.length) {
-                    this.currentFrameIndex = 0;
-                }
-                this.renderer.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
-                this.currentFrameTime = 0;
-            }
+            this.animation.Animate(delta);
         }
     }
 
@@ -409,18 +403,10 @@ export class Hero implements IDisposable {
 
     private SetAnimationByFacingDirection(): void {
         if (this.FacingDirection[0] < 0) {
-            this.ChangeFrameSet(this.leftFacingAnimationFrames);
+            this.animation.CurrentFrameSet = this.leftFacingAnimationFrames;
         } else if (this.FacingDirection[0] > 0) {
-            this.ChangeFrameSet(this.rightFacingAnimationFrames);
+            this.animation.CurrentFrameSet = this.rightFacingAnimationFrames;
         }
-    }
-
-    /**
-     * Helper function to make frame changes seamless by immediately changing the sprite offset when a frame change happens
-     */
-    private ChangeFrameSet(frames: vec2[]) {
-        this.currentFrameSet = frames;
-        this.renderer.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
     }
 
     private async PlayWalkSounds(): Promise<void> {

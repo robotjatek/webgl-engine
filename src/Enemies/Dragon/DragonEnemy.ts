@@ -19,6 +19,7 @@ import { EnterArenaState } from './States/EnterArenaState';
 import { GroundAttackState } from './States/GroundAttackStates/GroundAttackState';
 import { Layer } from '../../Layer';
 import { Point } from '../../Point';
+import { Animation } from '../../Animation';
 
 export class DragonEnemy extends EnemyBase {
 
@@ -54,8 +55,7 @@ export class DragonEnemy extends EnemyBase {
     private state: IState = this.ENTER_ARENA_STATE();
 
     // Animation related
-    private currentFrameTime: number = 0;
-    private currentAnimationFrame: number = 0;
+    private animation: Animation;
     private leftFacingAnimationFrames = [
         vec2.fromValues(3 / 12, 3 / 8),
         vec2.fromValues(4 / 12, 3 / 8),
@@ -112,7 +112,7 @@ export class DragonEnemy extends EnemyBase {
         const bbSize = vec2.fromValues(4.8, 3);
         const bbOffset = vec3.fromValues(0.1, 1.5, 0);
         super(shader, sprite, texture, bbShader, bbSize, bbOffset, position, visualScale, health);
-        this.renderer.TextureOffset = this.leftFacingAnimationFrames[0];
+        this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer, this.currentFrameSet);
     }
 
     public static async Create(position: vec3,
@@ -222,13 +222,13 @@ export class DragonEnemy extends EnemyBase {
         // Face in the direction of the hero
         const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);
         if (dir[0] < 0) {
-            this.ChangeFrameSet(this.rightFacingAnimationFrames);
+            this.animation.CurrentFrameSet = this.rightFacingAnimationFrames;
             vec3.set(this.lastFacingDirection, -1, 0, 0);
         } else if (dir[0] > 0) {
-            this.ChangeFrameSet(this.leftFacingAnimationFrames);
+            this.animation.CurrentFrameSet = this.leftFacingAnimationFrames;
             vec3.set(this.lastFacingDirection, 1, 0, 0);
         }
-        this.Animate(delta);
+        this.animation.Animate(delta);
         this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
 
         await this.state.Update(delta);
@@ -282,28 +282,6 @@ export class DragonEnemy extends EnemyBase {
      */
     public WillCollide(direction: vec3, delta: number): boolean {
         return this.CheckCollisionWithCollider(this.CalculateNextPosition(direction, delta))
-    }
-
-    // TODO: duplikált kód pl a Slime enemyben is (IDE waringozik is miatta)
-    private Animate(delta: number): void {
-        this.currentFrameTime += delta;
-        if (this.currentFrameTime > 264) {
-            this.currentAnimationFrame++;
-            if (this.currentAnimationFrame > 2) {
-                this.currentAnimationFrame = 0;
-            }
-
-            this.renderer.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
-            this.currentFrameTime = 0;
-        }
-    }
-
-    /**
-     * Helper function to make frame changes seamless by immediately changing the spite offset when a frame change happens
-     */
-    private ChangeFrameSet(frames: vec2[]) {
-        this.currentFrameSet = frames;
-        this.renderer.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
     }
 
     public Dispose(): void {

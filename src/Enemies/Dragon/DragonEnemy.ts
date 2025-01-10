@@ -112,7 +112,7 @@ export class DragonEnemy extends EnemyBase {
         const bbSize = vec2.fromValues(4.8, 3);
         const bbOffset = vec3.fromValues(0.1, 1.5, 0);
         super(shader, sprite, texture, bbShader, bbSize, bbOffset, position, visualScale, health);
-        this.batch.TextureOffset = this.leftFacingAnimationFrames[0];
+        this.renderer.TextureOffset = this.leftFacingAnimationFrames[0];
     }
 
     public static async Create(position: vec3,
@@ -293,7 +293,7 @@ export class DragonEnemy extends EnemyBase {
                 this.currentAnimationFrame = 0;
             }
 
-            this.batch.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
+            this.renderer.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
             this.currentFrameTime = 0;
         }
     }
@@ -303,7 +303,7 @@ export class DragonEnemy extends EnemyBase {
      */
     private ChangeFrameSet(frames: vec2[]) {
         this.currentFrameSet = frames;
-        this.batch.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
+        this.renderer.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
     }
 
     public Dispose(): void {

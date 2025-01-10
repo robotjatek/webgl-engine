@@ -1,7 +1,6 @@
 import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
 import { Shader } from './Shader';
 import { Sprite } from './Sprite';
-import { SpriteBatch } from './SpriteBatch';
 import { Texture } from './Texture';
 import { TexturePool } from './TexturePool';
 import { Utils } from './Utils';
@@ -23,6 +22,8 @@ import { XBoxControllerKeys } from './XBoxControllerKeys';
 import { Keys } from './Keys';
 import { MeleeAttack } from './Projectiles/MeleeAttack';
 import { IDisposable } from './IDisposable';
+import { SpriteRenderer } from './SpriteRenderer';
+import { Environment } from './Environment';
 
 enum State {
     IDLE = 'idle',
@@ -44,7 +45,11 @@ export class Hero implements IDisposable {
     private state: State = State.IDLE;
 
     private readonly sprite: Sprite;
-    private batch: SpriteBatch;
+    private renderer: SpriteRenderer;
+    private bbRenderer: SpriteRenderer;
+
+    private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
+
     private lastPosition: vec3 = vec3.fromValues(0, 0, 1);
     private velocity: vec3 = vec3.fromValues(0, 0, 0);
     private acceptInput: boolean = true;
@@ -88,9 +93,6 @@ export class Hero implements IDisposable {
     private timeSinceLastMeleeAttack = 0;
     private timeInOverHeal = 0;
     private timeLeftInDeadState: number = 3000;
-
-    private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
-    private bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], null);
 
     public get BoundingBox(): BoundingBox {
         if (this.state !== State.STOMP) {
@@ -166,14 +168,11 @@ export class Hero implements IDisposable {
             )
         );
 
-        this.batch = new SpriteBatch(
-            this.shader,
-            [this.sprite],
-            this.texture
-        );
+        this.renderer = new SpriteRenderer(shader, texture, this.sprite, visualScale);
+        this.renderer.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
 
-        this.batch.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
-        // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 1));
+        this.bbRenderer = new SpriteRenderer(bbShader, null, this.bbSprite, this.bbSize);
+        this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
     }
 
     public static async Create(
@@ -198,28 +197,18 @@ export class Hero implements IDisposable {
     }
 
     public Draw(proj: mat4, view: mat4): void {
-        this.batch.Draw(proj, view);
+        this.renderer.Draw(proj, view, this.position);
+
         const modelMat = mat4.create();
 
         if (this.state === State.DEAD) {
             this.RotateSprite(modelMat, this.dirOnDeath);
         }
 
-        mat4.translate(modelMat, modelMat, this.position);
-        mat4.scale(
-            modelMat,
-            modelMat,
-            vec3.fromValues(this.visualScale[0], this.visualScale[1], 1)
-        );
-
-        this.batch.ModelMatrix = modelMat;
-
         // Draw bounding box
-        this.bbBatch.Draw(proj, view);
-        mat4.translate(this.bbBatch.ModelMatrix, mat4.create(), this.BoundingBox.position);
-        mat4.scale(this.bbBatch.ModelMatrix,
-            this.bbBatch.ModelMatrix,
-            vec3.fromValues(this.BoundingBox.size[0], this.BoundingBox.size[1], 1));
+        if (Environment.RenderBoundingBoxes) {
+            this.bbRenderer.Draw(proj, view, this.BoundingBox.position);
+        }
     }
 
     private RotateSprite(modelMat: mat4, directionOnDeath: vec3) {
@@ -403,7 +392,7 @@ export class Hero implements IDisposable {
                 if (this.currentFrameIndex >= this.currentFrameSet.length) {
                     this.currentFrameIndex = 0;
                 }
-                this.batch.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
+                this.renderer.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
                 this.currentFrameTime = 0;
             }
         }
@@ -431,7 +420,7 @@ export class Hero implements IDisposable {
      */
     private ChangeFrameSet(frames: vec2[]) {
         this.currentFrameSet = frames;
-        this.batch.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
+        this.renderer.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
     }
 
     private async PlayWalkSounds(): Promise<void> {
@@ -629,8 +618,8 @@ export class Hero implements IDisposable {
     }
 
     public Dispose(): void {
-        this.batch.Dispose();
-        this.bbBatch.Dispose();
+        this.renderer.Dispose();
+        this.bbRenderer.Dispose();
         this.shader.Delete();
         this.bbShader.Delete();
     }

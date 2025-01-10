@@ -1,8 +1,7 @@
 import { IProjectile } from './IProjectile';
 import { BoundingBox } from '../BoundingBox';
-import { mat4, vec2, vec3 } from 'gl-matrix';
+import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
 import { Hero } from '../Hero';
-import { SpriteBatch } from '../SpriteBatch';
 import { Shader } from '../Shader';
 import { Texture } from '../Texture';
 import { Sprite } from '../Sprite';
@@ -10,15 +9,18 @@ import { SoundEffect } from '../SoundEffect';
 import { ICollider } from '../ICollider';
 import { Utils } from '../Utils';
 import { IProjectileHitListener } from '../Level';
+import { Environment } from '../Environment';
+import { SpriteRenderer } from '../SpriteRenderer';
 
 
 export abstract class ProjectileBase implements IProjectile {
+    protected renderer: SpriteRenderer;
+    protected bbRenderer: SpriteRenderer;
+    private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
+
     protected alreadyHit = false;
-    protected batch: SpriteBatch;
     protected OnHitListeners: IProjectileHitListener[] = [];
 
-    private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
-    protected bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], null);
 
     protected constructor(protected shader: Shader,
                           protected texture: Texture,
@@ -31,26 +33,20 @@ export abstract class ProjectileBase implements IProjectile {
                           protected animationMustComplete: boolean,
                           private collider: ICollider | null,
                           protected bbShader: Shader) {
-        this.batch = new SpriteBatch(this.shader, [this.sprite], this.texture);
+        this.renderer = new SpriteRenderer(shader, texture, sprite, visualScale);
+        this.bbRenderer = new SpriteRenderer(bbShader, null, this.bbSprite, bbSize);
+        bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
     }
 
     public Draw(proj: mat4, view: mat4): void {
         if (!this.AlreadyHit || this.animationMustComplete) {
             const topLeft = vec3.sub(vec3.create(), this.centerPosition, vec3.fromValues(this.visualScale[0] / 2, this.visualScale[1] / 2, 0));
-            mat4.translate(this.batch.ModelMatrix, mat4.create(), topLeft);
-            mat4.scale(this.batch.ModelMatrix,
-                this.batch.ModelMatrix,
-                vec3.fromValues(this.visualScale[0], this.visualScale[1], 1));
-            this.batch.Draw(proj, view);
+            this.renderer.Draw(proj, view, topLeft);
         }
 
-        // Draw bb
-        mat4.translate(this.bbBatch.ModelMatrix, mat4.create(), this.BoundingBox.position);
-        mat4.scale(
-            this.bbBatch.ModelMatrix,
-            this.bbBatch.ModelMatrix,
-            vec3.fromValues(this.BoundingBox.size[0], this.BoundingBox.size[1], 1));
-        this.bbBatch.Draw(proj, view);
+        if (Environment.RenderBoundingBoxes) {
+            this.bbRenderer.Draw(proj, view, this.BoundingBox.position);
+        }
     }
 
     public get AlreadyHit(): boolean {
@@ -81,8 +77,8 @@ export abstract class ProjectileBase implements IProjectile {
     }
 
     public Dispose(): void {
-        this.batch.Dispose();
-        this.bbBatch.Dispose();
+        this.renderer.Dispose();
+        this.bbRenderer.Dispose();
     }
 
     public IsCollidingWith(boundingBox: BoundingBox): boolean {

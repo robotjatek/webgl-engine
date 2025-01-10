@@ -35,9 +35,7 @@ export class MeleeAttack extends ProjectileBase {
 
         const animationMustComplete = true;
         super(shader, texture, sprite, centerPosition, spriteVisualScale, bbOffset, bbSize, null, animationMustComplete,
-            null, bbShader)
-        //this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0, 0, 1, 0.5));
-        //bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.5));
+            null, bbShader);
     }
 
     public CollideWithAttack(attack: IProjectile): void {
@@ -94,7 +92,7 @@ export class MeleeAttack extends ProjectileBase {
             }
 
             // TODO: hardcoded for sword.png. Make animation parametrizable
-            this.batch.TextureOffset = vec2.fromValues(this.currentAnimationFrame / 5.0, 0 / 2.0);
+            this.renderer.TextureOffset = vec2.fromValues(this.currentAnimationFrame / 5.0, 0 / 2.0);
             this.currentFrameTime = 0;
         }
     }

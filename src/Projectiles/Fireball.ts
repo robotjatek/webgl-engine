@@ -10,7 +10,7 @@ import { IProjectile } from './IProjectile';
 import { SoundEffect } from 'src/SoundEffect';
 import { ProjectileBase } from './ProjectileBase';
 
-export class Fireball extends ProjectileBase{
+export class Fireball extends ProjectileBase {
     private spawnSoundPlayed = false;
 
     // Animation related
@@ -61,7 +61,6 @@ export class Fireball extends ProjectileBase{
             false, collider, bbShader);
 
         shader.SetVec4Uniform('clr', vec4.fromValues(0, 1, 0, 0.4));
-        //bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
     }
 
     public static async Create(centerPosition: vec3, moveDirection: vec3, collider: ICollider): Promise<Fireball> {
@@ -121,7 +120,7 @@ export class Fireball extends ProjectileBase{
                 this.currentAnimationFrameIndex = 0;
             }
 
-            this.batch.TextureOffset = this.currentFrameSet[this.currentAnimationFrameIndex];
+            this.renderer.TextureOffset = this.currentFrameSet[this.currentAnimationFrameIndex];
             this.currentFrameTime = 0;
         }
     }

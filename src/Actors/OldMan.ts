@@ -8,8 +8,8 @@ import { Texture } from '../Texture';
 import { TexturePool } from '../TexturePool';
 import { Sprite } from '../Sprite';
 import { Utils } from '../Utils';
-import { SpriteBatch } from '../SpriteBatch';
 import { ICollider } from '../ICollider';
+import { SpriteRenderer } from '../SpriteRenderer';
 
 enum AnimationStates {
     IDLE,
@@ -24,7 +24,8 @@ export class OldMan implements IGameobject {
         Utils.DefaultSpriteVertices,
         Utils.CreateTextureCoordinates(0.0, 0.0, 1.0 / 12.0, 1.0 / 8.0));
 
-    private batch = new SpriteBatch(this.shader, [this.sprite], this.texture);
+    private renderer: SpriteRenderer;
+
     private visualScale: vec2 = vec2.fromValues(3, 3);
     private bbOffset = vec3.fromValues(1.2, 1.1, 0);
     private bbSize = vec2.fromValues(0.8, 1.8);
@@ -36,12 +37,12 @@ export class OldMan implements IGameobject {
     private leftFacingAnimationFrames = [
         vec2.fromValues(6.0 / 12.0, 7.0 / 8.0),
         vec2.fromValues(7.0 / 12.0, 7.0 / 8.0),
-        vec2.fromValues(8.0 / 12.0, 7.0 / 8.0),
+        vec2.fromValues(8.0 / 12.0, 7.0 / 8.0)
     ];
     private rightFacingAnimationFrames = [
         vec2.fromValues(6.0 / 12.0, 5.0 / 8.0),
         vec2.fromValues(7.0 / 12.0, 5.0 / 8.0),
-        vec2.fromValues(8.0 / 12.0, 5.0 / 8.0),
+        vec2.fromValues(8.0 / 12.0, 5.0 / 8.0)
     ];
     private currentFrameSet = this.leftFacingAnimationFrames;
     private currentFrameTime = 0;
@@ -52,7 +53,9 @@ export class OldMan implements IGameobject {
                         private texture: Texture,
                         private collider: ICollider) {
         vec3.copy(this.lastPosition, this.position);
-        this.batch.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
+
+        this.renderer = new SpriteRenderer(shader, texture, this.sprite, this.visualScale);
+        this.renderer.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
     }
 
     public static async Create(position: vec3, collider: ICollider): Promise<OldMan> {
@@ -62,11 +65,7 @@ export class OldMan implements IGameobject {
     }
 
     public Draw(proj: mat4, view: mat4): void {
-        this.batch.Draw(proj, view);
-        const modelMat = mat4.create();
-        mat4.translate(modelMat, modelMat, this.position);
-        mat4.scale(modelMat, modelMat, vec3.fromValues(this.visualScale[0], this.visualScale[1], 1));
-        this.batch.ModelMatrix = modelMat;
+        this.renderer.Draw(proj, view, this.position);
     }
 
     public Move(direction: vec3, delta: number): void {
@@ -125,7 +124,7 @@ export class OldMan implements IGameobject {
                 if (this.currentFrameIndex >= this.currentFrameSet.length) {
                     this.currentFrameIndex = 0;
                 }
-                this.batch.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
+                this.renderer.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
                 this.currentFrameTime = 0;
             }
         }
@@ -152,7 +151,7 @@ export class OldMan implements IGameobject {
      */
     private ChangeFrameSet(frames: vec2[]) {
         this.currentFrameSet = frames;
-        this.batch.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
+        this.renderer.TextureOffset = this.currentFrameSet[this.currentFrameIndex];
     }
 
     public CollideWithAttack(attack: IProjectile): void {
@@ -175,7 +174,7 @@ export class OldMan implements IGameobject {
     }
 
     public Dispose(): void {
-        this.batch.Dispose();
+        this.renderer.Dispose();
         this.shader.Delete();
     }
 

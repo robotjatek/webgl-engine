@@ -34,7 +34,6 @@ export class Firebomb extends ProjectileBase {
 
         super(shader, texture, sprite, centerPosition, visualScale, bbOffset, bbSize, hitSound, false,
             collider, bbShader);
-      //  bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.5));
     }
 
     public static async Create(centerPosition: vec3, collider: ICollider): Promise<Firebomb> {

@@ -161,7 +161,7 @@ export class SlimeEnemy extends EnemyBase {
      */
     private ChangeFrameSet(frames: vec2[]) {
         this.currentFrameSet = frames;
-        this.batch.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
+        this.renderer.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
     }
 
     // TODO: generic move method
@@ -188,7 +188,7 @@ export class SlimeEnemy extends EnemyBase {
                 this.currentAnimationFrame = 0;
             }
 
-            this.batch.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
+            this.renderer.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
             this.currentFrameTime = 0;
         }
     }

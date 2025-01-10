@@ -60,8 +60,9 @@ enum State {
     PAUSED = 'paused'
 }
 
-// TODO: draw component for old man
-// TODO: draw component for projectile
+// TODO: camera smoothing - the camera should not follow the hero, but a position that moves with the hero but at a slower rate
+//  like MatchHeroPosition in dragon
+
 // TODO: Movement ECS for projectiles
 // TODO: Movement ECS for old man
 

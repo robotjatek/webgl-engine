@@ -121,7 +121,7 @@ export class Cactus extends EnemyBase {
                 this.currentAnimationFrame = 0;
             }
 
-            this.batch.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
+            this.renderer.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
             this.currentFrameTime = 0;
         }
     }

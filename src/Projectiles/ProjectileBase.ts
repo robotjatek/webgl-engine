@@ -40,11 +40,11 @@ export abstract class ProjectileBase implements IProjectile {
     public Draw(proj: mat4, view: mat4): void {
         if (!this.AlreadyHit || this.animationMustComplete) {
             const topLeft = vec3.sub(vec3.create(), this.centerPosition, vec3.fromValues(this.visualScale[0] / 2, this.visualScale[1] / 2, 0));
-            this.renderer.Draw(proj, view, topLeft);
+            this.renderer.Draw(proj, view, topLeft, 0);
         }
 
         if (Environment.RenderBoundingBoxes) {
-            this.bbRenderer.Draw(proj, view, this.BoundingBox.position);
+            this.bbRenderer.Draw(proj, view, this.BoundingBox.position, 0);
         }
     }
 

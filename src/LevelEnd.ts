@@ -71,7 +71,7 @@ export class LevelEnd implements IGameobject, IEndConditionsMetEventListener, ID
     }
 
     public Draw(projection: mat4, view: mat4): void {
-        this.renderer.Draw(projection, view, this.position);
+        this.renderer.Draw(projection, view, this.position, 0);
     }
 
     public async Update(delta: number): Promise<void> {

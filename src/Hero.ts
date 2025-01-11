@@ -40,7 +40,6 @@ enum AnimationStates {
     WALKING
 }
 
-// BUG: hero rotate after death
 export class Hero implements IDisposable {
     private health: number = 100;
     private collectedCoins: number = 0;
@@ -88,6 +87,7 @@ export class Hero implements IDisposable {
     private invincible: boolean = false;
     private invincibleTime: number = 0;
     private dirOnDeath!: vec3;
+    private rotation: number = 0;
     private timeSinceLastStomp: number = 9999;
     private timeSinceLastDash: number = 0;
     private dashAvailable = true;
@@ -200,27 +200,12 @@ export class Hero implements IDisposable {
     }
 
     public Draw(proj: mat4, view: mat4): void {
-        this.renderer.Draw(proj, view, this.position);
-
-        const modelMat = mat4.create();
-
-        if (this.state === State.DEAD) {
-            this.RotateSprite(modelMat, this.dirOnDeath);
-        }
+        this.renderer.Draw(proj, view, this.position, this.rotation);
 
         // Draw bounding box
         if (Environment.RenderBoundingBoxes) {
-            this.bbRenderer.Draw(proj, view, this.BoundingBox.position);
+            this.bbRenderer.Draw(proj, view, this.BoundingBox.position, this.rotation);
         }
-    }
-
-    private RotateSprite(modelMat: mat4, directionOnDeath: vec3) {
-        const centerX = this.position[0] + this.visualScale[0] * 0.5;
-        const centerY = this.position[1] + this.visualScale[1] * 0.5;
-
-        mat4.translate(modelMat, modelMat, vec3.fromValues(centerX, centerY, 0));
-        mat4.rotateZ(modelMat, modelMat, directionOnDeath[0] > 0 ? -Math.PI / 2 : Math.PI / 2);
-        mat4.translate(modelMat, modelMat, vec3.fromValues(-centerX, -centerY, 0));
     }
 
     public async Update(delta: number): Promise<void> {
@@ -265,8 +250,11 @@ export class Hero implements IDisposable {
                 this.onDeath();
                 this.timeLeftInDeadState = 3000;
             }
-        }
 
+            if (this.state === State.DEAD) {
+                this.RotateSprite(this.dirOnDeath);
+            }
+        }
 
         vec3.copy(this.lastPosition, this.position);
         this.ApplyGravityToVelocity(delta);
@@ -274,6 +262,10 @@ export class Hero implements IDisposable {
         this.ApplyVelocityToPosition(delta);
         this.HandleCollisionWithCollider();
         await this.HandleInput(delta);
+    }
+
+    private RotateSprite(directionOnDeath: vec3): void {
+        this.rotation = directionOnDeath[0] > 0 ? -Math.PI / 2 : Math.PI / 2;
     }
 
     private CalculateFacingDirection() {
@@ -440,10 +432,16 @@ export class Hero implements IDisposable {
         if (this.state !== State.DEAD && this.state !== State.STOMP && this.state !== State.DASH) {
             this.state = State.WALK;
             const nextPosition = vec3.scaleAndAdd(vec3.create(), this.position, direction, delta);
-            if (!this.checkCollision(nextPosition)) {
+            if (!this.CheckCollisionWithCollider(nextPosition)) {
                 this.position = nextPosition;
             }
         }
+    }
+
+    public CheckCollisionWithCollider(nextPosition: vec3): boolean {
+        const nextBbPos = vec3.add(vec3.create(), nextPosition, this.bbOffset);
+        const nextBoundingBox = new BoundingBox(nextBbPos, this.bbSize);
+        return this.collider.IsCollidingWith(nextBoundingBox, true);
     }
 
     private async Jump(): Promise<void> {
@@ -597,11 +595,6 @@ export class Hero implements IDisposable {
         if (this.state !== State.DEAD) {
             this.Health = 0;
         }
-    }
-
-    private checkCollision(nextPosition: vec3): boolean {
-        const nextBoundingBox = new BoundingBox(vec3.add(vec3.create(), nextPosition, this.bbOffset), this.bbSize);
-        return this.collider.IsCollidingWith(nextBoundingBox, true);
     }
 
     public Dispose(): void {

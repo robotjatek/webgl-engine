@@ -66,18 +66,19 @@ export class OldMan implements IGameobject {
     }
 
     public Draw(proj: mat4, view: mat4): void {
-        this.renderer.Draw(proj, view, this.position);
+        this.renderer.Draw(proj, view, this.position, 0);
     }
 
     public Move(direction: vec3, delta: number): void {
         const nextPosition = vec3.scaleAndAdd(vec3.create(), this.position, direction, delta);
-        if (!this.CheckCollision(nextPosition)) {
+        if (!this.CheckCollisionWithCollider(nextPosition)) {
             this.position = nextPosition;
         }
     }
 
-    private CheckCollision(nextPosition: vec3): boolean {
-        const nextBoundingBox = new BoundingBox(vec3.add(vec3.create(), nextPosition, this.bbOffset), this.bbSize);
+    public CheckCollisionWithCollider(nextPosition: vec3): boolean {
+        const nextBbPos = vec3.add(vec3.create(), nextPosition, this.bbOffset);
+        const nextBoundingBox = new BoundingBox(nextBbPos, this.bbSize);
         return this.collider.IsCollidingWith(nextBoundingBox, true);
     }
 
@@ -130,7 +131,7 @@ export class OldMan implements IGameobject {
 
     private ApplyVelocityToPosition(delta: number): void {
         const nextPosition = vec3.scaleAndAdd(vec3.create(), this.position, this.velocity, delta);
-        if (this.CheckCollision(nextPosition)) {
+        if (this.CheckCollisionWithCollider(nextPosition)) {
             // reset the position to the last non-colliding position
             vec3.copy(this.position, this.lastPosition);
             this.velocity = vec3.create();

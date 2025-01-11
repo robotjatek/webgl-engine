@@ -40,11 +40,11 @@ export abstract class EnemyBase implements IEnemy {
     }
 
     public Draw(proj: mat4, view: mat4): void {
-        this.renderer.Draw(proj, view, this.position);
+        this.renderer.Draw(proj, view, this.position, 0);
 
         // Bounding box drawing
         if (Environment.RenderBoundingBoxes) {
-            this.bbRenderer.Draw(proj, view, this.BoundingBox.position);
+            this.bbRenderer.Draw(proj, view, this.BoundingBox.position, 0);
         }
     }
 

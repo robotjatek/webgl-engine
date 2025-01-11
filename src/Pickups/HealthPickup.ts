@@ -50,7 +50,7 @@ export class HealthPickup implements IPickup {
     }
 
     public Draw(proj: mat4, view: mat4): void {
-        this.renderer.Draw(proj, view, this.position);
+        this.renderer.Draw(proj, view, this.position, 0);
     }
 
     private currentTime = 0;

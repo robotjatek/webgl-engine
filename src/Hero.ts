@@ -40,6 +40,7 @@ enum AnimationStates {
     WALKING
 }
 
+// BUG: hero rotate after death
 export class Hero implements IDisposable {
     private health: number = 100;
     private collectedCoins: number = 0;

@@ -144,10 +144,10 @@ export class SlimeEnemy extends EnemyBase {
         const dir = vec3.sub(vec3.create(), this.position, this.targetWaypoint.position);
         if (dir[0] < 0) {
             this.animation.CurrentFrameSet = this.rightFacingAnimationFrames;
-            this.MoveOnX(this.movementSpeed, delta);
+            this.Move(vec3.fromValues(this.movementSpeed, 0, 0), delta);
         } else if (dir[0] > 0) {
             this.animation.CurrentFrameSet = this.leftFacingAnimationFrames;
-            this.MoveOnX(-this.movementSpeed, delta);
+            this.Move(vec3.fromValues(-this.movementSpeed, 0, 0), delta);
         }
 
         if (vec3.distance(this.position, this.targetWaypoint.position) < 0.25 && this.targetWaypoint.next) {
@@ -155,17 +155,15 @@ export class SlimeEnemy extends EnemyBase {
         }
     }
 
-    // TODO: generic move method
     // TODO: simple move component implemented like in dragonenemy.ts. Implement it like a reusable component
-    private MoveOnX(amount: number, delta: number): void {
-        const nextPosition =
-            vec3.fromValues(this.position[0] + amount * delta, this.position[1], this.position[2]);
-        if (!this.checkCollision(nextPosition)) {
+    public Move(direction: vec3, delta: number): void {
+        const nextPosition = vec3.scaleAndAdd(vec3.create(), this.position, direction, delta);
+        if (!this.CheckCollisionWithCollider(nextPosition)) {
             this.position = nextPosition;
         }
     }
 
-    private checkCollision(nextPosition: vec3): boolean {
+    public CheckCollisionWithCollider(nextPosition: vec3): boolean {
         const nextBbPos = vec3.add(vec3.create(), nextPosition, this.bbOffset);
         const nextBoundingBox = new BoundingBox(nextBbPos, this.bbSize);
         return this.collider.IsCollidingWith(nextBoundingBox, true);

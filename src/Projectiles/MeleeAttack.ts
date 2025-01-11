@@ -38,7 +38,7 @@ export class MeleeAttack extends ProjectileBase {
         const animationMustComplete = true;
         super(shader, texture, sprite, centerPosition, spriteVisualScale, bbOffset, bbSize, null, animationMustComplete,
             null, bbShader);
-        this.animation = new Animation(1 / 30 * 1000, this.renderer, this.currentFrameSet);
+        this.animation = new Animation(1 / 30 * 1000, this.renderer);
         this.renderer.TextureOffset = this.currentFrameSet[0];
     }
 
@@ -77,7 +77,7 @@ export class MeleeAttack extends ProjectileBase {
             this.attackSoundPlayed = true;
         }
 
-        const animationFinished = this.animation.Animate(delta);
+        const animationFinished = this.animation.Animate(delta, this.currentFrameSet);
         if (animationFinished) {
             this.alreadyHit = true;
             this.OnHitListeners.forEach(l => l.DespawnAttack(this));

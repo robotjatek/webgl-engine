@@ -59,7 +59,7 @@ export class Fireball extends ProjectileBase {
 
         super(shader, texture, sprite, centerPosition, visualScale, bbOffset, bbSize, hitSound,
             false, collider, bbShader);
-        this.animation = new Animation(1 / 30 * 1000, this.renderer, this.currentFrameSet);
+        this.animation = new Animation(1 / 30 * 1000, this.renderer);
 
         shader.SetVec4Uniform('clr', vec4.fromValues(0, 1, 0, 0.4));
     }
@@ -90,7 +90,7 @@ export class Fireball extends ProjectileBase {
         this.currentFrameSet = this.moveDirection[0] > 0 ?
             this.rightFacingAnimationFrames :
             this.leftFacingAnimationFrames;
-        this.animation.Animate(delta);
+        this.animation.Animate(delta, this.currentFrameSet);
 
         if (!this.spawnSoundPlayed) {
             await this.spawnSound.Play(1, 0.5);

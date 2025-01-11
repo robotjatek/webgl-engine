@@ -172,7 +172,7 @@ export class Hero implements IDisposable {
 
         this.renderer = new SpriteRenderer(shader, texture, this.sprite, visualScale);
         this.renderer.TextureOffset = this.currentFrameSet[0];
-        this.animation = new Animation(1 / 60 * 8 * 1000, this.renderer, this.currentFrameSet);
+        this.animation = new Animation(1 / 60 * 8 * 1000, this.renderer);
 
         this.bbRenderer = new SpriteRenderer(bbShader, null, this.bbSprite, this.bbSize);
         this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
@@ -381,7 +381,7 @@ export class Hero implements IDisposable {
 
     private Animate(delta: number): void {
         if (this.animationState !== AnimationStates.IDLE) {
-            this.animation.Animate(delta);
+            this.animation.Animate(delta, this.currentFrameSet);
         }
     }
 
@@ -396,9 +396,9 @@ export class Hero implements IDisposable {
 
     private SetAnimationByFacingDirection(): void {
         if (this.FacingDirection[0] < 0) {
-            this.animation.CurrentFrameSet = this.leftFacingAnimationFrames;
+            this.currentFrameSet = this.leftFacingAnimationFrames;
         } else if (this.FacingDirection[0] > 0) {
-            this.animation.CurrentFrameSet = this.rightFacingAnimationFrames;
+            this.currentFrameSet = this.rightFacingAnimationFrames;
         }
     }
 

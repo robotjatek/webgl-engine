@@ -56,7 +56,7 @@ export class OldMan implements IGameobject {
 
         this.renderer = new SpriteRenderer(shader, texture, this.sprite, this.visualScale);
         this.renderer.TextureOffset = this.currentFrameSet[0];
-        this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer, this.currentFrameSet);
+        this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer);
     }
 
     public static async Create(position: vec3, collider: ICollider): Promise<OldMan> {
@@ -112,15 +112,15 @@ export class OldMan implements IGameobject {
     private SetAnimationByFacingDirection(): void {
         const direction = vec3.sub(vec3.create(), this.position, this.lastPosition);
         if (direction[0] < 0) {
-            this.animation.CurrentFrameSet = this.leftFacingAnimationFrames;
+            this.currentFrameSet = this.leftFacingAnimationFrames;
         } else if (direction[0] > 0) {
-            this.animation.CurrentFrameSet = this.rightFacingAnimationFrames;
+            this.currentFrameSet = this.rightFacingAnimationFrames;
         }
     }
 
     private Animate(delta: number): void {
         if (this.animationState !== AnimationStates.IDLE) {
-            this.animation.Animate(delta);
+            this.animation.Animate(delta, this.currentFrameSet);
         }
     }
 

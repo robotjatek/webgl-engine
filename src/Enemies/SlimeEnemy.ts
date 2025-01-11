@@ -28,12 +28,12 @@ export class SlimeEnemy extends EnemyBase {
     private leftFacingAnimationFrames: vec2[] = [
         vec2.fromValues(0 / 12, 3 / 8),
         vec2.fromValues(1 / 12, 3 / 8),
-        vec2.fromValues(2 / 12, 3 / 8),
+        vec2.fromValues(2 / 12, 3 / 8)
     ];
     private rightFacingAnimationFrames: vec2[] = [
         vec2.fromValues(0 / 12, 1 / 8),
         vec2.fromValues(1 / 12, 1 / 8),
-        vec2.fromValues(2 / 12, 1 / 8),
+        vec2.fromValues(2 / 12, 1 / 8)
     ];
     private currentFrameSet = this.leftFacingAnimationFrames;
 
@@ -67,7 +67,7 @@ export class SlimeEnemy extends EnemyBase {
         const health = 3;
         super(shader, sprite, texture, bbShader, bbSize, bbOffset, position, visualScale, health);
         this.lastPosition = vec3.create(); // If lastPosition is the same as position at initialization, the entity slowly falls through the floor
-        this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer, this.currentFrameSet);
+        this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer);
 
         // For now, slimes walk between their start position and another position with some constant offset
         const originalWaypoint = new Waypoint(this.position, null);
@@ -77,9 +77,9 @@ export class SlimeEnemy extends EnemyBase {
     }
 
     public static async Create(position: vec3,
-        visualScale: vec2,
-        collider: ICollider,
-        onDeath: (sender: SlimeEnemy) => void): Promise<SlimeEnemy> {
+                               visualScale: vec2,
+                               collider: ICollider,
+                               onDeath: (sender: SlimeEnemy) => void): Promise<SlimeEnemy> {
 
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
@@ -119,7 +119,7 @@ export class SlimeEnemy extends EnemyBase {
         this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
 
         this.MoveTowardsNextWaypoint(delta);
-        this.animation.Animate(delta);
+        this.animation.Animate(delta, this.currentFrameSet);
 
         vec3.copy(this.lastPosition, this.position);
         this.ApplyGravityToVelocity(delta);
@@ -143,10 +143,10 @@ export class SlimeEnemy extends EnemyBase {
     private MoveTowardsNextWaypoint(delta: number): void {
         const dir = vec3.sub(vec3.create(), this.position, this.targetWaypoint.position);
         if (dir[0] < 0) {
-            this.animation.CurrentFrameSet = this.rightFacingAnimationFrames;
+            this.currentFrameSet = this.rightFacingAnimationFrames;
             this.Move(vec3.fromValues(this.movementSpeed, 0, 0), delta);
         } else if (dir[0] > 0) {
-            this.animation.CurrentFrameSet = this.leftFacingAnimationFrames;
+            this.currentFrameSet = this.leftFacingAnimationFrames;
             this.Move(vec3.fromValues(-this.movementSpeed, 0, 0), delta);
         }
 

@@ -95,7 +95,7 @@ export class Cactus extends EnemyBase {
         const health = 3;
 
         super(shader, sprite, texture, bbShader, bbSize, bbOffset, position, visualScale, health);
-        this.animation = new Animation(1 / 15 * 1000, this.renderer, this.currentFrameSet); // 15 fps animation
+        this.animation = new Animation(1 / 15 * 1000, this.renderer); // 15 fps animation
     }
 
     public static async Create(position: vec3, onDeath: (sender: Cactus) => void): Promise<Cactus> {
@@ -109,7 +109,7 @@ export class Cactus extends EnemyBase {
     }
 
     public async Update(delta: number): Promise<void> {
-        this.animation.Animate(delta);
+        this.animation.Animate(delta, this.currentFrameSet);
         this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
     }
 

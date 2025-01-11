@@ -44,7 +44,7 @@ export class BiteProjectile extends ProjectileBase {
         const animationMustComplete = true;
         super(shader, texture, sprite, centerPosition, spriteVisualScale, bbOffset, bbSize, null, animationMustComplete,
             null, bbShader);
-        this.animation = new Animation(64, this.renderer, this.currentFrameSet);
+        this.animation = new Animation(64, this.renderer);
     }
 
     public static async Create(centerPosition: vec3, facingDirection: vec3): Promise<BiteProjectile> {
@@ -68,7 +68,7 @@ export class BiteProjectile extends ProjectileBase {
     }
 
     public async Update(delta: number): Promise<void> {
-        const animationFinished = this.animation.Animate(delta);
+        const animationFinished = this.animation.Animate(delta, this.currentFrameSet);
         if (animationFinished) {
             this.OnHitListeners.forEach(l => l.RemoveGameObject(this));
         }

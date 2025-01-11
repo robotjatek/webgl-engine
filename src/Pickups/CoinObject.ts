@@ -43,7 +43,7 @@ export class CoinObject implements IPickup {
         // this is hardcoded for coin.png
         this.sprite = new Sprite(Utils.DefaultSpriteVertices, Utils.CreateTextureCoordinates(0, 0, 1.0 / 10, 1.0));
         this.renderer = new SpriteRenderer(shader, texture, this.sprite, vec2.fromValues(1, 1));
-        this.animation = new Animation(1 / 60 * 1000 * 3, this.renderer, this.currentFrameSet);
+        this.animation = new Animation(1 / 60 * 1000 * 3, this.renderer);
     }
 
     public static async Create(position: vec3, onPickup: (pickup: IPickup) => void): Promise<CoinObject> {
@@ -76,7 +76,7 @@ export class CoinObject implements IPickup {
     }
 
     public async Update(delta: number): Promise<void> {
-        this.animation.Animate(delta);
+        this.animation.Animate(delta, this.currentFrameSet);
     }
 
     public Draw(proj: mat4, view: mat4): void {

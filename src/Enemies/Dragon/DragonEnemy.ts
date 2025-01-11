@@ -112,7 +112,7 @@ export class DragonEnemy extends EnemyBase {
         const bbSize = vec2.fromValues(4.8, 3);
         const bbOffset = vec3.fromValues(0.1, 1.5, 0);
         super(shader, sprite, texture, bbShader, bbSize, bbOffset, position, visualScale, health);
-        this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer, this.currentFrameSet);
+        this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer);
     }
 
     public static async Create(position: vec3,
@@ -222,13 +222,13 @@ export class DragonEnemy extends EnemyBase {
         // Face in the direction of the hero
         const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);
         if (dir[0] < 0) {
-            this.animation.CurrentFrameSet = this.rightFacingAnimationFrames;
+            this.currentFrameSet = this.rightFacingAnimationFrames;
             vec3.set(this.lastFacingDirection, -1, 0, 0);
         } else if (dir[0] > 0) {
-            this.animation.CurrentFrameSet = this.leftFacingAnimationFrames;
+            this.currentFrameSet = this.leftFacingAnimationFrames;
             vec3.set(this.lastFacingDirection, 1, 0, 0);
         }
-        this.animation.Animate(delta);
+        this.animation.Animate(delta, this.currentFrameSet);
         this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
 
         await this.state.Update(delta);

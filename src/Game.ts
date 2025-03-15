@@ -186,7 +186,7 @@ export class Game implements IStartEventListener,
     }
 
     public async Start(): Promise<void> {
-        const level = await Level.Create('levels/level1.json', this.keyHandler, this.gamepadHandler, this.uiService, this.camera, this);
+        const level = await Level.Create('levels/outro.json', this.keyHandler, this.gamepadHandler, this.uiService, this.camera, this);
         level.SubscribeToNextLevelEvent(this);
         level.SubscribeToRestartEvent(this);
         this.level = level;

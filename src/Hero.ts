@@ -24,7 +24,7 @@ import { MeleeAttack } from './Projectiles/MeleeAttack';
 import { IDisposable } from './IDisposable';
 import { SpriteRenderer } from './SpriteRenderer';
 import { Environment } from './Environment';
-import { Animation } from './Animation';
+import { Animation } from './Components/Animation';
 
 enum State {
     IDLE = 'idle',

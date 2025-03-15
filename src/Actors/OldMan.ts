@@ -10,7 +10,9 @@ import { Sprite } from '../Sprite';
 import { Utils } from '../Utils';
 import { ICollider } from '../ICollider';
 import { SpriteRenderer } from '../SpriteRenderer';
-import { Animation } from '../Animation';
+import { Animation } from '../Components/Animation';
+import { GravityComponent } from '../Components/GravityComponent';
+import { MovementComponent } from '../Components/MovementComponent';
 
 enum AnimationStates {
     IDLE,
@@ -35,6 +37,9 @@ export class OldMan implements IGameobject {
     // Last position is used in collision logic, and determining the facing direction when animating
     private lastPosition: vec3 = vec3.fromValues(0, 0, 0);
 
+    private movement: MovementComponent;
+    private gravityComponent: GravityComponent;
+
     private animation: Animation;
     private leftFacingAnimationFrames = [
         vec2.fromValues(6.0 / 12.0, 7.0 / 8.0),
@@ -56,7 +61,11 @@ export class OldMan implements IGameobject {
 
         this.renderer = new SpriteRenderer(shader, texture, this.sprite, this.visualScale);
         this.renderer.TextureOffset = this.currentFrameSet[0];
+
         this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer);
+        this.movement = new MovementComponent(collider, position, this.lastPosition, this.velocity, this.bbOffset,
+            this.BoundingBox);
+        this.gravityComponent = new GravityComponent(this.velocity);
     }
 
     public static async Create(position: vec3, collider: ICollider): Promise<OldMan> {
@@ -70,16 +79,7 @@ export class OldMan implements IGameobject {
     }
 
     public Move(direction: vec3, delta: number): void {
-        const nextPosition = vec3.scaleAndAdd(vec3.create(), this.position, direction, delta);
-        if (!this.CheckCollisionWithCollider(nextPosition)) {
-            this.position = nextPosition;
-        }
-    }
-
-    public CheckCollisionWithCollider(nextPosition: vec3): boolean {
-        const nextBbPos = vec3.add(vec3.create(), nextPosition, this.bbOffset);
-        const nextBoundingBox = new BoundingBox(nextBbPos, this.bbSize);
-        return this.collider.IsCollidingWith(nextBoundingBox, true);
+        vec3.copy(this.velocity, direction);
     }
 
     public get Position(): vec3 {
@@ -95,9 +95,8 @@ export class OldMan implements IGameobject {
         this.SetWalkingState();
         this.SetAnimationByFacingDirection();
 
-        vec3.copy(this.lastPosition, this.position);
-        this.ApplyGravityToVelocity(delta);
-        this.ApplyVelocityToPosition(delta);
+        await this.movement.Update(delta);
+        await this.gravityComponent.Update(delta);
     }
 
     private SetWalkingState(): void {
@@ -122,22 +121,6 @@ export class OldMan implements IGameobject {
         if (this.animationState !== AnimationStates.IDLE) {
             this.animation.Animate(delta, this.currentFrameSet);
         }
-    }
-
-    private ApplyGravityToVelocity(delta: number): void {
-        const gravity = vec3.fromValues(0, 0.00004, 0);
-        vec3.add(this.velocity, this.velocity, vec3.scale(vec3.create(), gravity, delta));
-    }
-
-    private ApplyVelocityToPosition(delta: number): void {
-        const nextPosition = vec3.scaleAndAdd(vec3.create(), this.position, this.velocity, delta);
-        if (this.CheckCollisionWithCollider(nextPosition)) {
-            // reset the position to the last non-colliding position
-            vec3.copy(this.position, this.lastPosition);
-            this.velocity = vec3.create();
-            return;
-        }
-        this.position = nextPosition;
     }
 
     public CollideWithAttack(attack: IProjectile): void {

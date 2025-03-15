@@ -8,7 +8,7 @@ import { Sprite } from 'src/Sprite';
 import { Utils } from 'src/Utils';
 import { SoundEffectPool } from 'src/SoundEffectPool';
 import { SoundEffect } from 'src/SoundEffect';
-import { Animation } from '../Animation';
+import { Animation } from '../Components/Animation';
 
 /**
  * Stationary enemy that cannot be stomped on (like spikes), but it can be damaged with a sword attack

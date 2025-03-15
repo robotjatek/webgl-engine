@@ -9,7 +9,7 @@ import { IProjectile } from './IProjectile';
 import { SoundEffect } from 'src/SoundEffect';
 import { Hero } from 'src/Hero';
 import { ProjectileBase } from './ProjectileBase';
-import { Animation } from '../Animation';
+import { Animation } from '../Components/Animation';
 
 // MeleeAttack is considered as a stationary projectile
 export class MeleeAttack extends ProjectileBase {

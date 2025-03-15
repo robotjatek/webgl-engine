@@ -8,7 +8,7 @@ import { SoundEffectPool } from '../SoundEffectPool';
 import { SoundEffect } from 'src/SoundEffect';
 import { Texture } from 'src/Texture';
 import { ProjectileBase } from './ProjectileBase';
-import { Animation } from '../Animation';
+import { Animation } from '../Components/Animation';
 
 /**
  * A stationary projectile that attacks the player

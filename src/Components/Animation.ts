@@ -1,5 +1,5 @@
 import { vec2 } from 'gl-matrix';
-import { SpriteRenderer } from './SpriteRenderer';
+import { SpriteRenderer } from '../SpriteRenderer';
 
 export class Animation {
     private currentFrameTime: number = 0;

@@ -19,7 +19,7 @@ import { EnterArenaState } from './States/EnterArenaState';
 import { GroundAttackState } from './States/GroundAttackStates/GroundAttackState';
 import { Layer } from '../../Layer';
 import { Point } from '../../Point';
-import { Animation } from '../../Animation';
+import { Animation } from '../../Components/Animation';
 
 export class DragonEnemy extends EnemyBase {
 

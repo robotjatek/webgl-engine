@@ -9,7 +9,7 @@ import { SoundEffectPool } from '../SoundEffectPool';
 import { IProjectile } from './IProjectile';
 import { SoundEffect } from 'src/SoundEffect';
 import { ProjectileBase } from './ProjectileBase';
-import { Animation } from '../Animation';
+import { Animation } from '../Components/Animation';
 
 export class Fireball extends ProjectileBase {
     private spawnSoundPlayed = false;

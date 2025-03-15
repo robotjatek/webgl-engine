@@ -11,7 +11,7 @@ import { SoundEffect } from '../SoundEffect';
 import { SoundEffectPool } from '../SoundEffectPool';
 import { IProjectile } from 'src/Projectiles/IProjectile';
 import { SpriteRenderer } from '../SpriteRenderer';
-import { Animation } from '../Animation';
+import { Animation } from '../Components/Animation';
 
 
 export class CoinObject implements IPickup {

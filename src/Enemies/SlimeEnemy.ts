@@ -5,13 +5,14 @@ import { Utils } from '../Utils';
 import { Shader } from '../Shader';
 import { Texture } from '../Texture';
 import { TexturePool } from '../TexturePool';
-import { BoundingBox } from '../BoundingBox';
 import { SoundEffectPool } from '../SoundEffectPool';
 import { Waypoint } from '../Waypoint';
 import { EnemyBase } from './IEnemy';
 import { Hero } from '../Hero';
 import { SoundEffect } from 'src/SoundEffect';
 import { Animation } from '../Components/Animation';
+import { GravityComponent } from '../Components/GravityComponent';
+import { MovementComponent } from '../Components/MovementComponent';
 
 /**
  * Slime enemy is a passive enemy, meaning it does not actively attack the player, but it hurts when contacted directly
@@ -43,6 +44,9 @@ export class SlimeEnemy extends EnemyBase {
     private damagedTime = 0;
     private damaged = false;
 
+    private gravityComponent: GravityComponent;
+    private movementComponent: MovementComponent;
+
     private constructor(
         position: vec3,
         shader: Shader,
@@ -70,10 +74,14 @@ export class SlimeEnemy extends EnemyBase {
         this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer);
 
         // For now, slimes walk between their start position and another position with some constant offset
-        const originalWaypoint = new Waypoint(this.position, null);
-        const targetPosition = vec3.add(vec3.create(), this.position, vec3.fromValues(-6, 0, 0));
+        const originalWaypoint = new Waypoint(vec3.clone(this.position), null);
+        const targetPosition = vec3.add(vec3.create(), vec3.clone(this.position), vec3.fromValues(-6, 0, 0));
         this.targetWaypoint = new Waypoint(targetPosition, originalWaypoint);
         originalWaypoint.next = this.targetWaypoint;
+
+        this.gravityComponent = new GravityComponent(this.velocity);
+        this.movementComponent = new MovementComponent(collider, position, this.lastPosition, this.velocity,
+            this.bbOffset, this.BoundingBox);
     }
 
     public static async Create(position: vec3,
@@ -117,14 +125,11 @@ export class SlimeEnemy extends EnemyBase {
 
     public async Update(delta: number): Promise<void> {
         this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
-
         this.MoveTowardsNextWaypoint(delta);
-        this.animation.Animate(delta, this.currentFrameSet);
 
-        vec3.copy(this.lastPosition, this.position);
-        this.ApplyGravityToVelocity(delta);
-        this.ApplyVelocityToPosition(delta);
-        this.HandleCollisionWithCollider();
+        this.animation.Animate(delta, this.currentFrameSet);
+        this.movementComponent.Update(delta);
+        this.gravityComponent.Update(delta);
     }
 
     // TODO: duplicated all over the place
@@ -145,52 +150,18 @@ export class SlimeEnemy extends EnemyBase {
         if (dir[0] < 0) {
             this.currentFrameSet = this.rightFacingAnimationFrames;
             this.Move(vec3.fromValues(this.movementSpeed, 0, 0), delta);
-        } else if (dir[0] > 0) {
+        } else {
             this.currentFrameSet = this.leftFacingAnimationFrames;
             this.Move(vec3.fromValues(-this.movementSpeed, 0, 0), delta);
         }
 
-        if (vec3.distance(this.position, this.targetWaypoint.position) < 0.25 && this.targetWaypoint.next) {
+        if (vec3.distance(this.position, this.targetWaypoint.position) < 0.025 && this.targetWaypoint.next) {
             this.targetWaypoint = this.targetWaypoint.next;
         }
     }
 
-    // TODO: simple move component implemented like in dragonenemy.ts. Implement it like a reusable component
     public Move(direction: vec3, delta: number): void {
-        const nextPosition = vec3.scaleAndAdd(vec3.create(), this.position, direction, delta);
-        if (!this.CheckCollisionWithCollider(nextPosition)) {
-            this.position = nextPosition;
-        }
-    }
-
-    public CheckCollisionWithCollider(nextPosition: vec3): boolean {
-        const nextBbPos = vec3.add(vec3.create(), nextPosition, this.bbOffset);
-        const nextBoundingBox = new BoundingBox(nextBbPos, this.bbSize);
-        return this.collider.IsCollidingWith(nextBoundingBox, true);
-    }
-
-    // TODO: should make this a component system
-    private ApplyGravityToVelocity(delta: number): void {
-        const gravity = vec3.fromValues(0, 0.00004, 0);
-        vec3.add(this.velocity, this.velocity, vec3.scale(vec3.create(), gravity, delta));
-    }
-
-    // TODO: make this a component system
-    private ApplyVelocityToPosition(delta: number) {
-        // TODO: check if next position causes a collision. Do not apply velocity if collision happens
-        const moveValue = vec3.create();
-        vec3.scale(moveValue, this.velocity, delta);
-        vec3.add(this.position, this.position, moveValue);
-    }
-
-
-    // TODO: how to make this a component?
-    private HandleCollisionWithCollider() {
-        const colliding = this.collider.IsCollidingWith(this.BoundingBox, false);
-        if (colliding) {
-            vec3.copy(this.position, this.lastPosition);
-            this.velocity = vec3.create();
-        }
+        vec3.copy(this.velocity, direction);
     }
 
     public Dispose(): void {

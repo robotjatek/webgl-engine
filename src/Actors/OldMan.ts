@@ -95,10 +95,11 @@ export class OldMan implements IGameobject {
         this.SetWalkingState();
         this.SetAnimationByFacingDirection();
 
-        await this.movement.Update(delta);
-        await this.gravityComponent.Update(delta);
+        this.movement.Update(delta);
+        this.gravityComponent.Update(delta);
     }
 
+    // TODO: somehow make this part of the animation system
     private SetWalkingState(): void {
         const distanceFromLastPosition = vec3.distance(this.lastPosition, this.position);
         if (distanceFromLastPosition > 0.001) {

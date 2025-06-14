@@ -9,7 +9,7 @@ export class GravityComponent {
     public constructor(private velocity: vec3) {
     }
 
-    public async Update(delta: number) {
+    public Update(delta: number) {
         this.ApplyGravityToVelocity(delta);
     }
 

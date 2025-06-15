@@ -41,8 +41,8 @@ export class GroundAttackState extends DragonStateBase implements IState {
         if (this.dragon.WillCollide(this.dir, delta)) {
             this.dir = vec3.fromValues(this.dir[0] * -1, 0, 0);
         }
-        this.dragon.Move(this.dir, delta);
-        this.MatchHeroHeight(delta);
+        this.dragon.Move(this.dir);
+        this.MatchHeroHeight();
 
         await this.internalState.Update(delta);
     }

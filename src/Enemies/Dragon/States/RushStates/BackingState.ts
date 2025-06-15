@@ -18,9 +18,9 @@ export class BackingState extends DragonStateBase implements IState {
         this.timeInBacking += delta;
         const dir = vec3.sub(vec3.create(), this.dragon.CenterPosition, this.hero.CenterPosition);
         if (dir[0] > 0) {
-            this.dragon.Move(vec3.fromValues(0.025, 0, 0), delta);
+            this.dragon.Move(vec3.fromValues(0.025, 0, 0));
         } else if (dir[0] < 0) {
-            this.dragon.Move(vec3.fromValues(-0.025, 0, 0), delta);
+            this.dragon.Move(vec3.fromValues(-0.025, 0, 0));
         }
 
         if (this.timeInBacking > 1500 ||
@@ -32,7 +32,7 @@ export class BackingState extends DragonStateBase implements IState {
             await this.context.ChangeState(this.context.CHARGE_STATE());
         }
 
-        this.MatchHeroHeight(delta);
+        this.MatchHeroHeight();
     }
 
     public async Enter(): Promise<void> {

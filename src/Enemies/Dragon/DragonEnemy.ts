@@ -20,6 +20,7 @@ import { GroundAttackState } from './States/GroundAttackStates/GroundAttackState
 import { Layer } from '../../Layer';
 import { Point } from '../../Point';
 import { Animation } from '../../Components/Animation';
+import { MovementComponent } from '../../Components/MovementComponent';
 
 export class DragonEnemy extends EnemyBase {
 
@@ -67,6 +68,7 @@ export class DragonEnemy extends EnemyBase {
         vec2.fromValues(5 / 12, 1 / 8)
     ];
     private currentFrameSet = this.leftFacingAnimationFrames;
+    private movementComponent: MovementComponent;
 
 
     // Behaviour related
@@ -77,6 +79,8 @@ export class DragonEnemy extends EnemyBase {
     };
 
     private lastFacingDirection = vec3.fromValues(-1, 0, 0); // Facing right by default
+    private velocity: vec3 = vec3.create();
+    private lastPosition: vec3 = vec3.create();
 
     private damagedTime = 0;
     private damaged = false;
@@ -113,6 +117,7 @@ export class DragonEnemy extends EnemyBase {
         const bbOffset = vec3.fromValues(0.1, 1.5, 0);
         super(shader, sprite, texture, bbShader, bbSize, bbOffset, position, visualScale, health);
         this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer);
+        this.movementComponent = new MovementComponent(collider, position, this.lastPosition, this.velocity, bbOffset, this.BoundingBox)
     }
 
     public static async Create(position: vec3,
@@ -175,7 +180,6 @@ export class DragonEnemy extends EnemyBase {
     // TODO: az egész damage method duplikálva van a cactusban
     public override async Damage(pushbackForce: vec3): Promise<void> {
         // Dragon ignores pushback at the moment
-
         if (this.invincible) {
             return;
         }
@@ -185,8 +189,6 @@ export class DragonEnemy extends EnemyBase {
         await this.enemyDamageSound.Play();
         this.health--;
         this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
-        // TODO: dragon does not have velocity at the moment
-        //vec3.set(this.velocity, pushbackForce[0], pushbackForce[1], 0);
 
         this.damaged = true;
         if (this.health <= 0) {
@@ -229,12 +231,10 @@ export class DragonEnemy extends EnemyBase {
             vec3.set(this.lastFacingDirection, 1, 0, 0);
         }
         this.animation.Animate(delta, this.currentFrameSet);
+        this.movementComponent.Update(delta);
         this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
 
         await this.state.Update(delta);
-
-        // TODO: gravity to velocity -- flying enemy maybe does not need gravity?
-        // TODO: velocity to position
     }
 
     // TODO: duplicated all over the place
@@ -256,32 +256,28 @@ export class DragonEnemy extends EnemyBase {
         }
     }
 
-    public Move(direction: vec3, delta: number): void {
-        const nextPosition = vec3.scaleAndAdd(vec3.create(), this.position, direction, delta);
-        if (!this.CheckCollisionWithCollider(nextPosition)) {
-            this.position = nextPosition;
-        }
+    /**
+     * Sets the velocity vector by completely replacing it
+     * @param direction
+     */
+    public Move(direction: vec3): void {
+        vec3.copy(this.velocity, direction);
     }
 
     /**
-     * Calculate next position without considering collision
+     * Updates only the Y component of the velocity vector, leaving X and Z unchanged.
+     * This allows for vertical movement to work together with other movement components.
+     * @param yVelocity The Y velocity to add to the current velocity
      */
-    public CalculateNextPosition(direction: vec3, delta: number): vec3 {
-        return vec3.scaleAndAdd(vec3.create(), this.position, direction, delta);
-    }
-
-    // TODO: ugyanez a slimeban is benn van privátként -- szintén valami movement component kéne
-    public CheckCollisionWithCollider(nextPosition: vec3): boolean {
-        const nextBbPos = vec3.add(vec3.create(), nextPosition, this.bbOffset);
-        const nextBoundingBox = new BoundingBox(nextBbPos, this.bbSize);
-        return this.collider.IsCollidingWith(nextBoundingBox, true);
+    public MoveVertical(yVelocity: number): void {
+        this.velocity[1] += yVelocity;
     }
 
     /**
      * Check if movement to the direction would cause a collision
      */
     public WillCollide(direction: vec3, delta: number): boolean {
-        return this.CheckCollisionWithCollider(this.CalculateNextPosition(direction, delta))
+        return this.movementComponent.WillCollide(direction, delta);
     }
 
     public Dispose(): void {

@@ -20,7 +20,7 @@ export class PreAttackState extends DragonStateBase implements IState {
             await this.context.ChangeState(this.context.ATTACK_STATE());
         }
 
-        this.MatchHeroHeight(delta);
+        this.MatchHeroHeight();
     }
 
     public async Enter(): Promise<void> {

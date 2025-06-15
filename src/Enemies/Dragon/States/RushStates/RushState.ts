@@ -42,16 +42,6 @@ export class RushState extends DragonStateBase implements IState {
 
     public async Update(delta: number): Promise<void> {
         await this.internalState.Update(delta);
-
-        const dir = vec3.sub(vec3.create(), this.dragon.CenterPosition, this.hero.CenterPosition);
-        const distance = vec3.distance(this.dragon.CenterPosition, this.hero.CenterPosition);
-        if (distance > 3) {
-            if (dir[0] > 0) {
-                this.dragon.Move(vec3.fromValues(-0.003, 0, 0), delta);
-            } else if (dir[0] < 0) {
-                this.dragon.Move(vec3.fromValues(0.003, 0, 0), delta);
-            }
-        }
     }
 
     public async Enter(): Promise<void> {

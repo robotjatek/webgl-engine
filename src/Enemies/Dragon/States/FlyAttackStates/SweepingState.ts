@@ -26,7 +26,7 @@ export class SweepingState implements IState {
         if (this.dragon.WillCollide(this.dir, delta)) {
             this.dir = vec3.fromValues(this.dir[0] * -1, 0, 0);
         }
-        this.dragon.Move(this.dir, delta);
+        this.dragon.Move(this.dir);
 
         // spit fireballs while sweeping
         const variance = 1500 + Math.random() * 1000; // 1500-2500

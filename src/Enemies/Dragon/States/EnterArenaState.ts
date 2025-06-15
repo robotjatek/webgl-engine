@@ -26,13 +26,13 @@ export class EnterArenaState extends DragonStateBase implements IState {
         // Reach the altitude of the waypoint - move on the axises separately
         const distanceFromAltitude = this.enterWaypoint[1] - this.dragon.CenterPosition[1];
         if (distanceFromAltitude > 0) {
-            this.dragon.Move(vec3.fromValues(0, 0.005, 0), delta);
+            this.dragon.Move(vec3.fromValues(0, 0.005, 0));
         }
 
         // Move to the predefined coordinates
         if (this.dragon.CenterPosition[0] > this.enterWaypoint[0]) {
             const dir = vec3.fromValues(-0.01, 0, 0);
-            this.dragon.Move(dir, delta);
+            this.dragon.Move(dir);
         } else {
             // close tiles
             // TODO: ezt a hardcodeot is meg kéne szüntetni

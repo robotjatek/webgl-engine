@@ -112,7 +112,7 @@ export class SlimeEnemy extends EnemyBase {
         await this.enemyDamageSound.Play();
         this.health--;
         this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
-        vec3.set(this.velocity, pushbackForce[0], pushbackForce[1], 0);
+        vec3.add(this.velocity, this.velocity, pushbackForce);
 
         this.damaged = true;
         if (this.health <= 0) {
@@ -125,7 +125,10 @@ export class SlimeEnemy extends EnemyBase {
 
     public async Update(delta: number): Promise<void> {
         this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
-        this.MoveTowardsNextWaypoint(delta);
+
+        if (!this.damaged) { // This way, the AI will not override velocity
+            this.MoveTowardsNextWaypoint(delta);
+        }
 
         this.animation.Animate(delta, this.currentFrameSet);
         this.movementComponent.Update(delta);

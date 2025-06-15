@@ -61,7 +61,7 @@ export class CoinObject implements IPickup {
         return true;
     }
 
-    public CollideWithAttack(attack: IProjectile): void {
+    public async CollideWithAttack(attack: IProjectile): Promise<void> {
         // No-op
     }
 

@@ -42,7 +42,7 @@ export class MeleeAttack extends ProjectileBase {
         this.renderer.TextureOffset = this.currentFrameSet[0];
     }
 
-    public CollideWithAttack(attack: IProjectile): void {
+    public async CollideWithAttack(attack: IProjectile): Promise<void> {
         // No-op as hero attacks shouldn't interact with each other
     }
 

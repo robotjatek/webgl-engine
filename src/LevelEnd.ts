@@ -54,7 +54,7 @@ export class LevelEnd implements IGameobject, IEndConditionsMetEventListener, ID
         this.interacted = interacted;
     }
 
-    public CollideWithAttack(attack: IProjectile): void {
+    public async CollideWithAttack(attack: IProjectile): Promise<void> {
         // NO-OP
     }
 

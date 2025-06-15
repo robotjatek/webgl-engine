@@ -62,7 +62,7 @@ export abstract class ProjectileBase implements IProjectile {
         return new BoundingBox(bbPos, this.bbSize);
     }
 
-    public CollideWithAttack(attack: IProjectile): void {
+    public async CollideWithAttack(attack: IProjectile): Promise<void> {
         // Do nothing
         // NOTE: overriding this could be used to cancel a projectile with an attack
     }

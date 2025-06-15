@@ -67,7 +67,7 @@ export class HealthPickup implements IPickup {
         return this.BoundingBox.IsCollidingWith(boundingBox);
     }
 
-    public CollideWithAttack(attack: IProjectile): void {
+    public async CollideWithAttack(attack: IProjectile): Promise<void> {
         // No-op
     }
 

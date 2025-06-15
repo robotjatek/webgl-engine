@@ -29,7 +29,6 @@ export class MovementComponent {
      * Check if movement to the direction would cause a collision
      */
     public WillCollide(direction: vec3, delta: number): boolean {
-        //return false;
         return this.CheckCollisionWithCollider(this.CalculateNextPosition(direction, delta), this.boundingBox);
     }
 

@@ -124,7 +124,7 @@ export class OldMan implements IGameobject {
         }
     }
 
-    public CollideWithAttack(attack: IProjectile): void {
+    public async CollideWithAttack(attack: IProjectile): Promise<void> {
     }
 
     public get EndCondition(): boolean {

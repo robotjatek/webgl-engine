@@ -8,16 +8,22 @@ export class PhysicsComponent {
     private velocity : vec3  = vec3.create();
     private externalForce : vec3 = vec3.create();
     private onGround : boolean = false;
+    private xCollide = false;
+    private yCollide = false;
 
     public constructor(private position: vec3,
                        private lastPosition : vec3,
-                       private boundingBox: BoundingBox,
+                       private boundingBox: () => BoundingBox,
                        private bbOffset: vec3,
                        private collider: ICollider,
-                       private flying: boolean) {
+                       private flying: boolean,
+                       private canGoOutOfBounds: boolean = false) {
     }
 
     public Update(delta: number) : void {
+        this.xCollide = false;
+        this.yCollide = false;
+
         if (!this.flying) {
             this.ApplyGravityToVelocity(delta);
         }
@@ -27,15 +33,17 @@ export class PhysicsComponent {
         const tmpVelocity = vec3.clone(this.velocity);
         const nextX = this.CalculateNextPosition(vec3.fromValues(tmpVelocity[0], 0, 0), delta);
         const nextY = this.CalculateNextPosition(vec3.fromValues(0, tmpVelocity[1], 0), delta);
-        if (this.CheckCollisionWithCollider(nextX, this.boundingBox, this.bbOffset)) {
+        if (this.CheckCollisionWithCollider(nextX, this.boundingBox(), this.bbOffset)) {
             this.velocity[0] = 0;
             tmpVelocity[0] = 0;
+            this.xCollide = true;
         }
         this.onGround = false;
-        if (this.CheckCollisionWithCollider(nextY, this.boundingBox, this.bbOffset)) {
+        if (this.CheckCollisionWithCollider(nextY, this.boundingBox(), this.bbOffset)) {
             this.velocity[1] = 0;
             tmpVelocity[1] = 0;
             this.onGround = true;
+            this.yCollide = true;
         }
 
         vec3.copy(this.lastPosition, this.position);
@@ -43,12 +51,20 @@ export class PhysicsComponent {
         this.externalForce = vec3.create();
     }
 
+    public get Colliding(): boolean {
+        return this.xCollide || this.yCollide;
+    }
+
     public AddToExternalForce(force: vec3) {
         vec3.add(this.externalForce, this.externalForce, force);
     }
 
     public WillCollide(delta: number): boolean {
-        return this.CheckCollisionWithCollider(this.CalculateNextPosition(this.velocity, delta), this.boundingBox, this.bbOffset);
+        const nextX = this.CalculateNextPosition(vec3.fromValues(this.velocity[0], 0, 0), delta);
+        const nextY = this.CalculateNextPosition(vec3.fromValues(0, this.velocity[1], 0), delta);
+
+        return this.CheckCollisionWithCollider(nextX, this.boundingBox(), this.bbOffset) ||
+            this.CheckCollisionWithCollider(nextY, this.boundingBox(), this.bbOffset);
     }
 
     public ResetVelocity() : void {
@@ -71,7 +87,7 @@ export class PhysicsComponent {
     private CheckCollisionWithCollider(nextPosition: vec3, boundingBox: BoundingBox, bbOffset: vec3): boolean {
         const nextBbPos = vec3.add(vec3.create(), nextPosition, bbOffset);
         const nextBoundingBox = new BoundingBox(nextBbPos, boundingBox.size);
-        return this.collider.IsCollidingWith(nextBoundingBox, true);
+        return this.collider.IsCollidingWith(nextBoundingBox, !this.canGoOutOfBounds);
     }
 
     private ApplyDamping() : void {
@@ -82,10 +98,10 @@ export class PhysicsComponent {
 
         vec3.scale(this.velocity, this.velocity, damping);
 
-        if (Math.abs(this.velocity[0]) < 0.0001) {
+        if (Math.abs(this.velocity[0]) < 0.00001) {
             this.velocity[0] = 0;
         }
-        if (Math.abs(this.velocity[1]) < 0.0001) {
+        if (Math.abs(this.velocity[1]) < 0.00001) {
             this.velocity[1] = 0;
         }
     }

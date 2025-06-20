@@ -9,6 +9,7 @@ import { SoundEffect } from 'src/SoundEffect';
 import { Texture } from 'src/Texture';
 import { ProjectileBase } from './ProjectileBase';
 import { Animation } from '../Components/Animation';
+import { NullCollider } from '../ICollider';
 
 /**
  * A stationary projectile that attacks the player
@@ -25,35 +26,40 @@ export class BiteProjectile extends ProjectileBase {
     ];
 
     private constructor(
-        centerPosition: vec3,
+        position: vec3,
         private facingDirection: vec3,
         shader: Shader,
         bbShader: Shader,
         private biteDamageSound: SoundEffect,
         texture: Texture
     ) {
-        const bbOffset = vec3.fromValues(0, 0, 0);
-        const bbSize = vec2.fromValues(1.6, 1.6);
-        const spriteVisualScale = vec2.fromValues(5, 5);
         const sprite: Sprite = new Sprite(Utils.DefaultSpriteVertices,
-                Utils.CreateTextureCoordinates(
-                    0 / 5,
-                    0 / 2,
-                    1 / 5,
-                    1 / 2));
+            Utils.CreateTextureCoordinates(
+                0 / 5,
+                0 / 2,
+                1 / 5,
+                1 / 2));
+
+        const bbSize = vec2.fromValues(2.0, 2.0);
+        const spriteVisualScale = vec2.fromValues(5, 5);
+        const bbOffset = facingDirection[0] > 0 ?
+            vec3.fromValues(spriteVisualScale[0] - bbSize[0] - 1.25, 1.25, 0) : // left box
+            vec3.fromValues(1.25, 1.25, 0); // right box
+
         const animationMustComplete = true;
-        super(shader, texture, sprite, centerPosition, spriteVisualScale, bbOffset, bbSize, null, animationMustComplete,
-            null, bbShader);
+        super(shader, texture, sprite, position, spriteVisualScale, bbOffset, bbSize, null, animationMustComplete,
+            new NullCollider(), bbShader);
+
         this.animation = new Animation(64, this.renderer);
     }
 
-    public static async Create(centerPosition: vec3, facingDirection: vec3): Promise<BiteProjectile> {
+    public static async Create(position: vec3, facingDirection: vec3): Promise<BiteProjectile> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
         const biteDamageSound = await SoundEffectPool.GetInstance().GetAudio('audio/bite.wav');
         const texture = await TexturePool.GetInstance().GetTexture('textures/fang.png');
 
-        return new BiteProjectile(centerPosition, facingDirection, shader, bbShader, biteDamageSound, texture);
+        return new BiteProjectile(position, facingDirection, shader, bbShader, biteDamageSound, texture);
     }
 
     public async OnHit(): Promise<void> {

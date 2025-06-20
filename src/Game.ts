@@ -63,8 +63,6 @@ enum State {
 // TODO: camera smoothing - the camera should not follow the hero, but a position that moves with the hero but at a slower rate
 //  like MatchHeroPosition in dragon
 
-// TODO: Movement ECS for projectiles
-
 // TODO: shake camera when attack hit
 
 // TODO: ui builder framework
@@ -185,7 +183,7 @@ export class Game implements IStartEventListener,
     }
 
     public async Start(): Promise<void> {
-        const level = await Level.Create('levels/boss_arena.json', this.keyHandler, this.gamepadHandler, this.uiService, this.camera, this);
+        const level = await Level.Create('levels/level1.json', this.keyHandler, this.gamepadHandler, this.uiService, this.camera, this);
         level.SubscribeToNextLevelEvent(this);
         level.SubscribeToRestartEvent(this);
         this.level = level;

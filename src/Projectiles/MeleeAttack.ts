@@ -10,6 +10,7 @@ import { SoundEffect } from 'src/SoundEffect';
 import { Hero } from 'src/Hero';
 import { ProjectileBase } from './ProjectileBase';
 import { Animation } from '../Components/Animation';
+import { NullCollider } from '../ICollider';
 
 // MeleeAttack is considered as a stationary projectile
 export class MeleeAttack extends ProjectileBase {
@@ -22,11 +23,14 @@ export class MeleeAttack extends ProjectileBase {
         vec2.fromValues(3 / 5.0, 1 / 2.0)
     ];
 
-    private constructor(centerPosition: vec3, private facingDirection: vec3,
+    private constructor(position: vec3, private facingDirection: vec3,
                         shader: Shader, bbShader: Shader, private attackSound: SoundEffect, texture: Texture) {
         const spriteVisualScale: vec2 = vec2.fromValues(4, 3);
         const bbSize = vec2.fromValues(1.25, 2);
-        const bbOffset = vec3.fromValues(0, 0, 0);
+        const bbOffset = facingDirection[0] > 0 ?
+            vec3.fromValues(1.25, 0.5, 0) :
+            vec3.fromValues(-(bbSize[0] - 2.75), 0.5, 0);
+
         const sprite: Sprite = new Sprite(Utils.DefaultSpriteVertices,
             Utils.CreateTextureCoordinates(
                 0.0 / 5.0,
@@ -36,8 +40,8 @@ export class MeleeAttack extends ProjectileBase {
 
 
         const animationMustComplete = true;
-        super(shader, texture, sprite, centerPosition, spriteVisualScale, bbOffset, bbSize, null, animationMustComplete,
-            null, bbShader);
+        super(shader, texture, sprite, position, spriteVisualScale, bbOffset, bbSize, null, animationMustComplete,
+            new NullCollider(), bbShader);
         this.animation = new Animation(1 / 30 * 1000, this.renderer);
         this.renderer.TextureOffset = this.currentFrameSet[0];
     }
@@ -46,14 +50,14 @@ export class MeleeAttack extends ProjectileBase {
         // No-op as hero attacks shouldn't interact with each other
     }
 
-    public static async Create(centerPosition: vec3, facingDirection: vec3): Promise<MeleeAttack> {
+    public static async Create(position: vec3, facingDirection: vec3): Promise<MeleeAttack> {
         // TODO: i really should rename the fragment shader from Hero.frag as everything seems to use it...
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
         const attackSound = await SoundEffectPool.GetInstance().GetAudio('audio/sword.mp3');
         const texture = await TexturePool.GetInstance().GetTexture('textures/Sword1.png');
 
-        return new MeleeAttack(centerPosition, facingDirection, shader, bbShader, attackSound, texture);
+        return new MeleeAttack(position, facingDirection, shader, bbShader, attackSound, texture);
     }
 
     public get PushbackForce(): vec3 {

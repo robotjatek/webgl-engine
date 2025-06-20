@@ -71,7 +71,7 @@ export class SlimeEnemy extends EnemyBase {
         const targetPosition = vec3.add(vec3.create(), vec3.clone(this.position), vec3.fromValues(-6, 0, 0));
         this.targetWaypoint = new Waypoint(targetPosition, originalWaypoint);
         originalWaypoint.next = this.targetWaypoint;
-        this.physicsComponent = new PhysicsComponent(this.position, vec3.create(), this.BoundingBox, this.bbOffset, this.collider, false);
+        this.physicsComponent = new PhysicsComponent(this.position, vec3.create(), () => this.BoundingBox, this.bbOffset, this.collider, false);
     }
 
     public static async Create(position: vec3,

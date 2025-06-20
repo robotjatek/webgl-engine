@@ -60,7 +60,7 @@ export class OldMan implements IGameobject {
         this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer);
         this.physicsComponent = new PhysicsComponent(this.position,
             this.lastPosition,
-            this.BoundingBox,
+            () => this.BoundingBox,
             this.bbOffset,
             this.collider,
             false);

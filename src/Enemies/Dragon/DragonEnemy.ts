@@ -114,7 +114,7 @@ export class DragonEnemy extends EnemyBase {
         const bbOffset = vec3.fromValues(0.1, 1.5, 0);
         super(shader, sprite, texture, bbShader, bbSize, bbOffset, position, visualScale, health);
         this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer);
-        this.physicsComponent = new PhysicsComponent(position, this.lastPosition, this.BoundingBox, bbOffset, collider, true);
+        this.physicsComponent = new PhysicsComponent(position, this.lastPosition, () => this.BoundingBox, bbOffset, collider, true);
     }
 
     public static async Create(position: vec3,
@@ -157,17 +157,15 @@ export class DragonEnemy extends EnemyBase {
     }
 
     public get BiteProjectilePosition(): vec3 {
-        // returns projectile center position
         return this.FacingDirection[0] > 0 ?
-            vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-2, 1, 0)) :
-            vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(2, 1, 0));
+            vec3.add(vec3.create(), this.position, vec3.fromValues((-0) - 1.6, 1, 0)) :
+            vec3.add(vec3.create(), this.position, vec3.fromValues((+0) + 1.6, 1, 0));
     }
 
     public get FireBallProjectileSpawnPosition(): vec3 {
-        // returns projectile center position
         return this.FacingDirection[0] > 0 ?
-            vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-3, 1, 0)) :
-            vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(3, 1, 0));
+            vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-3, -1, 0)) :
+            vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(3, -1, 0));
     }
 
     public get EndCondition(): boolean {

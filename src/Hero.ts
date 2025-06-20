@@ -311,16 +311,19 @@ export class Hero implements IDisposable {
 
             if (this.keyHandler.IsPressed(Keys.E) || this.gamepadHandler.IsPressed(XBoxControllerKeys.X) ||
                 this.keyHandler.IsPressed(Keys.LEFT_CONTROL) || this.keyHandler.IsPressed(Keys.RIGHT_SHIFT)) {
-                const attackPosition = this.FacingDirection[0] > 0 ?
-                    vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(1.5, 0, 0)) :
-                    vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-1.5, 0, 0));
-
+                const attackPosition = this.AttackSpawnPosition;
                 this.Attack(async () => {
                     // TODO: creating an attack instance on every attack is wasteful.
                     this.SpawnProjectile(this, await MeleeAttack.Create(attackPosition, this.FacingDirection));
                 });
             }
         }
+    }
+
+    private get AttackSpawnPosition(): vec3 {
+        return this.FacingDirection[0] > 0 ?
+            vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(0, -1, 0)) :
+            vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-4, -1, 0));
     }
 
     private async HandleDeath(): Promise<void> {

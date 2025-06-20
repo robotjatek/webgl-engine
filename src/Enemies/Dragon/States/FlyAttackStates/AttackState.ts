@@ -19,9 +19,9 @@ export class AttackState implements IState {
         const attackDirection = vec3.sub(vec3.create(), this.shared.savedHeroPosition, this.dragon.BiteProjectilePosition);
         attackDirection[2] = 0;
         vec3.normalize(attackDirection, attackDirection);
-        vec3.scale(attackDirection, attackDirection, 0.025); // hard coded attack speed
+        vec3.scale(attackDirection, attackDirection, 0.0003); // hard coded attack speed
 
-        this.dragon.Move(attackDirection);
+        this.dragon.Move(attackDirection, delta);
 
         const distanceToRushPosition = vec3.distance(this.shared.savedHeroPosition, this.dragon.CenterPosition);
         if (distanceToRushPosition < 2.0 || this.dragon.WillCollide(attackDirection, delta)) {

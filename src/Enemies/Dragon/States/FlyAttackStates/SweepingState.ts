@@ -9,7 +9,7 @@ import { FlyAttackState } from './FlyAttackState';
 
 export class SweepingState implements IState {
 
-    private dir = vec3.fromValues(-0.01, 0, 0);
+    private dir = vec3.fromValues(-0.00010, 0, 0);
 
     public constructor(
         private context: FlyAttackState,
@@ -24,9 +24,10 @@ export class SweepingState implements IState {
         // left-right movement
         // change direction on collision
         if (this.dragon.WillCollide(this.dir, delta)) {
+            this.dragon.ResetVelocity();
             this.dir = vec3.fromValues(this.dir[0] * -1, 0, 0);
         }
-        this.dragon.Move(this.dir);
+        this.dragon.Move(this.dir, delta);
 
         // spit fireballs while sweeping
         const variance = 1500 + Math.random() * 1000; // 1500-2500

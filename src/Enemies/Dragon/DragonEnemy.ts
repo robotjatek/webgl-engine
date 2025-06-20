@@ -1,5 +1,4 @@
 import { vec2, vec3, vec4 } from 'gl-matrix';
-import { BoundingBox } from '../../BoundingBox';
 import { Shader } from '../../Shader';
 import { Sprite } from '../../Sprite';
 import { Texture } from '../../Texture';
@@ -20,7 +19,7 @@ import { GroundAttackState } from './States/GroundAttackStates/GroundAttackState
 import { Layer } from '../../Layer';
 import { Point } from '../../Point';
 import { Animation } from '../../Components/Animation';
-import { MovementComponent } from '../../Components/MovementComponent';
+import { PhysicsComponent } from '../../Components/PhysicsComponent';
 
 export class DragonEnemy extends EnemyBase {
 
@@ -68,8 +67,7 @@ export class DragonEnemy extends EnemyBase {
         vec2.fromValues(5 / 12, 1 / 8)
     ];
     private currentFrameSet = this.leftFacingAnimationFrames;
-    private movementComponent: MovementComponent;
-
+    private physicsComponent: PhysicsComponent;
 
     // Behaviour related
     private shared: SharedDragonStateVariables = {
@@ -79,7 +77,6 @@ export class DragonEnemy extends EnemyBase {
     };
 
     private lastFacingDirection = vec3.fromValues(-1, 0, 0); // Facing right by default
-    private velocity: vec3 = vec3.create();
     private lastPosition: vec3 = vec3.create();
 
     private damagedTime = 0;
@@ -117,7 +114,7 @@ export class DragonEnemy extends EnemyBase {
         const bbOffset = vec3.fromValues(0.1, 1.5, 0);
         super(shader, sprite, texture, bbShader, bbSize, bbOffset, position, visualScale, health);
         this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer);
-        this.movementComponent = new MovementComponent(collider, position, this.lastPosition, this.velocity, bbOffset, this.BoundingBox)
+        this.physicsComponent = new PhysicsComponent(position, this.lastPosition, this.BoundingBox, bbOffset, collider, true);
     }
 
     public static async Create(position: vec3,
@@ -231,7 +228,7 @@ export class DragonEnemy extends EnemyBase {
             vec3.set(this.lastFacingDirection, 1, 0, 0);
         }
         this.animation.Animate(delta, this.currentFrameSet);
-        this.movementComponent.Update(delta);
+        this.physicsComponent.Update(delta);
         this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
 
         await this.state.Update(delta);
@@ -256,28 +253,19 @@ export class DragonEnemy extends EnemyBase {
         }
     }
 
-    /**
-     * Sets the velocity vector by completely replacing it
-     * @param direction
-     */
-    public Move(direction: vec3): void {
-        vec3.copy(this.velocity, direction);
-    }
-
-    /**
-     * Updates only the Y component of the velocity vector, leaving X and Z unchanged.
-     * This allows for vertical movement to work together with other movement components.
-     * @param yVelocity The Y velocity to add to the current velocity
-     */
-    public MoveVertical(yVelocity: number): void {
-        this.velocity[1] += yVelocity;
+    public Move(direction: vec3, delta: number): void {
+        this.physicsComponent.AddToExternalForce(vec3.scale(vec3.create(), direction, delta));
     }
 
     /**
      * Check if movement to the direction would cause a collision
      */
     public WillCollide(direction: vec3, delta: number): boolean {
-        return this.movementComponent.WillCollide(direction, delta);
+        return this.physicsComponent.WillCollide(delta);
+    }
+
+    public ResetVelocity(): void {
+        this.physicsComponent.ResetVelocity();
     }
 
     public Dispose(): void {

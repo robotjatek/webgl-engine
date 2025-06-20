@@ -20,6 +20,6 @@ export class StartState extends DragonStateBase implements IState {
 
     public override async Update(delta: number): Promise<void> {
         await this.context.ChangeState(this.context.BACKING_STATE());
-        this.MatchHeroHeight();
+        this.MatchHeroHeight(delta);
     }
 }

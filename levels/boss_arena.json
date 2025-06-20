@@ -1810,6 +1810,26 @@
       "tiles": [
         {
           "xPos": 30,
+          "yPos": 9,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 9,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 9,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
+          "yPos": 9,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 30,
           "yPos": 10,
           "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         },
@@ -1820,6 +1840,11 @@
         },
         {
           "xPos": 32,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
           "yPos": 10,
           "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         },
@@ -1839,6 +1864,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         },
         {
+          "xPos": 33,
+          "yPos": 11,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
           "xPos": 30,
           "yPos": 12,
           "texture": "textures/Platform_ByJanaChumi/PNG/34.png"
@@ -1850,6 +1880,11 @@
         },
         {
           "xPos": 32,
+          "yPos": 12,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
           "yPos": 12,
           "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         },
@@ -1865,6 +1900,11 @@
         },
         {
           "xPos": 32,
+          "yPos": 13,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
           "yPos": 13,
           "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         },
@@ -1880,6 +1920,11 @@
         },
         {
           "xPos": 32,
+          "yPos": 14,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
           "yPos": 14,
           "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         },

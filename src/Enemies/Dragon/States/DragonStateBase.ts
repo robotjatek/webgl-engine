@@ -12,15 +12,15 @@ export abstract class DragonStateBase {
      * Follow hero on the Y axis with a little delay.
      * "Delay" is achieved by moving the dragon slower than the hero movement speed.
      */
-    protected MatchHeroHeight(): void {
+    protected MatchHeroHeight(delta: number): void {
         // Reduce shaking by only moving when the distance is larger than a limit
         const distance = Math.abs(this.hero.CenterPosition[1] - this.dragon.CenterPosition[1]);
         if (distance > 0.2) {
             const dir = vec3.sub(vec3.create(), this.dragon.CenterPosition, this.hero.CenterPosition);
             if (dir[1] > 0) {
-                this.dragon.MoveVertical(-0.003);
+                this.dragon.Move(vec3.fromValues(0, -0.00004, 0), delta);
             } else if (dir[1] < 0) {
-                this.dragon.MoveVertical(0.003);
+                this.dragon.Move(vec3.fromValues(0, 0.00004, 0), delta);
             }
         }
     }

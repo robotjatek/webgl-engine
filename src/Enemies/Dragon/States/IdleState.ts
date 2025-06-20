@@ -45,11 +45,13 @@ export class IdleState extends DragonStateBase implements IState {
         const chance = Math.random();
         if (chance > 0.25 && chance < 0.30) {
             // Idle => fly state
-            await this.dragon.ChangeState(this.dragon.FLY_ATTACK_STATE());
+            //await this.dragon.ChangeState(this.dragon.FLY_ATTACK_STATE());
+            await this.dragon.ChangeState(this.dragon.GROUND_ATTACK_STATE());
             return;
         } else if (chance > 0.30 && chance < 0.35) {
             // idle => rush state
-            await this.dragon.ChangeState(this.dragon.RUSH_STATE());
+            //await this.dragon.ChangeState(this.dragon.RUSH_STATE());
+            await this.dragon.ChangeState(this.dragon.GROUND_ATTACK_STATE());
             return;
         } else if (chance > 0.35) {
             await this.dragon.ChangeState(this.dragon.GROUND_ATTACK_STATE());

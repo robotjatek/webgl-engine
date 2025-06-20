@@ -180,7 +180,7 @@ export class OutroEvent implements ILevelEvent {
                 // old man moves towards the hero
                 const oldManDistanceToHero = vec3.distance(this.oldMan.CenterPosition, this.hero.CenterPosition);
                 if (oldManDistanceToHero > 3) {
-                    this.oldMan.Move(vec3.fromValues(-0.005, 0, 0), delta);
+                    this.oldMan.Move(vec3.fromValues(-0.001, 0, 0));
                     return false;
                 }
                 return true;

@@ -11,8 +11,7 @@ import { EnemyBase } from './IEnemy';
 import { Hero } from '../Hero';
 import { SoundEffect } from 'src/SoundEffect';
 import { Animation } from '../Components/Animation';
-import { GravityComponent } from '../Components/GravityComponent';
-import { MovementComponent } from '../Components/MovementComponent';
+import { PhysicsComponent } from '../Components/PhysicsComponent';
 
 /**
  * Slime enemy is a passive enemy, meaning it does not actively attack the player, but it hurts when contacted directly
@@ -21,9 +20,10 @@ export class SlimeEnemy extends EnemyBase {
 
     private targetWaypoint: Waypoint;
     // A little variation in movement speed;
-    readonly minSpeed: number = 0.002;
-    readonly maxSpeed: number = 0.004;
+    readonly minSpeed: number = 0.00004;
+    readonly maxSpeed: number = 0.00006;
     private movementSpeed: number = Math.random() * (this.maxSpeed - this.minSpeed) + this.minSpeed;
+    private physicsComponent: PhysicsComponent;
 
     private animation: Animation;
     private leftFacingAnimationFrames: vec2[] = [
@@ -38,14 +38,8 @@ export class SlimeEnemy extends EnemyBase {
     ];
     private currentFrameSet = this.leftFacingAnimationFrames;
 
-    private velocity: vec3 = vec3.fromValues(0, 0, 0);
-    private readonly lastPosition: vec3;
-
     private damagedTime = 0;
     private damaged = false;
-
-    private gravityComponent: GravityComponent;
-    private movementComponent: MovementComponent;
 
     private constructor(
         position: vec3,
@@ -70,7 +64,6 @@ export class SlimeEnemy extends EnemyBase {
         const bbOffset = vec3.fromValues(1.2, 1.8, 0);
         const health = 3;
         super(shader, sprite, texture, bbShader, bbSize, bbOffset, position, visualScale, health);
-        this.lastPosition = vec3.create(); // If lastPosition is the same as position at initialization, the entity slowly falls through the floor
         this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer);
 
         // For now, slimes walk between their start position and another position with some constant offset
@@ -78,10 +71,7 @@ export class SlimeEnemy extends EnemyBase {
         const targetPosition = vec3.add(vec3.create(), vec3.clone(this.position), vec3.fromValues(-6, 0, 0));
         this.targetWaypoint = new Waypoint(targetPosition, originalWaypoint);
         originalWaypoint.next = this.targetWaypoint;
-
-        this.gravityComponent = new GravityComponent(this.velocity);
-        this.movementComponent = new MovementComponent(collider, position, this.lastPosition, this.velocity,
-            this.bbOffset, this.BoundingBox);
+        this.physicsComponent = new PhysicsComponent(this.position, vec3.create(), this.BoundingBox, this.bbOffset, this.collider, false);
     }
 
     public static async Create(position: vec3,
@@ -112,7 +102,7 @@ export class SlimeEnemy extends EnemyBase {
         await this.enemyDamageSound.Play();
         this.health--;
         this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
-        vec3.add(this.velocity, this.velocity, pushbackForce);
+        this.physicsComponent.AddToExternalForce(pushbackForce);
 
         this.damaged = true;
         if (this.health <= 0) {
@@ -131,8 +121,7 @@ export class SlimeEnemy extends EnemyBase {
         }
 
         this.animation.Animate(delta, this.currentFrameSet);
-        this.movementComponent.Update(delta);
-        this.gravityComponent.Update(delta);
+        this.physicsComponent.Update(delta);
     }
 
     // TODO: duplicated all over the place
@@ -157,14 +146,13 @@ export class SlimeEnemy extends EnemyBase {
             this.currentFrameSet = this.leftFacingAnimationFrames;
             this.Move(vec3.fromValues(-this.movementSpeed, 0, 0), delta);
         }
-
         if (vec3.distance(this.position, this.targetWaypoint.position) < 0.025 && this.targetWaypoint.next) {
             this.targetWaypoint = this.targetWaypoint.next;
         }
     }
 
     public Move(direction: vec3, delta: number): void {
-        vec3.copy(this.velocity, direction);
+        this.physicsComponent.AddToExternalForce(vec3.scale(vec3.create(), direction, delta));
     }
 
     public Dispose(): void {

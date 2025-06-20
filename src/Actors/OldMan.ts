@@ -11,8 +11,7 @@ import { Utils } from '../Utils';
 import { ICollider } from '../ICollider';
 import { SpriteRenderer } from '../SpriteRenderer';
 import { Animation } from '../Components/Animation';
-import { GravityComponent } from '../Components/GravityComponent';
-import { MovementComponent } from '../Components/MovementComponent';
+import { PhysicsComponent } from '../Components/PhysicsComponent';
 
 enum AnimationStates {
     IDLE,
@@ -22,7 +21,6 @@ enum AnimationStates {
 export class OldMan implements IGameobject {
 
     private animationState: AnimationStates = AnimationStates.IDLE;
-
     private sprite = new Sprite(
         Utils.DefaultSpriteVertices,
         Utils.CreateTextureCoordinates(0.0, 0.0, 1.0 / 12.0, 1.0 / 8.0));
@@ -33,12 +31,9 @@ export class OldMan implements IGameobject {
     private bbOffset = vec3.fromValues(1.2, 1.1, 0);
     private bbSize = vec2.fromValues(0.8, 1.8);
 
-    private velocity: vec3 = vec3.fromValues(0, 0, 0);
     // Last position is used in collision logic, and determining the facing direction when animating
     private lastPosition: vec3 = vec3.fromValues(0, 0, 0);
-
-    private movement: MovementComponent;
-    private gravityComponent: GravityComponent;
+    private physicsComponent: PhysicsComponent;
 
     private animation: Animation;
     private leftFacingAnimationFrames = [
@@ -63,9 +58,12 @@ export class OldMan implements IGameobject {
         this.renderer.TextureOffset = this.currentFrameSet[0];
 
         this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer);
-        this.movement = new MovementComponent(collider, position, this.lastPosition, this.velocity, this.bbOffset,
-            this.BoundingBox);
-        this.gravityComponent = new GravityComponent(this.velocity);
+        this.physicsComponent = new PhysicsComponent(this.position,
+            this.lastPosition,
+            this.BoundingBox,
+            this.bbOffset,
+            this.collider,
+            false);
     }
 
     public static async Create(position: vec3, collider: ICollider): Promise<OldMan> {
@@ -78,8 +76,8 @@ export class OldMan implements IGameobject {
         this.renderer.Draw(proj, view, this.position, 0);
     }
 
-    public Move(direction: vec3, delta: number): void {
-        vec3.copy(this.velocity, direction);
+    public Move(direction: vec3): void {
+        this.physicsComponent.AddToExternalForce(direction);
     }
 
     public get Position(): vec3 {
@@ -95,8 +93,7 @@ export class OldMan implements IGameobject {
         this.SetWalkingState();
         this.SetAnimationByFacingDirection();
 
-        this.movement.Update(delta);
-        this.gravityComponent.Update(delta);
+        this.physicsComponent.Update(delta);
     }
 
     // TODO: somehow make this part of the animation system

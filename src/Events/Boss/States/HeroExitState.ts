@@ -16,7 +16,7 @@ export class HeroExitState implements IState {
         this.level.MainLayer.SetCollision(29, 12, false);
         this.level.MainLayer.SetCollision(29, 13, false);
         this.level.MainLayer.SetCollision(29, 14, false);
-        this.hero.Move(vec3.fromValues(0.01, 0, 0), delta);
+        this.hero.Move(vec3.fromValues(0.0004, 0, 0), delta);
     }
 
     public async Enter(): Promise<void> {

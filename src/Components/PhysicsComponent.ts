@@ -2,9 +2,11 @@ import { vec3 } from 'gl-matrix';
 import { BoundingBox } from '../BoundingBox';
 import { ICollider } from '../ICollider';
 
+// TODO: too fast movement can cause collision issues, needs to be fixed
 export class PhysicsComponent {
 
-    private readonly GRAVITY = vec3.fromValues(0, 0.00004, 0);
+    private gravityEnabled = true;
+    private readonly GRAVITY = vec3.fromValues(0, 0.00023, 0);
     private velocity : vec3  = vec3.create();
     private externalForce : vec3 = vec3.create();
     private onGround : boolean = false;
@@ -24,26 +26,33 @@ export class PhysicsComponent {
         this.xCollide = false;
         this.yCollide = false;
 
-        if (!this.flying) {
+        if (!this.flying && this.gravityEnabled) {
             this.ApplyGravityToVelocity(delta);
         }
         this.ApplyDamping();
         this.ApplyExternalForceToVelocity();
 
         const tmpVelocity = vec3.clone(this.velocity);
+
         const nextX = this.CalculateNextPosition(vec3.fromValues(tmpVelocity[0], 0, 0), delta);
-        const nextY = this.CalculateNextPosition(vec3.fromValues(0, tmpVelocity[1], 0), delta);
         if (this.CheckCollisionWithCollider(nextX, this.boundingBox(), this.bbOffset)) {
             this.velocity[0] = 0;
             tmpVelocity[0] = 0;
             this.xCollide = true;
         }
-        this.onGround = false;
+
+        const nextY = this.CalculateNextPosition(vec3.fromValues(0, tmpVelocity[1], 0), delta);
         if (this.CheckCollisionWithCollider(nextY, this.boundingBox(), this.bbOffset)) {
+            // Only set onGround if we're moving downward or stopped
+            const movingDownward = this.velocity[1] > 0;
+            const stopped = Math.abs(this.velocity[1]) < 0.00001;
+
             this.velocity[1] = 0;
             tmpVelocity[1] = 0;
-            this.onGround = true;
+            this.onGround = movingDownward || stopped;
             this.yCollide = true;
+        } else {
+            this.onGround = false;
         }
 
         vec3.copy(this.lastPosition, this.position);
@@ -51,8 +60,24 @@ export class PhysicsComponent {
         this.externalForce = vec3.create();
     }
 
+    public get OnGround(): boolean {
+        return this.onGround;
+    }
+
     public get Colliding(): boolean {
         return this.xCollide || this.yCollide;
+    }
+
+    public get Velocity(): vec3 {
+        return this.velocity;
+    }
+
+    public DisableGravity(): void {
+        this.gravityEnabled = false;
+    }
+
+    public EnableGravity(): void {
+        this.gravityEnabled = true;
     }
 
     public AddToExternalForce(force: vec3) {
@@ -70,6 +95,11 @@ export class PhysicsComponent {
     public ResetVelocity() : void {
         vec3.set(this.velocity, 0, 0, 0);
         this.externalForce = vec3.create();
+    }
+
+    public ResetVerticalVelocity() : void {
+        this.velocity[1] = 0;
+        this.externalForce[1] = 0;
     }
 
     private ApplyExternalForceToVelocity() {
@@ -93,8 +123,10 @@ export class PhysicsComponent {
     private ApplyDamping() : void {
         const groundDamping = 0.75;
         const airDamping = 0.9;
+        const nonFlyingAirDamping = 0.75;
+        // flying enemies only affected by air damping
         const damping = this.flying ? airDamping :
-            this.onGround ? groundDamping : airDamping;
+            this.onGround ? groundDamping : nonFlyingAirDamping;
 
         vec3.scale(this.velocity, this.velocity, damping);
 

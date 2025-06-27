@@ -23,7 +23,7 @@ class MoveToWaypoint implements ISequenceStep {
         this.hero.AcceptInput = false;
         const distanceFromWaypoint = vec3.distance(this.waypoint, this.hero.CenterPosition);
         if (distanceFromWaypoint > 0.5) {
-            this.hero.Move(vec3.fromValues(0.005, 0, 0), delta);
+            this.hero.Move(vec3.fromValues(0.0001, 0, 0), delta);
             return false;
         } else {
             return true;
@@ -70,7 +70,7 @@ class DragonRoar implements ISequenceStep {
         this._timeSinceRoarStarted += delta;
         if (this._timeSinceRoarStarted > 500 && !this.heroReactedToRoar) {
             this.heroReactedToRoar = true;
-            this._hero.Move(vec3.fromValues(-0.005, 0, 0), delta);
+            this._hero.Move(vec3.fromValues(-0.0005, 0, 0), delta);
         }
 
         this._timeSinceFadeOutStarted += delta;
@@ -172,7 +172,7 @@ export class OutroEvent implements ILevelEvent {
             .Add(new MoveToWaypoint(this.hero, vec3.fromValues(10, 15, 0)))
             .Action(async (delta: number) => {
                 // hero looks back where he came from
-                this.hero.Move(vec3.fromValues(-0.035, 0, 0), delta);
+                this.hero.Move(vec3.fromValues(-0.00025, 0, 0), delta);
                 return true;
             })
             .Add(new SpawnOldMan(this.level, this.oldMan))
@@ -187,7 +187,7 @@ export class OutroEvent implements ILevelEvent {
             })
             .Action(async (delta: number) => {
                 // Hero looks at the old man
-                this.hero.Move(vec3.fromValues(0.0025, 0, 0), delta);
+                this.hero.Move(vec3.fromValues(0.00010, 0, 0), delta);
                 return true;
             })
             .Action(async (delta: number) => {

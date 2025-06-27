@@ -69,7 +69,6 @@ enum State {
 // TODO: flip sprite
 // TODO: recheck every vector passing. Sometimes vectors need to be cloned
 // TODO: update ts version
-// TODO: render bounding boxes in debug mode
 // TODO: texture map padding
 export class Game implements IStartEventListener,
     IResumeEventListener,

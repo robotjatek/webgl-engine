@@ -25,6 +25,7 @@ import { IDisposable } from './IDisposable';
 import { SpriteRenderer } from './SpriteRenderer';
 import { Environment } from './Environment';
 import { Animation } from './Components/Animation';
+import { PhysicsComponent } from './Components/PhysicsComponent';
 
 enum State {
     IDLE = 'idle',
@@ -32,7 +33,7 @@ enum State {
     DEAD = 'dead',
     STOMP = 'stomp',
     JUMP = 'jump',
-    DASH = 'dash'
+    DASH = 'dash',
 }
 
 enum AnimationStates {
@@ -48,11 +49,11 @@ export class Hero implements IDisposable {
     private readonly sprite: Sprite;
     private readonly renderer: SpriteRenderer;
     private readonly bbRenderer: SpriteRenderer;
+    private readonly physicsComponent: PhysicsComponent;
 
     private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
 
     private lastPosition: vec3 = vec3.fromValues(0, 0, 1);
-    private velocity: vec3 = vec3.fromValues(0, 0, 0);
     private acceptInput: boolean = true;
 
     private animationState: AnimationStates = AnimationStates.IDLE;
@@ -81,12 +82,12 @@ export class Hero implements IDisposable {
     // TODO: state machines
     private bbOffset = vec3.fromValues(1.2, 1.1, 0);
     private bbSize = vec2.fromValues(0.8, 1.8);
-    private jumping: boolean = false;
-    private onGround: boolean = true;
     private wasInAir: boolean = false;
+    private remainingJumpTime: number = 0;
+    private isJumping: boolean = false;
     private invincible: boolean = false;
     private invincibleTime: number = 0;
-    private dirOnDeath!: vec3;
+    private dirOnDeath: vec3 = vec3.create();
     private rotation: number = 0;
     private timeSinceLastStomp: number = 9999;
     private timeSinceLastDash: number = 0;
@@ -94,6 +95,8 @@ export class Hero implements IDisposable {
     private timeSinceLastMeleeAttack = 0;
     private timeInOverHeal = 0;
     private timeLeftInDeadState: number = 3000;
+    private pushbackForce = vec3.create();
+    private isDamaged: boolean = false;
 
     public get BoundingBox(): BoundingBox {
         if (this.state !== State.STOMP) {
@@ -176,6 +179,8 @@ export class Hero implements IDisposable {
 
         this.bbRenderer = new SpriteRenderer(bbShader, null, this.bbSprite, this.bbSize);
         this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
+
+        this.physicsComponent = new PhysicsComponent(position, this.lastPosition, () => this.BoundingBox, this.bbOffset, collider, false, false);
     }
 
     public static async Create(
@@ -224,7 +229,6 @@ export class Hero implements IDisposable {
             if (this.Health > 100) {
                 this.timeInOverHeal += delta;
             }
-
             if (this.timeInOverHeal > 1000) {
                 this.timeInOverHeal = 0;
                 this.Health--;
@@ -237,8 +241,22 @@ export class Hero implements IDisposable {
             this.timeSinceLastDash += delta;
             this.timeSinceLastMeleeAttack += delta;
 
+            // TODO: on exit dash state
             if (this.state === State.DASH && this.timeSinceLastDash > 300) {
                 this.state = State.WALK;
+                this.physicsComponent.EnableGravity();
+                // BUG: nem mindig kapcsol vissza a gravity
+            }
+
+            if (this.isJumping && this.remainingJumpTime > 0) {
+                const force = vec3.fromValues(0, -0.013, 0);
+                this._jump(delta, force);
+            }
+
+            if (this.isDamaged && this.remainingJumpTime > 0) {
+                this._jump(delta, this.pushbackForce);
+            } else {
+                this.isDamaged = false;
             }
 
             if (this.invincible) {
@@ -251,17 +269,21 @@ export class Hero implements IDisposable {
                 this.timeLeftInDeadState = 3000;
             }
 
-            if (this.state === State.DEAD) {
-                this.RotateSprite(this.dirOnDeath);
-            }
+            this.RotateSprite(this.dirOnDeath);
         }
 
-        vec3.copy(this.lastPosition, this.position);
-        this.ApplyGravityToVelocity(delta);
-        this.ReduceHorizontalVelocityWhenDashing();
-        this.ApplyVelocityToPosition(delta);
-        this.HandleCollisionWithCollider();
+        await this.physicsComponent.Update(delta);
         await this.HandleInput(delta);
+    }
+
+    private _jump(delta: number, force: vec3): void {
+        const jDelta = Math.min(this.remainingJumpTime, delta);
+        this.physicsComponent.AddToExternalForce(force);
+        this.remainingJumpTime -= jDelta;
+
+        if (this.remainingJumpTime <= 0 && this.physicsComponent.OnGround) {
+            this.isJumping = false;
+        }
     }
 
     private RotateSprite(directionOnDeath: vec3): void {
@@ -283,12 +305,12 @@ export class Hero implements IDisposable {
                 this.keyHandler.IsPressed(Keys.LEFT_ARROW) ||
                 this.gamepadHandler.LeftStick[0] < -0.5 ||
                 this.gamepadHandler.IsPressed(XBoxControllerKeys.LEFT)) {
-                this.Move(vec3.fromValues(-0.01, 0, 0), delta);
+                this.Move(vec3.fromValues(-0.0002, 0, 0), delta);
             } else if (this.keyHandler.IsPressed(Keys.D) ||
                 this.keyHandler.IsPressed(Keys.RIGHT_ARROW) ||
                 this.gamepadHandler.LeftStick[0] > 0.5 ||
                 this.gamepadHandler.IsPressed(XBoxControllerKeys.RIGHT)) {
-                this.Move(vec3.fromValues(0.01, 0, 0), delta);
+                this.Move(vec3.fromValues(0.0002, 0, 0), delta);
             }
 
             if (this.keyHandler.IsPressed(Keys.SPACE) ||
@@ -330,14 +352,11 @@ export class Hero implements IDisposable {
         if (this.Health <= 0) {
             this.state = State.DEAD;
             await this.dieSound.Play();
-            const dir = vec3.create();
-            vec3.subtract(dir, this.position, this.lastPosition);
-            this.dirOnDeath = dir;
-
+            vec3.subtract(this.dirOnDeath, this.position, this.lastPosition);
             this.bbSize = vec2.fromValues(this.bbSize[1], this.bbSize[0]);
             // This is only kind-of correct, but im already in dead state so who cares if the bb is not correctly aligned.
             // The only important thing is not to fall through the geometry...
-            this.bbOffset[0] = dir[0] > 0 ? this.bbOffset[0] : 1.5 - this.bbOffset[0];
+            this.bbOffset[0] = this.dirOnDeath[0] > 0 ? this.bbOffset[0] : 1.5 - this.bbOffset[0];
         }
     }
 
@@ -348,38 +367,6 @@ export class Hero implements IDisposable {
             this.shader.SetVec4Uniform('colorOverlay', vec4.create());
         }
         this.invincible ? this.invincibleTime += delta : this.invincibleTime = 0;
-    }
-
-    /**
-     * Sets the velocity to zero on collision
-     */
-    private HandleCollisionWithCollider(): void {
-        const colliding = this.collider.IsCollidingWith(this.BoundingBox, true);
-        if (colliding) {
-            vec3.copy(this.position, this.lastPosition);
-            this.velocity = vec3.create();
-            this.onGround = true;
-        } else {
-            this.onGround = false;
-        }
-    }
-
-    private ApplyVelocityToPosition(delta: number): void {
-        const moveValue = vec3.create();
-        vec3.scale(moveValue, this.velocity, delta);
-        vec3.add(this.position, this.position, moveValue);
-    }
-
-    private ApplyGravityToVelocity(delta: number): void {
-        if (this.state !== State.DASH) {
-            const gravity = vec3.fromValues(0, 0.00004, 0);
-            vec3.add(this.velocity, this.velocity, vec3.scale(vec3.create(), gravity, delta));
-        }
-    }
-
-    private ReduceHorizontalVelocityWhenDashing(): void {
-        if (!this.dashAvailable)
-            this.velocity[0] *= 0.75;
     }
 
     private Animate(delta: number): void {
@@ -406,7 +393,9 @@ export class Hero implements IDisposable {
     }
 
     private async PlayWalkSounds(): Promise<void> {
-        if (this.state === State.WALK && this.position !== this.lastPosition && !this.jumping && this.onGround) {
+        if (this.state === State.WALK &&
+            vec3.distance(this.position, this.lastPosition) > 0.0005
+            && this.physicsComponent.OnGround) {
             await this.walkSound.Play(1.8, 0.8);
         }
 
@@ -416,51 +405,48 @@ export class Hero implements IDisposable {
     }
 
     private async HandleLanding(): Promise<void> {
-        const isOnGround = this.velocity[1] === 0 && !this.jumping;
-        if (this.wasInAir && isOnGround) {
-            await this.landSound.Play(1.8, 0.5);
-            this.dashAvailable = true;
-        }
-        this.wasInAir = !isOnGround;
+        const wasStomping = this.state === State.STOMP;
 
-        if (this.velocity[1] === 0) {
-            this.jumping = false;
-            this.state = State.IDLE;
+        if (this.physicsComponent.OnGround) {
+            if ((this.wasInAir || wasStomping) &&
+                vec3.squaredLength(this.physicsComponent.Velocity) < 0.00001) {
+                this.state = State.IDLE;
+                this.wasInAir = false;
+                this.dashAvailable = true;
+                this.isJumping = false;
+
+                if (!wasStomping) {
+                    await this.landSound.Play(1.8, 0.5);
+                }
+            }
+        } else {
+            this.wasInAir = true;
         }
     }
 
-    // TODO: move left, and move right should a change the velocity not the position itself
     // TODO: gradual acceleration
     public Move(direction: vec3, delta: number): void {
-        if (this.state !== State.DEAD && this.state !== State.STOMP && this.state !== State.DASH) {
-            this.state = State.WALK;
-            const nextPosition = vec3.scaleAndAdd(vec3.create(), this.position, direction, delta);
-            if (!this.CheckCollisionWithCollider(nextPosition)) {
-                this.position = nextPosition;
-            }
+        if (this.state !== State.DEAD && this.state !== State.STOMP && this.state !== State.DASH && !this.isDamaged) {
+            this.state = State.WALK; // TODO: animáció állapotok
+            this.physicsComponent.AddToExternalForce(vec3.scale(vec3.create(), direction, delta));
         }
     }
 
-    public CheckCollisionWithCollider(nextPosition: vec3): boolean {
-        const nextBbPos = vec3.add(vec3.create(), nextPosition, this.bbOffset);
-        const nextBoundingBox = new BoundingBox(nextBbPos, this.bbSize);
-        return this.collider.IsCollidingWith(nextBoundingBox, true);
-    }
-
+    // TODO: gradual jump height
     private async Jump(): Promise<void> {
         // TODO: all these dead checks are getting ridiculous. Something really needs to be done...
-        if (!this.jumping && this.onGround && this.state !== State.DEAD) {
-            this.velocity[1] = -0.02;
-            this.jumping = true;
+        if (this.state !== State.JUMP && this.physicsComponent.OnGround && this.state !== State.DEAD) {
+            this.remainingJumpTime = 150;
             await this.jumpSound.Play();
-            this.state = State.JUMP
+            this.state = State.JUMP;
+            this.isJumping = true;
         }
     }
 
     private async Stomp(): Promise<void> {
-        if (this.jumping && !this.onGround && this.state !== State.DEAD && this.state !== State.STOMP && this.timeSinceLastStomp > 480) {
+        if (!this.physicsComponent.OnGround && this.state !== State.DEAD && this.state !== State.STOMP && this.timeSinceLastStomp > 480) {
             this.state = State.STOMP;
-            this.velocity[1] = 0.04;
+            this.physicsComponent.AddToExternalForce(vec3.fromValues(0, 0.02,0));
             this.invincible = true;
             this.timeSinceLastStomp = 0;
             const pitch = 0.8 + Math.random() * (1.25 - 0.8);
@@ -468,21 +454,27 @@ export class Hero implements IDisposable {
         }
     }
 
+    // TODO: enter dash state (state machine)
     private async Dash(): Promise<void> {
         if (this.state !== State.DEAD
-            && this.state !== State.IDLE
-            && this.timeSinceLastDash > 300
-            && this.state !== State.STOMP
-            && this.dashAvailable) {
+        && this.state !== State.IDLE
+        && this.timeSinceLastDash > 300
+        && this.state !== State.STOMP
+        && this.dashAvailable) {
+
             this.state = State.DASH;
-            const dir = vec3.create();
-            vec3.subtract(dir, this.position, this.lastPosition);
-            this.velocity[0] = 0.7 * dir[0];
-            this.velocity[1] = -0.0001; // TODO: yet another little hack to make dash play nicely with collision detection
-            const pitch = 0.8 + Math.random() * (1.25 - 0.8);
-            await this.stompSound.Play(pitch);
             this.timeSinceLastDash = 0;
             this.dashAvailable = false;
+
+            // TODO: dash enter state => disable gravity, disable input
+            // TODO: dash exit => enable gravity, enable input
+            // quick burst momentum
+            this.physicsComponent.ResetVerticalVelocity();
+            this.physicsComponent.DisableGravity();
+            this.physicsComponent.AddToExternalForce(vec3.fromValues(0.08 * this.FacingDirection[0], 0, 0));
+
+            const pitch = 0.8 + Math.random() * (1.25 - 0.8);
+            await this.stompSound.Play(pitch);
         }
     }
 
@@ -503,7 +495,7 @@ export class Hero implements IDisposable {
     public async InteractWithProjectile(projectile: IProjectile): Promise<void> {
         if (!projectile.AlreadyHit && this.state !== State.DEAD) {
             const pushbackForce = projectile.PushbackForce;
-            await this.Damage(pushbackForce);
+            await this.Damage(pushbackForce, 20);
             await projectile.OnHit();
         }
     }
@@ -518,79 +510,57 @@ export class Hero implements IDisposable {
 
     public async CollideWithDragon(enemy: DragonEnemy): Promise<void> {
         if (this.state === State.STOMP) {
-            // TODO: HandleStomp() method
-            vec3.set(this.velocity, 0, -0.025, 0);
+            this.physicsComponent.AddToExternalForce(vec3.fromValues(0, -0.05, 0));
             this.state = State.JUMP;
-            this.jumping = true;
             await enemy.Damage(vec3.create()); // Damage the enemy without pushing it to any direction
         }
     }
 
+    // TODO: kicsit soknak tűnik a stomp körüli interakció kezelés duplikációja
     public async CollideWithSlime(enemy: SlimeEnemy): Promise<void> {
         if (this.state !== State.STOMP) {
-            if (!this.invincible) {
-                // Damage and pushback hero on collision.
-                this.invincible = true;
-                this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
-                await this.damageSound.Play();
-                this.Health -= 34;
-
-                const dir = vec3.subtract(vec3.create(), this.position, enemy.Position);
-                vec3.normalize(dir, dir);
-                const damagePushback = vec3.scale(vec3.create(), dir, 0.01);
-                // TODO: this is a hack to make sure that the hero is not detected as colliding with the ground, so a pushback can happen
-                damagePushback[1] -= 0.01;
-                vec3.set(this.velocity, damagePushback[0], damagePushback[1], 0);
-            }
+            const pushbackForceRatio = vec3.fromValues(this.FacingDirection[0] * -0.0075, -0.003, 0);
+            await this.DamageWithInvincibilityConsidered(pushbackForceRatio, 34);
         } else if (this.state === State.STOMP) {
-            vec3.set(this.velocity, 0, -0.025, 0);
+            this.physicsComponent.AddToExternalForce(vec3.fromValues(0, -0.05, 0));
             this.state = State.JUMP;
-            this.jumping = true;
             await enemy.Damage(vec3.create()); // Damage the enemy without pushing it to any direction
         }
     }
 
     public async CollideWithSpike(enemy: Spike): Promise<void> {
-        const pushback = vec3.fromValues(0, -0.018, 0);
         if (!this.invincible) {
-            await this.Damage(pushback);
+            await this.Damage(vec3.fromValues(0, -0.025, 0), 20);
         }
     }
 
     public async CollideWithCactus(enemy: Cactus): Promise<void> {
         if (this.state !== State.STOMP) {
-            const dir = vec3.subtract(vec3.create(), this.position, enemy.Position);
-            vec3.normalize(dir, dir);
-            const pushback = vec3.scale(vec3.create(), dir, 0.01);
-            pushback[1] -= 0.01;
-            if (!this.invincible) {
-                await this.Damage(pushback);
-            }
-        } else {
-            const pushback = vec3.fromValues(0, -0.025, 0);
-            await this.Damage(pushback);
+            const pushbackForceRatio = vec3.fromValues(this.FacingDirection[0] * -0.0075, -0.005, 0);
+            await this.DamageWithInvincibilityConsidered(pushbackForceRatio, 20);
+        } else { // cactus will hurt the hero when stomping on it
+            await this.Damage(vec3.fromValues(0, -0.025, 0), 20);
             this.state = State.JUMP;
-            this.jumping = true;
         }
     }
 
-    public async DamageWithInvincibilityConsidered(pushbackForce: vec3): Promise<void> {
+    public async DamageWithInvincibilityConsidered(pushbackForce: vec3, damage: number): Promise<void> {
         if (!this.invincible) {
-            await this.Damage(pushbackForce);
+            await this.Damage(pushbackForce, damage);
         }
     }
 
-    private async Damage(pushbackForce: vec3): Promise<void> {
+    private async Damage(pushbackForce: vec3, damage: number): Promise<void> {
         // TODO: This is almost a 1:1 copy from the Collide method
-
         // Damage method should not consider the invincible flag because I don't want to cancel damage with projectiles when stomping
         if (this.state !== State.DEAD) {
             this.invincible = true;
             this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
             await this.damageSound.Play();
-            this.Health -= 20;
-
-            vec3.set(this.velocity, pushbackForce[0], pushbackForce[1], 0);
+            this.Health -= damage;
+            this.isDamaged = true;
+            this.pushbackForce = vec3.clone(pushbackForce);
+            this.remainingJumpTime = 150; // TODO: külön változó?
         }
     }
 

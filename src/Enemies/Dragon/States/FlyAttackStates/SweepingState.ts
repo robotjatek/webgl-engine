@@ -1,4 +1,4 @@
-import { IState } from '../../../IState';
+import { IState } from '../../../../IState';
 import { vec3 } from 'gl-matrix';
 import { DragonEnemy } from '../../DragonEnemy';
 import { IProjectile } from '../../../../Projectiles/IProjectile';

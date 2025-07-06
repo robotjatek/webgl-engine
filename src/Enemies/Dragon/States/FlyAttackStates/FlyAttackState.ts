@@ -1,6 +1,6 @@
 import { Hero } from 'src/Hero';
 import { DragonStateBase } from '../DragonStateBase';
-import { IState } from '../../../IState';
+import { IState } from '../../../../IState';
 import { SharedDragonStateVariables } from '../SharedDragonStateVariables';
 import { DragonEnemy } from '../../DragonEnemy';
 import { vec3 } from 'gl-matrix';

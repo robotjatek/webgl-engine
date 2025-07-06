@@ -2,7 +2,7 @@ import { Hero } from 'src/Hero';
 import { IProjectile } from 'src/Projectiles/IProjectile';
 import { SoundEffect } from 'src/SoundEffect';
 import { DragonEnemy } from '../../DragonEnemy';
-import { IState } from '../../../IState';
+import { IState } from '../../../../IState';
 import { SharedDragonStateVariables } from '../SharedDragonStateVariables';
 import { DragonStateBase } from '../DragonStateBase';
 import { StartState } from './StartState';

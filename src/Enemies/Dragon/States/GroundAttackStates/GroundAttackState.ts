@@ -1,5 +1,5 @@
 import { DragonStateBase } from '../DragonStateBase';
-import { IState } from '../../../IState';
+import { IState } from '../../../../IState';
 import { SharedDragonStateVariables } from '../SharedDragonStateVariables';
 import { Hero } from '../../../../Hero';
 import { DragonEnemy } from '../../DragonEnemy';

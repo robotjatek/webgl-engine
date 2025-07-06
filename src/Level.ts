@@ -214,7 +214,7 @@ export class Level implements IProjectileHitListener, IDisposable {
             for (const gameObject of this.gameObjects) {
                 await gameObject.Update(delta);
                 if (gameObject.IsCollidingWith(this.hero.BoundingBox, false)) {
-                    await this.hero.CollideWithGameObject(gameObject);
+                    await gameObject.Visit(this.hero);
                 }
 
                 // Despawn out-of-bounds game objects. These will be projectiles most of the time.

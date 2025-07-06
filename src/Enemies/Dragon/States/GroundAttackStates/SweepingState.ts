@@ -1,4 +1,4 @@
-import { IState } from '../../../IState';
+import { IState } from '../../../../IState';
 import { Hero } from '../../../../Hero';
 import { DragonEnemy } from '../../DragonEnemy';
 import { ICollider } from '../../../../ICollider';

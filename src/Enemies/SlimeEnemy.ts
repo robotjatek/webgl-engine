@@ -1,5 +1,5 @@
 import { ICollider } from '../ICollider';
-import { vec2, vec3, vec4 } from 'gl-matrix';
+import { vec2, vec3 } from 'gl-matrix';
 import { Sprite } from '../Sprite';
 import { Utils } from '../Utils';
 import { Shader } from '../Shader';
@@ -12,6 +12,8 @@ import { Hero } from '../Hero';
 import { SoundEffect } from 'src/SoundEffect';
 import { Animation } from '../Components/Animation';
 import { PhysicsComponent } from '../Components/PhysicsComponent';
+import { StompState } from '../Hero/States/DeadState';
+import { FlashOverlayComponent } from '../Components/FlashOverlayComponent';
 
 /**
  * Slime enemy is a passive enemy, meaning it does not actively attack the player, but it hurts when contacted directly
@@ -24,6 +26,7 @@ export class SlimeEnemy extends EnemyBase {
     readonly maxSpeed: number = 0.00006;
     private movementSpeed: number = Math.random() * (this.maxSpeed - this.minSpeed) + this.minSpeed;
     private physicsComponent: PhysicsComponent;
+    private damageFlashComponent: FlashOverlayComponent;
 
     private animation: Animation;
     private leftFacingAnimationFrames: vec2[] = [
@@ -37,9 +40,6 @@ export class SlimeEnemy extends EnemyBase {
         vec2.fromValues(2 / 12, 1 / 8)
     ];
     private currentFrameSet = this.leftFacingAnimationFrames;
-
-    private damagedTime = 0;
-    private damaged = false;
 
     private constructor(
         position: vec3,
@@ -72,6 +72,7 @@ export class SlimeEnemy extends EnemyBase {
         this.targetWaypoint = new Waypoint(targetPosition, originalWaypoint);
         originalWaypoint.next = this.targetWaypoint;
         this.physicsComponent = new PhysicsComponent(this.position, vec3.create(), () => this.BoundingBox, this.bbOffset, this.collider, false);
+        this.damageFlashComponent = new FlashOverlayComponent(this.shader);
     }
 
     public static async Create(position: vec3,
@@ -89,7 +90,13 @@ export class SlimeEnemy extends EnemyBase {
     }
 
     public async Visit(hero: Hero): Promise<void> {
-        await hero.CollideWithSlime(this);
+        if (hero.StateClass !== StompState.name) {
+            const pushbackForceRatio = vec3.fromValues(hero.FacingDirection[0] * -0.0075, -0.003, 0);
+            await hero.DamageWithInvincibilityConsidered(pushbackForceRatio, 34);
+        } else if (hero.StateClass === StompState.name) {
+            await hero.ChangeState(hero.AFTER_STOMP_STATE());
+            await this.Damage(vec3.create()); // Damage the enemy without pushing it to any direction
+        }
     }
 
     public get EndCondition(): boolean {
@@ -101,10 +108,10 @@ export class SlimeEnemy extends EnemyBase {
     public async Damage(pushbackForce: vec3): Promise<void> {
         await this.enemyDamageSound.Play();
         this.health--;
-        this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
         this.physicsComponent.AddToExternalForce(pushbackForce);
+        this.damageFlashComponent.Flash(this.damageFlashComponent.DAMAGE_OVERLAY_COLOR,
+            this.damageFlashComponent.DAMAGE_FLASH_DURATION);
 
-        this.damaged = true;
         if (this.health <= 0) {
             if (this.onDeath) {
                 await this.enemyDeathSound.Play();
@@ -114,27 +121,14 @@ export class SlimeEnemy extends EnemyBase {
     }
 
     public async Update(delta: number): Promise<void> {
-        this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
+        this.damageFlashComponent.Update(delta);
 
-        if (!this.damaged) { // This way, the AI will not override velocity
+        if (this.physicsComponent.OnGround) { // This way, the AI will not override velocity
             this.MoveTowardsNextWaypoint(delta);
         }
 
         this.animation.Animate(delta, this.currentFrameSet);
         this.physicsComponent.Update(delta);
-    }
-
-    // TODO: duplicated all over the place
-    private RemoveDamageOverlayAfter(delta: number, showOverlayTime: number) {
-        if (this.damaged) {
-            this.damagedTime += delta;
-        }
-
-        if (this.damagedTime > showOverlayTime) {
-            this.damagedTime = 0;
-            this.damaged = false;
-            this.shader.SetVec4Uniform('colorOverlay', vec4.create());
-        }
     }
 
     private MoveTowardsNextWaypoint(delta: number): void {

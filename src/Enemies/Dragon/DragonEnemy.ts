@@ -9,7 +9,7 @@ import { SoundEffectPool } from '../../SoundEffectPool';
 import { IProjectile } from '../../Projectiles/IProjectile';
 import { EnemyBase } from '../IEnemy';
 import { SoundEffect } from 'src/SoundEffect';
-import { IState } from '../IState';
+import { IState } from '../../IState';
 import { SharedDragonStateVariables } from './States/SharedDragonStateVariables';
 import { IdleState } from './States/IdleState';
 import { RushState } from './States/RushStates/RushState';
@@ -20,6 +20,8 @@ import { Layer } from '../../Layer';
 import { Point } from '../../Point';
 import { Animation } from '../../Components/Animation';
 import { PhysicsComponent } from '../../Components/PhysicsComponent';
+import { StompState } from '../../Hero/States/DeadState';
+import { FlashOverlayComponent } from '../../Components/FlashOverlayComponent';
 
 export class DragonEnemy extends EnemyBase {
 
@@ -79,13 +81,10 @@ export class DragonEnemy extends EnemyBase {
     private lastFacingDirection = vec3.fromValues(-1, 0, 0); // Facing right by default
     private lastPosition: vec3 = vec3.create();
 
-    private damagedTime = 0;
-    private damaged = false;
     private invincible = false;
     private timeInInvincibility = 0;
 
-    private signaling = false;
-    private attackSignalTime = 0;
+    private flashOverlayComponent: FlashOverlayComponent;
 
     private constructor(
         position: vec3,
@@ -115,6 +114,7 @@ export class DragonEnemy extends EnemyBase {
         super(shader, sprite, texture, bbShader, bbSize, bbOffset, position, visualScale, health);
         this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer);
         this.physicsComponent = new PhysicsComponent(position, this.lastPosition, () => this.BoundingBox, bbOffset, collider, true);
+        this.flashOverlayComponent = new FlashOverlayComponent(this.shader);
     }
 
     public static async Create(position: vec3,
@@ -142,7 +142,11 @@ export class DragonEnemy extends EnemyBase {
     }
 
     public async Visit(hero: Hero): Promise<void> {
-        await hero.CollideWithDragon(this);
+        if (this.hero.StateClass === StompState.name) {
+            this.physicsComponent.AddToExternalForce(vec3.fromValues(0, -0.05, 0));
+            await hero.ChangeState(hero.AFTER_STOMP_STATE());
+            await this.Damage(vec3.create()); // Damage the enemy without pushing it to any direction
+        }
     }
 
     public get CenterPosition(): vec3 {
@@ -183,9 +187,9 @@ export class DragonEnemy extends EnemyBase {
 
         await this.enemyDamageSound.Play();
         this.health--;
-        this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
+        this.flashOverlayComponent.Flash(this.flashOverlayComponent.DAMAGE_OVERLAY_COLOR,
+            this.flashOverlayComponent.DAMAGE_FLASH_DURATION);
 
-        this.damaged = true;
         if (this.health <= 0) {
             if (this.onDeath) {
                 await this.enemyDeathSound.Play();
@@ -200,9 +204,8 @@ export class DragonEnemy extends EnemyBase {
     }
 
     public SignalAttack(): void {
-        this.signaling = true;
-        this.attackSignalTime = 0;
-        this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0.65, 0.65, 0.65, 0));
+        this.flashOverlayComponent.Flash(this.flashOverlayComponent.ATTACK_SIGNAL_COLOR,
+            this.flashOverlayComponent.ATTACK_SIGNAL_DURATION);
     }
 
     public async Update(delta: number): Promise<void> {
@@ -227,28 +230,9 @@ export class DragonEnemy extends EnemyBase {
         }
         this.animation.Animate(delta, this.currentFrameSet);
         this.physicsComponent.Update(delta);
-        this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
+        this.flashOverlayComponent.Update(delta);
 
         await this.state.Update(delta);
-    }
-
-    // TODO: duplicated all over the place
-    private RemoveDamageOverlayAfter(delta: number, showOverlayTime: number) {
-        if (this.damaged) {
-            this.damagedTime += delta;
-        }
-
-        if (this.signaling) {
-            this.attackSignalTime += delta;
-        }
-
-        if (this.damagedTime > showOverlayTime || this.attackSignalTime > 5 / 60 * 1000) {
-            this.damagedTime = 0;
-            this.damaged = false;
-            this.attackSignalTime = 0;
-            this.signaling = false;
-            this.shader.SetVec4Uniform('colorOverlay', vec4.create());
-        }
     }
 
     public Move(direction: vec3, delta: number): void {

@@ -3,7 +3,7 @@ import { Hero } from 'src/Hero';
 import { SoundEffect } from 'src/SoundEffect';
 import { DragonEnemy } from '../../DragonEnemy';
 import { DragonStateBase } from '../DragonStateBase';
-import { IState } from '../../../IState';
+import { IState } from '../../../../IState';
 import { RushState } from './RushState';
 
 export class BackingState extends DragonStateBase implements IState {

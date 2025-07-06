@@ -1,4 +1,4 @@
-import { vec2, vec3, vec4 } from 'gl-matrix';
+import { vec2, vec3 } from 'gl-matrix';
 import { Hero } from 'src/Hero';
 import { EnemyBase } from './IEnemy';
 import { Texture } from 'src/Texture';
@@ -9,13 +9,14 @@ import { Utils } from 'src/Utils';
 import { SoundEffectPool } from 'src/SoundEffectPool';
 import { SoundEffect } from 'src/SoundEffect';
 import { Animation } from '../Components/Animation';
+import { StompState } from '../Hero/States/DeadState';
+import { FlashOverlayComponent } from '../Components/FlashOverlayComponent';
 
 /**
  * Stationary enemy that cannot be stomped on (like spikes), but it can be damaged with a sword attack
  */
 export class Cactus extends EnemyBase {
-    private damagedTime = 0;
-    private damaged = false;
+    private damageFlashComponent: FlashOverlayComponent;
 
     private animation: Animation;
     private currentFrameSet: vec2[] = [
@@ -96,6 +97,7 @@ export class Cactus extends EnemyBase {
 
         super(shader, sprite, texture, bbShader, bbSize, bbOffset, position, visualScale, health);
         this.animation = new Animation(1 / 15 * 1000, this.renderer); // 15 fps animation
+        this.damageFlashComponent = new FlashOverlayComponent(this.shader);
     }
 
     public static async Create(position: vec3, onDeath: (sender: Cactus) => void): Promise<Cactus> {
@@ -110,17 +112,17 @@ export class Cactus extends EnemyBase {
 
     public async Update(delta: number): Promise<void> {
         this.animation.Animate(delta, this.currentFrameSet);
-        this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
+        this.damageFlashComponent.Update(delta);
     }
 
     public override async Damage(pushbackForce: vec3): Promise<void> {
         await this.enemyDamageSound.Play();
         this.health--;
-        this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
+        this.damageFlashComponent.Flash(this.damageFlashComponent.DAMAGE_OVERLAY_COLOR,
+            this.damageFlashComponent.DAMAGE_FLASH_DURATION);
         // Cacti cannot move
         // vec3.set(this.velocity, pushbackForce[0], pushbackForce[1], 0);
 
-        this.damaged = true;
         if (this.health <= 0) {
             if (this.onDeath) {
                 await this.enemyDeathSound.Play();
@@ -134,18 +136,12 @@ export class Cactus extends EnemyBase {
     }
 
     public async Visit(hero: Hero): Promise<void> {
-        await hero.CollideWithCactus(this);
-    }
-
-    private RemoveDamageOverlayAfter(delta: number, showOverlayTime: number) {
-        if (this.damaged) {
-            this.damagedTime += delta;
-        }
-
-        if (this.damagedTime > showOverlayTime) {
-            this.damagedTime = 0;
-            this.damaged = false;
-            this.shader.SetVec4Uniform('colorOverlay', vec4.create());
+        if (hero.StateClass !== StompState.name) {
+            await hero.DamageWithInvincibilityConsidered(vec3.fromValues(0, -0.01, 0), 20);
+        } else {
+            // cactus will hurt the hero when stomping on it
+            await hero.Damage(vec3.fromValues(0, -0.008, 0), 20);
+            await hero.ChangeState(hero.AFTER_STOMP_STATE());
         }
     }
 

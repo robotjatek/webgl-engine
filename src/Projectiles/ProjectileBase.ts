@@ -12,6 +12,7 @@ import { IProjectileHitListener } from '../Level';
 import { Environment } from '../Environment';
 import { SpriteRenderer } from '../SpriteRenderer';
 import { PhysicsComponent } from '../Components/PhysicsComponent';
+import { DeadState } from '../Hero/States/DeadState';
 
 
 export abstract class ProjectileBase implements IProjectile {
@@ -88,7 +89,11 @@ export abstract class ProjectileBase implements IProjectile {
     public abstract get PushbackForce(): vec3;
 
     public async Visit(hero: Hero): Promise<void> {
-        await hero.InteractWithProjectile(this);
+        if (!this.AlreadyHit && hero.StateClass !== DeadState.name) {
+            const pushbackForce = this.PushbackForce;
+            await hero.Damage(pushbackForce, 20);
+            await this.OnHit();
+        }
     }
 
     protected async Move(direction: vec3, delta: number): Promise<void> {

@@ -6,6 +6,7 @@ import { TexturePool } from 'src/TexturePool';
 import { Sprite } from 'src/Sprite';
 import { Utils } from 'src/Utils';
 import { Shader } from 'src/Shader';
+import { StompState } from '../Hero/States/DeadState';
 
 /**
  * Stationary enemy. Cannot be damaged. Can damage the hero
@@ -44,7 +45,13 @@ export class Spike extends EnemyBase {
     }
 
     public async Visit(hero: Hero): Promise<void> {
-        await hero.CollideWithSpike(this);
+        if (hero.StateClass !== StompState.name) {
+            const pushbackForceRatio = vec3.fromValues(0, -0.008, 0);
+            await hero.DamageWithInvincibilityConsidered(pushbackForceRatio, 20);
+        } else {
+            await hero.Damage(vec3.fromValues(0, -0.008, 0), 20);
+            await hero.ChangeState(hero.AFTER_STOMP_STATE());
+        }
     }
 
     public Dispose(): void {

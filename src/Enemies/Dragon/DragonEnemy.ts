@@ -1,4 +1,4 @@
-import { vec2, vec3, vec4 } from 'gl-matrix';
+import { vec2, vec3 } from 'gl-matrix';
 import { Shader } from '../../Shader';
 import { Sprite } from '../../Sprite';
 import { Texture } from '../../Texture';
@@ -22,6 +22,7 @@ import { Animation } from '../../Components/Animation';
 import { PhysicsComponent } from '../../Components/PhysicsComponent';
 import { StompState } from '../../Hero/States/DeadState';
 import { FlashOverlayComponent } from '../../Components/FlashOverlayComponent';
+import { DamageComponent } from '../../Components/DamageComponent';
 
 export class DragonEnemy extends EnemyBase {
 
@@ -69,7 +70,7 @@ export class DragonEnemy extends EnemyBase {
         vec2.fromValues(5 / 12, 1 / 8)
     ];
     private currentFrameSet = this.leftFacingAnimationFrames;
-    private physicsComponent: PhysicsComponent;
+    private readonly physicsComponent: PhysicsComponent;
 
     // Behaviour related
     private shared: SharedDragonStateVariables = {
@@ -81,10 +82,8 @@ export class DragonEnemy extends EnemyBase {
     private lastFacingDirection = vec3.fromValues(-1, 0, 0); // Facing right by default
     private lastPosition: vec3 = vec3.create();
 
-    private invincible = false;
-    private timeInInvincibility = 0;
-
-    private flashOverlayComponent: FlashOverlayComponent;
+    private readonly flashOverlayComponent: FlashOverlayComponent;
+    private readonly damageComponent: DamageComponent;
 
     private constructor(
         position: vec3,
@@ -115,6 +114,7 @@ export class DragonEnemy extends EnemyBase {
         this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer);
         this.physicsComponent = new PhysicsComponent(position, this.lastPosition, () => this.BoundingBox, bbOffset, collider, true);
         this.flashOverlayComponent = new FlashOverlayComponent(this.shader);
+        this.damageComponent = new DamageComponent(this, this.flashOverlayComponent, this.enemyDamageSound, this.physicsComponent, 15);
     }
 
     public static async Create(position: vec3,
@@ -145,7 +145,7 @@ export class DragonEnemy extends EnemyBase {
         if (this.hero.StateClass === StompState.name) {
             this.physicsComponent.AddToExternalForce(vec3.fromValues(0, -0.05, 0));
             await hero.ChangeState(hero.AFTER_STOMP_STATE());
-            await this.Damage(vec3.create()); // Damage the enemy without pushing it to any direction
+            await this.DamageWithInvincibilityConsidered(vec3.create(), 1); // Damage the enemy without pushing it to any direction
         }
     }
 
@@ -176,19 +176,12 @@ export class DragonEnemy extends EnemyBase {
         return true;
     }
 
-    // TODO: az egész damage method duplikálva van a cactusban
-    public override async Damage(pushbackForce: vec3): Promise<void> {
-        // Dragon ignores pushback at the moment
-        if (this.invincible) {
-            return;
-        }
-        this.invincible = true;
-        this.timeInInvincibility = 0;
+    public override async Damage(pushbackForce: vec3, damage: number): Promise<void> {
+        await this.DamageWithInvincibilityConsidered(pushbackForce, damage);
+    }
 
-        await this.enemyDamageSound.Play();
-        this.health--;
-        this.flashOverlayComponent.Flash(this.flashOverlayComponent.DAMAGE_OVERLAY_COLOR,
-            this.flashOverlayComponent.DAMAGE_FLASH_DURATION);
+    public override async DamageWithInvincibilityConsidered(pushbackForce: vec3, damage: number): Promise<void> {
+        await this.damageComponent.DamageWithInvincibilityConsidered(pushbackForce, damage);
 
         if (this.health <= 0) {
             if (this.onDeath) {
@@ -209,15 +202,11 @@ export class DragonEnemy extends EnemyBase {
     }
 
     public async Update(delta: number): Promise<void> {
-        this.timeInInvincibility += delta;
         this.shared.timeSinceLastAttack += delta;
         this.shared.timeSinceLastCharge += delta;
         this.shared.timeSinceLastFireBall += delta;
 
-        if (this.timeInInvincibility > 700 && this.invincible) {
-            this.invincible = false;
-            this.timeInInvincibility = 0;
-        }
+        this.damageComponent.Update(delta);
 
         // Face in the direction of the hero
         const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);

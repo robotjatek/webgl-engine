@@ -1,5 +1,5 @@
 import { IState } from '../../IState';
-import { Hero } from '../../Hero';
+import { Hero, SharedHeroStateVariables } from '../../Hero';
 import { vec2, vec3 } from 'gl-matrix';
 import { Animation } from '../../Components/Animation';
 import { SoundEffect } from '../../SoundEffect';
@@ -7,15 +7,13 @@ import { PhysicsComponent } from '../../Components/PhysicsComponent';
 import { MeleeAttack } from '../../Projectiles/MeleeAttack';
 import { IProjectile } from '../../Projectiles/IProjectile';
 
-// TODO: top prio bugok:
 // TODO: input snapshot állapotváltáskor, hogy ne legyen késés idle => walk stb changekor. Most meg van hackelve az idle hogy mozogjon 1-et váltás előtt
 
 export abstract class HeroBaseState implements IState {
-    private timeSinceLastMeleeAttack = 0;
-    private timeInOverHeal = 0;
 
     protected constructor(protected hero: Hero,
-                          private SpawnProjectile: (sender: Hero, projectile: IProjectile) => void) {
+                          private SpawnProjectile: (sender: Hero, projectile: IProjectile) => void,
+                          protected sharedStateVariables: SharedHeroStateVariables) {
     }
 
     abstract Enter(): Promise<void>;
@@ -29,8 +27,8 @@ export abstract class HeroBaseState implements IState {
 
         await this.HandleInput();
         this.OverHealCountdown();
-        this.timeSinceLastMeleeAttack += delta;
-        this.timeInOverHeal += delta;
+        this.sharedStateVariables.timeSinceLastMeleeAttack += delta;
+        this.sharedStateVariables.timeInOverHeal += delta;
 
         await this.UpdateState(delta);
     }
@@ -44,8 +42,8 @@ export abstract class HeroBaseState implements IState {
     private async HandleInput(): Promise<void> {
         if (this.hero.InputSource.Attack()) {
             const attackPosition = this.AttackSpawnPosition;
-            if (this.timeSinceLastMeleeAttack > 350) {
-                this.timeSinceLastMeleeAttack = 0;
+            if (this.sharedStateVariables.timeSinceLastMeleeAttack > 350) {
+                this.sharedStateVariables.timeSinceLastMeleeAttack = 0;
                 if (this.SpawnProjectile) {
                     // TODO: damage után az attack van hogy rossz helyre spawnol
                     // TODO: creating an attack instance on every attack is wasteful.
@@ -62,10 +60,10 @@ export abstract class HeroBaseState implements IState {
     }
 
     private OverHealCountdown() {
-        if (this.hero.Health >= 100) {
-            if (this.timeInOverHeal > 1000) {
+        if (this.hero.Health > 100) {
+            if (this.sharedStateVariables.timeInOverHeal > 1000) {
                 this.hero.Health--;
-                this.timeInOverHeal = 0;
+                this.sharedStateVariables.timeInOverHeal = 0;
             }
         }
     }
@@ -77,9 +75,9 @@ export class IdleState extends HeroBaseState {
     public constructor(hero: Hero,
                        spawnProjectile: (sender: Hero, projectile: IProjectile) => void,
                        private physicsComponent: PhysicsComponent,
-                       private sharedStateVariables: { timeSinceLastDash: number, dashAvailable: boolean, timeSinceLastStomp: number },
-                       private animation: Animation) {
-        super(hero, spawnProjectile);
+                       sharedStateVariables: SharedHeroStateVariables,
+                       private animation: Animation){
+        super(hero, spawnProjectile, sharedStateVariables);
     }
 
     protected async UpdateState(delta: number): Promise<void> {
@@ -122,8 +120,8 @@ export class DashState extends HeroBaseState {
                        spawnProjectile: (sender: Hero, projectile: IProjectile) => void,
                        private physicsComponent: PhysicsComponent,
                        private dashSound: SoundEffect,
-                       private sharedStateVariables: { timeSinceLastDash: number, dashAvailable: boolean }) {
-        super(hero, spawnProjectile);
+                       sharedStateVariables: SharedHeroStateVariables) {
+        super(hero, spawnProjectile, sharedStateVariables);
     }
 
     protected override async UpdateState(delta: number): Promise<void> {
@@ -158,9 +156,9 @@ export class StompState extends HeroBaseState {
                        spawnProjectile: (sender: Hero, projectile: IProjectile) => void,
                        private physicsComponent: PhysicsComponent,
                        private stompSound: SoundEffect,
-                       private sharedStateVariables: { timeSinceLastStomp: number, dashAvailable: boolean },
+                       sharedStateVariables: SharedHeroStateVariables,
                        private landSound: SoundEffect) {
-        super(hero, spawnProjectile);
+        super(hero, spawnProjectile, sharedStateVariables);
     }
 
     protected override async UpdateState(delta: number): Promise<void> {
@@ -190,9 +188,10 @@ export class AfterStompState extends HeroBaseState {
 
     public constructor(hero: Hero,
                        spawnProjectile: (sender: Hero, projectile: IProjectile) => void,
-                       private physicsComponent: PhysicsComponent
+                       private physicsComponent: PhysicsComponent,
+                       sharedStateVariables: SharedHeroStateVariables
     ) {
-        super(hero, spawnProjectile);
+        super(hero, spawnProjectile, sharedStateVariables);
     }
 
     protected override async UpdateState(delta: number): Promise<void> {
@@ -223,8 +222,8 @@ export class JumpState extends HeroBaseState {
                        private jumpSound: SoundEffect,
                        private landSound: SoundEffect,
                        private physicsComponent: PhysicsComponent,
-                       private sharedStateVariables: { timeSinceLastDash: number, dashAvailable: boolean, timeSinceLastStomp: number }) {
-        super(hero, spawnProjectile);
+                       sharedStateVariables: SharedHeroStateVariables) {
+        super(hero, spawnProjectile, sharedStateVariables);
     }
 
     protected override async UpdateState(delta: number): Promise<void> {
@@ -289,8 +288,8 @@ export class WalkState extends HeroBaseState {
                        private animation: Animation,
                        private physicsComponent: PhysicsComponent,
                        private walkSound: SoundEffect,
-                       private sharedStateVariables: { timeSinceLastDash: number }) {
-        super(hero, spawnProjectile);
+                       sharedStateVariables: SharedHeroStateVariables) {
+        super(hero, spawnProjectile, sharedStateVariables);
     }
 
     public async Enter(): Promise<void> {

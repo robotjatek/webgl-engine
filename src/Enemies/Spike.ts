@@ -36,7 +36,11 @@ export class Spike extends EnemyBase {
         // No update for spike at the moment
     }
 
-    public override async Damage(pushbackForce: vec3): Promise<void> {
+    public override async Damage(pushbackForce: vec3, damage: number): Promise<void> {
+        // Cannot damage a spike
+    }
+
+    public override async DamageWithInvincibilityConsidered(pushbackForce: vec3, damage: number): Promise<void> {
         // Cannot damage a spike
     }
 

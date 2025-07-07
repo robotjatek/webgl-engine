@@ -11,13 +11,10 @@ import { Texture } from '../Texture';
 import { Utils } from '../Utils';
 import { Environment } from '../Environment';
 import { SpriteRenderer } from '../SpriteRenderer';
+import { IDamageable } from '../Components/DamageComponent';
 
-export interface IEnemy extends ICollider, IDisposable, IGameobject {
-    Damage(pushbackForce: vec3): Promise<void>;
-
+export interface IEnemy extends ICollider, IDisposable, IGameobject, IDamageable {
     get Position(): vec3;
-
-    get Health(): number;
 }
 
 export abstract class EnemyBase implements IEnemy {
@@ -53,10 +50,11 @@ export abstract class EnemyBase implements IEnemy {
     }
 
     public async CollideWithAttack(attack: IProjectile): Promise<void> {
-        await this.Damage(attack.PushbackForce);
+        await this.Damage(attack.PushbackForce, 1);
     }
 
-    public abstract Damage(pushbackForce: vec3): Promise<void>;
+    public abstract Damage(pushbackForce: vec3, damage: number): Promise<void>;
+    public abstract DamageWithInvincibilityConsidered(pushbackForce: vec3, damage: number): Promise<void>;
 
     public Dispose(): void {
         this.renderer.Dispose();
@@ -69,6 +67,10 @@ export abstract class EnemyBase implements IEnemy {
 
     public get Health(): number {
         return this.health;
+    }
+
+    public set Health(health: number) {
+        this.health = health;
     }
 
     public IsCollidingWith(boundingBox: BoundingBox): boolean {

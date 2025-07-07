@@ -14,6 +14,7 @@ import { Animation } from '../Components/Animation';
 import { PhysicsComponent } from '../Components/PhysicsComponent';
 import { StompState } from '../Hero/States/DeadState';
 import { FlashOverlayComponent } from '../Components/FlashOverlayComponent';
+import { DamageComponent } from '../Components/DamageComponent';
 
 /**
  * Slime enemy is a passive enemy, meaning it does not actively attack the player, but it hurts when contacted directly
@@ -25,8 +26,8 @@ export class SlimeEnemy extends EnemyBase {
     readonly minSpeed: number = 0.00004;
     readonly maxSpeed: number = 0.00006;
     private movementSpeed: number = Math.random() * (this.maxSpeed - this.minSpeed) + this.minSpeed;
-    private physicsComponent: PhysicsComponent;
-    private damageFlashComponent: FlashOverlayComponent;
+    private readonly physicsComponent: PhysicsComponent;
+    private readonly damageComponent: DamageComponent;
 
     private animation: Animation;
     private leftFacingAnimationFrames: vec2[] = [
@@ -72,7 +73,8 @@ export class SlimeEnemy extends EnemyBase {
         this.targetWaypoint = new Waypoint(targetPosition, originalWaypoint);
         originalWaypoint.next = this.targetWaypoint;
         this.physicsComponent = new PhysicsComponent(this.position, vec3.create(), () => this.BoundingBox, this.bbOffset, this.collider, false);
-        this.damageFlashComponent = new FlashOverlayComponent(this.shader);
+        const damageFlashComponent = new FlashOverlayComponent(this.shader);
+        this.damageComponent = new DamageComponent(this, damageFlashComponent, this.enemyDamageSound, this.physicsComponent, 0);
     }
 
     public static async Create(position: vec3,
@@ -95,7 +97,7 @@ export class SlimeEnemy extends EnemyBase {
             await hero.DamageWithInvincibilityConsidered(pushbackForceRatio, 34);
         } else if (hero.StateClass === StompState.name) {
             await hero.ChangeState(hero.AFTER_STOMP_STATE());
-            await this.Damage(vec3.create()); // Damage the enemy without pushing it to any direction
+            await this.Damage(vec3.create(), 1); // Damage the enemy without pushing it to any direction
         }
     }
 
@@ -103,15 +105,8 @@ export class SlimeEnemy extends EnemyBase {
         return false;
     }
 
-    // TODO: damage amount
-    // TODO: multiple types of enemies can be damaged, make this a component
-    public async Damage(pushbackForce: vec3): Promise<void> {
-        await this.enemyDamageSound.Play();
-        this.health--;
-        this.physicsComponent.AddToExternalForce(pushbackForce);
-        this.damageFlashComponent.Flash(this.damageFlashComponent.DAMAGE_OVERLAY_COLOR,
-            this.damageFlashComponent.DAMAGE_FLASH_DURATION);
-
+    public override async Damage(pushbackForce: vec3, damage: number): Promise<void> {
+       await this.damageComponent.Damage(pushbackForce, damage);
         if (this.health <= 0) {
             if (this.onDeath) {
                 await this.enemyDeathSound.Play();
@@ -120,8 +115,12 @@ export class SlimeEnemy extends EnemyBase {
         }
     }
 
+    public override async DamageWithInvincibilityConsidered(pushbackForce: vec3, damage: number): Promise<void> {
+        throw new Error('Method not implemented.');
+    }
+
     public async Update(delta: number): Promise<void> {
-        this.damageFlashComponent.Update(delta);
+        this.damageComponent.Update(delta);
 
         if (this.physicsComponent.OnGround) { // This way, the AI will not override velocity
             this.MoveTowardsNextWaypoint(delta);

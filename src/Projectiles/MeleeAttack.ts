@@ -61,7 +61,7 @@ export class MeleeAttack extends ProjectileBase {
     }
 
     public get PushbackForce(): vec3 {
-        return vec3.fromValues(this.facingDirection[0] / 50, -0.005, 0);
+        return vec3.fromValues(this.facingDirection[0] * 0.0075, -0.005, 0);
     }
 
     public override async OnHit(): Promise<void> {

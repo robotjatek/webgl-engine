@@ -25,21 +25,35 @@ import { IControlSource } from './Components/Input/IControlSource';
 import { InputSource } from './Components/Input/InputSource';
 import { ScriptControlSource } from './Components/Input/ScriptControlSource';
 import { FlashOverlayComponent } from './Components/FlashOverlayComponent';
-import { DamageComponent } from './Components/DamageComponent';
+import { DamageComponent, IDamageable } from './Components/DamageComponent';
 
-export class Hero implements IDisposable {
+export type SharedHeroStateVariables = {
+    timeSinceLastDash: number,
+    dashAvailable: boolean,
+    timeSinceLastStomp: number,
+    bbOffset: vec3,
+    bbSize: vec2,
+    rotation: number,
+    timeSinceLastMeleeAttack: number,
+    timeInOverHeal: number
+}
+
+export class Hero implements IDamageable, IDisposable {
 
     // TODO: make bb variables parametrizable
     private bbOffset = vec3.fromValues(1.2, 1.1, 0);
     private bbSize = vec2.fromValues(0.8, 1.8);
+    private readonly invincibleFrames = 15;
 
-    private sharedStateVariables = {
+    private sharedStateVariables: SharedHeroStateVariables = {
         timeSinceLastDash: 500,
         dashAvailable: true,
         timeSinceLastStomp: 500,
         bbOffset: this.bbOffset,
         bbSize: this.bbSize,
-        rotation: 0
+        rotation: 0,
+        timeSinceLastMeleeAttack: 0,
+        timeInOverHeal: 0
     }
 
     private input: IControlSource;
@@ -74,7 +88,7 @@ export class Hero implements IDisposable {
     }
 
     public AFTER_STOMP_STATE(): IState {
-        return new AfterStompState(this, this.SpawnProjectile, this.physicsComponent);
+        return new AfterStompState(this, this.SpawnProjectile, this.physicsComponent, this.sharedStateVariables);
     }
 
     private health: number = 100;
@@ -196,7 +210,6 @@ export class Hero implements IDisposable {
         return this.internalState.constructor.name;
     }
 
-    private readonly flashOverlayComponent: FlashOverlayComponent;
     private readonly damageComponent: DamageComponent;
 
     private constructor(
@@ -232,14 +245,14 @@ export class Hero implements IDisposable {
         this.renderer = new SpriteRenderer(shader, texture, this.sprite, visualScale);
         this.renderer.TextureOffset = this.currentFrameSet[0];
         this.animation = new Animation(1 / 60 * 8 * 1000, this.renderer);
-        this.flashOverlayComponent = new FlashOverlayComponent(this.shader);
+        const flashOverlayComponent = new FlashOverlayComponent(this.shader);
 
         this.bbRenderer = new SpriteRenderer(bbShader, null, this.bbSprite, this.bbSize);
         this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
 
         this.physicsComponent = new PhysicsComponent(position, this.lastPosition, () => this.BoundingBox, this.bbOffset, collider, false, false);
-        this.damageComponent = new DamageComponent(this, this.flashOverlayComponent,
-            this.damageSound, this.physicsComponent);
+        this.damageComponent = new DamageComponent(this, flashOverlayComponent, this.damageSound,
+            this.physicsComponent, this.invincibleFrames);
 
         this.internalState = this.IDLE_STATE();
         this.internalState.Enter();
@@ -284,7 +297,6 @@ export class Hero implements IDisposable {
         this.CalculateFacingDirection();
 
         this.animation.Animate(delta, this.currentFrameSet);
-        this.flashOverlayComponent.Update(delta);
         await this.damageComponent.Update(delta);
         await this.physicsComponent.Update(delta);
     }

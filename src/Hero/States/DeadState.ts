@@ -6,14 +6,17 @@ import { SoundEffect } from '../../SoundEffect';
 import { PhysicsComponent } from '../../Components/PhysicsComponent';
 import { MeleeAttack } from '../../Projectiles/MeleeAttack';
 import { IProjectile } from '../../Projectiles/IProjectile';
-
-// TODO: input snapshot állapotváltáskor, hogy ne legyen késés idle => walk stb changekor. Most meg van hackelve az idle hogy mozogjon 1-et váltás előtt
+import { HeroMovementBehaviour } from '../HeroMovementBehaviour';
 
 export abstract class HeroBaseState implements IState {
 
+    protected movementBehaviour: HeroMovementBehaviour;
+
     protected constructor(protected hero: Hero,
+                          protected physicsComponent: PhysicsComponent,
                           private SpawnProjectile: (sender: Hero, projectile: IProjectile) => void,
                           protected sharedStateVariables: SharedHeroStateVariables) {
+        this.movementBehaviour = new HeroMovementBehaviour(hero, physicsComponent);
     }
 
     abstract Enter(): Promise<void>;
@@ -75,22 +78,18 @@ export class IdleState extends HeroBaseState {
 
     public constructor(hero: Hero,
                        spawnProjectile: (sender: Hero, projectile: IProjectile) => void,
-                       private physicsComponent: PhysicsComponent,
+                       physicsComponent: PhysicsComponent,
                        sharedStateVariables: SharedHeroStateVariables,
                        private animation: Animation){
-        super(hero, spawnProjectile, sharedStateVariables);
+        super(hero, physicsComponent, spawnProjectile, sharedStateVariables);
     }
 
     protected async UpdateState(delta: number): Promise<void> {
         if (this.hero.InputSource.Left()) {
-            this.physicsComponent.AddToExternalForce(vec3.scale(vec3.create(), vec3.fromValues(-this.hero.Speed, 0, 0), delta));
-            this.hero.SetAnimationFrameset("left_walk");
-            this.hero.FaceLeft();
+            this.movementBehaviour.MoveLeft(delta);
             await this.hero.ChangeState(this.hero.WALK_STATE());
-        } else if(this.hero.InputSource.Right()) {
-            this.physicsComponent.AddToExternalForce(vec3.scale(vec3.create(), vec3.fromValues(this.hero.Speed, 0, 0), delta));
-            this.hero.SetAnimationFrameset("right_walk");
-            this.hero.FaceRight();
+        } else if (this.hero.InputSource.Right()) {
+            this.movementBehaviour.MoveRight(delta);
             await this.hero.ChangeState(this.hero.WALK_STATE());
         } else if (this.hero.InputSource.Jump()) {
             await this.hero.ChangeState(this.hero.JUMP_STATE());
@@ -121,10 +120,10 @@ export class DashState extends HeroBaseState {
 
     public constructor(hero: Hero,
                        spawnProjectile: (sender: Hero, projectile: IProjectile) => void,
-                       private physicsComponent: PhysicsComponent,
+                       physicsComponent: PhysicsComponent,
                        private dashSound: SoundEffect,
                        sharedStateVariables: SharedHeroStateVariables) {
-        super(hero, spawnProjectile, sharedStateVariables);
+        super(hero, physicsComponent, spawnProjectile, sharedStateVariables);
     }
 
     protected override async UpdateState(delta: number): Promise<void> {
@@ -157,11 +156,11 @@ export class StompState extends HeroBaseState {
 
     public constructor(hero: Hero,
                        spawnProjectile: (sender: Hero, projectile: IProjectile) => void,
-                       private physicsComponent: PhysicsComponent,
+                       physicsComponent: PhysicsComponent,
                        private stompSound: SoundEffect,
                        sharedStateVariables: SharedHeroStateVariables,
                        private landSound: SoundEffect) {
-        super(hero, spawnProjectile, sharedStateVariables);
+        super(hero, physicsComponent, spawnProjectile, sharedStateVariables);
     }
 
     protected override async UpdateState(delta: number): Promise<void> {
@@ -191,10 +190,10 @@ export class AfterStompState extends HeroBaseState {
 
     public constructor(hero: Hero,
                        spawnProjectile: (sender: Hero, projectile: IProjectile) => void,
-                       private physicsComponent: PhysicsComponent,
+                       physicsComponent: PhysicsComponent,
                        sharedStateVariables: SharedHeroStateVariables
     ) {
-        super(hero, spawnProjectile, sharedStateVariables);
+        super(hero, physicsComponent, spawnProjectile, sharedStateVariables);
     }
 
     protected override async UpdateState(delta: number): Promise<void> {
@@ -224,9 +223,9 @@ export class JumpState extends HeroBaseState {
                        spawnProjectile: (sender: Hero, projectile: IProjectile) => void,
                        private jumpSound: SoundEffect,
                        private landSound: SoundEffect,
-                       private physicsComponent: PhysicsComponent,
+                       physicsComponent: PhysicsComponent,
                        sharedStateVariables: SharedHeroStateVariables) {
-        super(hero, spawnProjectile, sharedStateVariables);
+        super(hero, physicsComponent, spawnProjectile, sharedStateVariables);
     }
 
     protected override async UpdateState(delta: number): Promise<void> {
@@ -242,15 +241,10 @@ export class JumpState extends HeroBaseState {
             }
         }
 
-        // TODO: ezek behaviournak tűnnek, duplikálva van a walk stateben is
         if (this.hero.InputSource.Left()) {
-            this.physicsComponent.AddToExternalForce(vec3.scale(vec3.create(), vec3.fromValues(-this.hero.Speed, 0, 0), delta));
-            this.hero.SetAnimationFrameset("left_walk");
-            this.hero.FaceLeft();
+            this.movementBehaviour.MoveLeft(delta);
         } else if (this.hero.InputSource.Right()) {
-            this.physicsComponent.AddToExternalForce(vec3.scale(vec3.create(), vec3.fromValues(this.hero.Speed, 0, 0), delta));
-            this.hero.SetAnimationFrameset("right_walk");
-            this.hero.FaceRight();
+            this.movementBehaviour.MoveRight(delta);
         }
 
         if (this.hero.InputSource.Dash()) {
@@ -291,10 +285,10 @@ export class WalkState extends HeroBaseState {
     public constructor(hero: Hero,
                        spawnProjectile: (sender: Hero, projectile: IProjectile) => void,
                        private animation: Animation,
-                       private physicsComponent: PhysicsComponent,
+                       physicsComponent: PhysicsComponent,
                        private walkSound: SoundEffect,
                        sharedStateVariables: SharedHeroStateVariables) {
-        super(hero, spawnProjectile, sharedStateVariables);
+        super(hero, physicsComponent, spawnProjectile, sharedStateVariables);
     }
 
     public async Enter(): Promise<void> {
@@ -306,13 +300,9 @@ export class WalkState extends HeroBaseState {
     protected override async UpdateState(delta: number): Promise<void> {
 
         if (this.hero.InputSource.Left()) {
-            this.physicsComponent.AddToExternalForce(vec3.scale(vec3.create(), vec3.fromValues(-this.hero.Speed, 0, 0), delta));
-            this.hero.SetAnimationFrameset("left_walk");
-            this.hero.FaceLeft();
+            this.movementBehaviour.MoveLeft(delta);
         } else if (this.hero.InputSource.Right()) {
-            this.physicsComponent.AddToExternalForce(vec3.scale(vec3.create(), vec3.fromValues(this.hero.Speed, 0, 0), delta));
-            this.hero.SetAnimationFrameset("right_walk");
-            this.hero.FaceRight();
+            this.movementBehaviour.MoveRight(delta);
         } else {
             await this.hero.ChangeState(this.hero.IDLE_STATE());
         }

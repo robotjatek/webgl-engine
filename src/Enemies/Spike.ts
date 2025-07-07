@@ -10,7 +10,6 @@ import { StompState } from '../Hero/States/DeadState';
 
 /**
  * Stationary enemy. Cannot be damaged. Can damage the hero
- * // TODO: maybe not enemy, but game object like Coin
  */
 export class Spike extends EnemyBase {
     private constructor(position: vec3,

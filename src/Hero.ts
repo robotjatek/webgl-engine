@@ -127,10 +127,10 @@ export class Hero implements IDamageable, IDisposable {
     private currentFrameSet = this.rightFacingAnimationFrames;
 
     // http://www.davetech.co.uk/gamedevplatformer
-    // TODO: buffer jump
+    // TODO: buffer jump -- can jump if pressed jump right before landing
     // TODO: coyote time -- can jump for little time after falling
-    // TODO: longer range but much slower attack
     // TODO: double jump
+    // TODO: longer range but much slower attack
 
     public get BoundingBox(): BoundingBox {
         if (this.StateClass !== StompState.name) {

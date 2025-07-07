@@ -45,7 +45,7 @@ export class SweepingState implements IState {
                 const fireball = await Fireball.Create(
                     position,
                     this.dragon.FacingDirection,
-                    vec3.scale(vec3.create(), this.dragon.FacingDirection, -0.0001),
+                    vec3.scale(vec3.create(), this.dragon.FacingDirection, -0.00015),
                     this.collider);
 
                 this.spawnProjectile(this.dragon, fireball);

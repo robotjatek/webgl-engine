@@ -29,6 +29,8 @@ export abstract class HeroBaseState implements IState {
         this.OverHealCountdown();
         this.sharedStateVariables.timeSinceLastMeleeAttack += delta;
         this.sharedStateVariables.timeInOverHeal += delta;
+        this.sharedStateVariables.timeSinceLastDash += delta;
+        this.sharedStateVariables.timeSinceLastStomp += delta;
 
         await this.UpdateState(delta);
     }
@@ -45,7 +47,6 @@ export abstract class HeroBaseState implements IState {
             if (this.sharedStateVariables.timeSinceLastMeleeAttack > 350) {
                 this.sharedStateVariables.timeSinceLastMeleeAttack = 0;
                 if (this.SpawnProjectile) {
-                    // TODO: damage után az attack van hogy rossz helyre spawnol
                     // TODO: creating an attack instance on every attack is wasteful.
                     this.SpawnProjectile(this.hero, await MeleeAttack.Create(attackPosition, this.hero.FacingDirection));
                 }
@@ -84,10 +85,12 @@ export class IdleState extends HeroBaseState {
         if (this.hero.InputSource.Left()) {
             this.physicsComponent.AddToExternalForce(vec3.scale(vec3.create(), vec3.fromValues(-this.hero.Speed, 0, 0), delta));
             this.hero.SetAnimationFrameset("left_walk");
+            this.hero.FaceLeft();
             await this.hero.ChangeState(this.hero.WALK_STATE());
         } else if(this.hero.InputSource.Right()) {
             this.physicsComponent.AddToExternalForce(vec3.scale(vec3.create(), vec3.fromValues(this.hero.Speed, 0, 0), delta));
             this.hero.SetAnimationFrameset("right_walk");
+            this.hero.FaceRight();
             await this.hero.ChangeState(this.hero.WALK_STATE());
         } else if (this.hero.InputSource.Jump()) {
             await this.hero.ChangeState(this.hero.JUMP_STATE());
@@ -243,9 +246,11 @@ export class JumpState extends HeroBaseState {
         if (this.hero.InputSource.Left()) {
             this.physicsComponent.AddToExternalForce(vec3.scale(vec3.create(), vec3.fromValues(-this.hero.Speed, 0, 0), delta));
             this.hero.SetAnimationFrameset("left_walk");
+            this.hero.FaceLeft();
         } else if (this.hero.InputSource.Right()) {
             this.physicsComponent.AddToExternalForce(vec3.scale(vec3.create(), vec3.fromValues(this.hero.Speed, 0, 0), delta));
             this.hero.SetAnimationFrameset("right_walk");
+            this.hero.FaceRight();
         }
 
         if (this.hero.InputSource.Dash()) {
@@ -303,9 +308,11 @@ export class WalkState extends HeroBaseState {
         if (this.hero.InputSource.Left()) {
             this.physicsComponent.AddToExternalForce(vec3.scale(vec3.create(), vec3.fromValues(-this.hero.Speed, 0, 0), delta));
             this.hero.SetAnimationFrameset("left_walk");
+            this.hero.FaceLeft();
         } else if (this.hero.InputSource.Right()) {
             this.physicsComponent.AddToExternalForce(vec3.scale(vec3.create(), vec3.fromValues(this.hero.Speed, 0, 0), delta));
             this.hero.SetAnimationFrameset("right_walk");
+            this.hero.FaceRight();
         } else {
             await this.hero.ChangeState(this.hero.IDLE_STATE());
         }

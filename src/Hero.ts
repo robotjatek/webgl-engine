@@ -291,23 +291,17 @@ export class Hero implements IDamageable, IDisposable {
 
     public async Update(delta: number): Promise<void> {
         await this.internalState.Update(delta);
-
-        this.sharedStateVariables.timeSinceLastDash += delta;
-        this.sharedStateVariables.timeSinceLastStomp += delta;
-        this.CalculateFacingDirection();
-
         this.animation.Animate(delta, this.currentFrameSet);
         await this.damageComponent.Update(delta);
         await this.physicsComponent.Update(delta);
     }
 
-    private CalculateFacingDirection() {
-        const dir = vec3.sub(vec3.create(), this.position, this.lastPosition);
-        if (dir[0] < 0) {
-            vec3.set(this.lastFacingDirection, -1, 0, 0);
-        } else if (dir[0] > 0) {
-            vec3.set(this.lastFacingDirection, 1, 0, 0);
-        }
+    public FaceLeft(): void {
+        vec3.set(this.lastFacingDirection, -1, 0, 0);
+    }
+
+    public FaceRight(): void {
+        vec3.set(this.lastFacingDirection, 1, 0, 0);
     }
 
     public async DamageWithInvincibilityConsidered(pushbackForce: vec3, damage: number): Promise<void> {

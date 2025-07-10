@@ -3,7 +3,7 @@ import { Environment } from './Environment';
 import { Layer } from './Layer';
 
 export class Camera {
-    private viewMatrix: mat4;
+    private readonly viewMatrix: mat4;
     private shake = false;
 
     public constructor(private position: vec3) {

@@ -1,4 +1,4 @@
-import { Hero } from 'src/Hero';
+import { Hero } from 'src/Hero/Hero';
 import { DragonStateBase } from './DragonStateBase';
 import { IState } from '../../../IState';
 import { DragonEnemy } from '../DragonEnemy';

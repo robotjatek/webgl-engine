@@ -1,5 +1,5 @@
 import { ILevelEvent } from './ILevelEvent';
-import { Hero } from '../Hero';
+import { Hero } from '../Hero/Hero';
 import { Camera } from '../Camera';
 import { vec2, vec3 } from 'gl-matrix';
 import { Environment } from '../Environment';

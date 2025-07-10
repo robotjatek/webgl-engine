@@ -1,5 +1,5 @@
 import { IState } from '../../../../IState';
-import { Hero } from '../../../../Hero';
+import { Hero } from '../../../../Hero/Hero';
 import { DragonEnemy } from '../../DragonEnemy';
 import { ICollider } from '../../../../ICollider';
 import { IProjectile } from '../../../../Projectiles/IProjectile';

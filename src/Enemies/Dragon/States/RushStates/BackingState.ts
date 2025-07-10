@@ -1,5 +1,5 @@
 import { vec3 } from 'gl-matrix';
-import { Hero } from 'src/Hero';
+import { Hero } from 'src/Hero/Hero';
 import { SoundEffect } from 'src/SoundEffect';
 import { DragonEnemy } from '../../DragonEnemy';
 import { DragonStateBase } from '../DragonStateBase';

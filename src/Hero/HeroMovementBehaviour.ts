@@ -1,4 +1,4 @@
-import { Hero } from '../Hero';
+import { Hero } from './Hero';
 import { PhysicsComponent } from '../Components/PhysicsComponent';
 import { vec3 } from 'gl-matrix';
 

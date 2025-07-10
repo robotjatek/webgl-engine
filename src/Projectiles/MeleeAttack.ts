@@ -7,7 +7,7 @@ import { Utils } from '../Utils';
 import { SoundEffectPool } from '../SoundEffectPool';
 import { IProjectile } from './IProjectile';
 import { SoundEffect } from 'src/SoundEffect';
-import { Hero } from 'src/Hero';
+import { Hero } from 'src/Hero/Hero';
 import { ProjectileBase } from './ProjectileBase';
 import { Animation } from '../Components/Animation';
 import { NullCollider } from '../ICollider';

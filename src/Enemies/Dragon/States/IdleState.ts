@@ -1,5 +1,5 @@
 import { vec3 } from 'gl-matrix';
-import { Hero } from 'src/Hero';
+import { Hero } from 'src/Hero/Hero';
 import { ICollider } from 'src/ICollider';
 import { BiteProjectile } from 'src/Projectiles/BiteProjectile';
 import { IProjectile } from 'src/Projectiles/IProjectile';

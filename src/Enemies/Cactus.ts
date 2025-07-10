@@ -1,5 +1,5 @@
 import { vec2, vec3 } from 'gl-matrix';
-import { Hero } from 'src/Hero';
+import { Hero } from 'src/Hero/Hero';
 import { EnemyBase } from './IEnemy';
 import { Texture } from 'src/Texture';
 import { TexturePool } from 'src/TexturePool';

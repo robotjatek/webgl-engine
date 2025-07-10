@@ -1,7 +1,7 @@
 import { IEnemy } from '../../Enemies/IEnemy';
 import { Level } from 'src/Level';
 import { ILevelEvent } from '../ILevelEvent';
-import { Hero } from 'src/Hero';
+import { Hero } from 'src/Hero/Hero';
 import { vec3 } from 'gl-matrix';
 import { UIService } from 'src/UIService';
 import { SoundEffectPool } from 'src/SoundEffectPool';

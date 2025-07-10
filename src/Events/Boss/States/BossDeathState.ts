@@ -1,5 +1,5 @@
 import { IState } from '../../../IState';
-import { Hero } from '../../../Hero';
+import { Hero } from '../../../Hero/Hero';
 import { Level } from '../../../Level';
 import { SharedBossEventVariables } from '../SharedBossEventVariables';
 import { BossEvent } from '../BossEvent';

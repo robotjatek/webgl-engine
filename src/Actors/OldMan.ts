@@ -2,7 +2,7 @@ import { IGameobject } from '../IGameobject';
 import { BoundingBox } from '../BoundingBox';
 import { IProjectile } from '../Projectiles/IProjectile';
 import { mat4, vec2, vec3 } from 'gl-matrix';
-import { Hero } from '../Hero';
+import { Hero } from '../Hero/Hero';
 import { Shader } from '../Shader';
 import { Texture } from '../Texture';
 import { TexturePool } from '../TexturePool';

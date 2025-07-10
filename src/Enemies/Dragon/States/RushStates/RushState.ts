@@ -1,4 +1,4 @@
-import { Hero } from 'src/Hero';
+import { Hero } from 'src/Hero/Hero';
 import { IProjectile } from 'src/Projectiles/IProjectile';
 import { SoundEffect } from 'src/SoundEffect';
 import { DragonEnemy } from '../../DragonEnemy';
@@ -10,7 +10,6 @@ import { BackingState } from './BackingState';
 import { ChargeState } from './ChargeState';
 import { PreAttackState } from './PreAttackState';
 import { AttackState } from './AttackState';
-import { vec3 } from 'gl-matrix';
 
 export class RushState extends DragonStateBase implements IState {
     public START_STATE = () => new StartState(this.hero, this.dragon, this);

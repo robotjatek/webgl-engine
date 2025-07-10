@@ -1,5 +1,5 @@
 import { HeroBaseState } from './HeroBaseState';
-import { Hero } from '../../Hero';
+import { Hero } from '../Hero';
 import { IProjectile } from '../../Projectiles/IProjectile';
 import { SoundEffect } from '../../SoundEffect';
 import { PhysicsComponent } from '../../Components/PhysicsComponent';

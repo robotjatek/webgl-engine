@@ -8,7 +8,7 @@ import { TexturePool } from '../TexturePool';
 import { SoundEffectPool } from '../SoundEffectPool';
 import { Waypoint } from '../Waypoint';
 import { EnemyBase } from './IEnemy';
-import { Hero } from '../Hero';
+import { Hero } from '../Hero/Hero';
 import { SoundEffect } from 'src/SoundEffect';
 import { Animation } from '../Components/Animation';
 import { PhysicsComponent } from '../Components/PhysicsComponent';

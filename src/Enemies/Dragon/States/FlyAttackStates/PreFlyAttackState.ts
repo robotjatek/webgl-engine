@@ -1,6 +1,6 @@
 import { IState } from '../../../../IState';
 import { DragonEnemy } from '../../DragonEnemy';
-import { Hero } from '../../../../Hero';
+import { Hero } from '../../../../Hero/Hero';
 import { SoundEffect } from '../../../../SoundEffect';
 import { FlyAttackState } from './FlyAttackState';
 import { SharedFlyAttackVariables } from './SharedFlyAttackVariables';

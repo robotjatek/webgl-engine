@@ -1,4 +1,4 @@
-import { Hero } from 'src/Hero';
+import { Hero } from 'src/Hero/Hero';
 import { DragonStateBase } from '../DragonStateBase';
 import { IState } from '../../../../IState';
 import { SharedDragonStateVariables } from '../SharedDragonStateVariables';
@@ -13,7 +13,7 @@ import { PreFlyAttackState } from './PreFlyAttackState';
 import { AttackState } from './AttackState';
 import { SharedFlyAttackVariables } from './SharedFlyAttackVariables';
 
-// TODO: 125 TODOs in 12/01 on boss_event branch - 77 TODOs on master as of 01/01 - 37 todos on component branch on 07/07
+// TODO: 125 TODOs in 12/01 on boss_event branch - 77 TODOs on master as of 01/01 - 35 todos on component branch on 07/10
 export class FlyAttackState extends DragonStateBase implements IState {
 
     public REACH_ALTITUDE_STATE(): IState {

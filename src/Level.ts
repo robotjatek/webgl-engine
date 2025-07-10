@@ -8,7 +8,7 @@ import { Tile } from "./Tile";
 import { SoundEffectPool } from './SoundEffectPool';
 import { SoundEffect } from './SoundEffect';
 import { Texture } from './Texture';
-import { Hero } from './Hero';
+import { Hero } from './Hero/Hero';
 import { KeyHandler } from './KeyHandler';
 import { ControllerHandler } from './ControllerHandler';
 import { IGameobject } from './IGameobject';

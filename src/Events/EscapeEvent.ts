@@ -1,6 +1,6 @@
 import { vec3 } from "gl-matrix";
 import { Layer } from "../Layer";
-import { Hero } from '../Hero';
+import { Hero } from '../Hero/Hero';
 import { Camera } from '../Camera';
 import { SoundEffect } from '../SoundEffect';
 import { SoundEffectPool } from '../SoundEffectPool';

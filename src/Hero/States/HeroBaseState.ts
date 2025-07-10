@@ -1,6 +1,6 @@
 import { IState } from '../../IState';
 import { HeroMovementBehaviour } from '../HeroMovementBehaviour';
-import { Hero } from '../../Hero';
+import { Hero } from '../Hero';
 import { PhysicsComponent } from '../../Components/PhysicsComponent';
 import { DamageComponent } from '../../Components/DamageComponent';
 import { IProjectile } from '../../Projectiles/IProjectile';

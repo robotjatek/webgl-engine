@@ -1,6 +1,6 @@
 import { mat4 } from 'gl-matrix';
 import { ICollider } from './ICollider';
-import { Hero } from './Hero';
+import { Hero } from './Hero/Hero';
 import { IDisposable } from 'src/IDisposable';
 import { IProjectile } from './Projectiles/IProjectile';
 

@@ -4,7 +4,7 @@ import { IDisposable } from 'src/IDisposable';
 import { IGameobject } from 'src/IGameobject';
 import { BoundingBox } from '../BoundingBox';
 import { IProjectile } from '../Projectiles/IProjectile';
-import { Hero } from '../Hero';
+import { Hero } from '../Hero/Hero';
 import { Shader } from '../Shader';
 import { Sprite } from '../Sprite';
 import { Texture } from '../Texture';

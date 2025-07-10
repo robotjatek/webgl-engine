@@ -4,7 +4,7 @@ import { BoundingBox } from './BoundingBox';
 import { TexturePool } from './TexturePool';
 import { Shader } from './Shader';
 import { Utils } from './Utils';
-import { Hero } from './Hero';
+import { Hero } from './Hero/Hero';
 import { SoundEffect } from './SoundEffect';
 import { SoundEffectPool } from './SoundEffectPool';
 import { Texture } from './Texture';

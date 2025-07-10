@@ -1,6 +1,6 @@
 import { IState } from '../../../IState';
 import { Level } from '../../../Level';
-import { Hero } from '../../../Hero';
+import { Hero } from '../../../Hero/Hero';
 
 import { InputSource } from '../../../Components/Input/InputSource';
 

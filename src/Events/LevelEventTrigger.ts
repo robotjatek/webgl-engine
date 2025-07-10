@@ -1,5 +1,5 @@
 import { mat4, vec2, vec3 } from "gl-matrix";
-import { Hero } from '../Hero';
+import { Hero } from '../Hero/Hero';
 import { Level } from '../Level';
 import { BoundingBox } from '../BoundingBox';
 import { IProjectile } from '../Projectiles/IProjectile';

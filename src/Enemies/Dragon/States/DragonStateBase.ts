@@ -1,4 +1,4 @@
-import { Hero } from 'src/Hero';
+import { Hero } from 'src/Hero/Hero';
 import { DragonEnemy } from '../DragonEnemy';
 import { vec3 } from 'gl-matrix';
 

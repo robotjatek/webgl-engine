@@ -5,7 +5,7 @@ import { Sprite } from '../Sprite';
 import { Utils } from '../Utils';
 import { TexturePool } from '../TexturePool';
 import { Texture } from '../Texture';
-import { Hero } from '../Hero';
+import { Hero } from '../Hero/Hero';
 import { IPickup } from './IPickup';
 import { SoundEffect } from '../SoundEffect';
 import { SoundEffectPool } from '../SoundEffectPool';

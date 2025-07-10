@@ -1,7 +1,7 @@
 import { IState } from '../../../IState';
 import { IEnemy } from '../../../Enemies/IEnemy';
 import { Level } from '../../../Level';
-import { Hero } from '../../../Hero';
+import { Hero } from '../../../Hero/Hero';
 import { vec2, vec3 } from 'gl-matrix';
 import { Point } from '../../../Point';
 import { SoundEffect } from '../../../SoundEffect';

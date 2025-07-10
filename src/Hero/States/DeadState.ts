@@ -1,5 +1,5 @@
 import { IState } from '../../IState';
-import { Hero } from '../../Hero';
+import { Hero } from '../Hero';
 import { vec2, vec3 } from 'gl-matrix';
 import { Animation } from '../../Components/Animation';
 import { SoundEffect } from '../../SoundEffect';

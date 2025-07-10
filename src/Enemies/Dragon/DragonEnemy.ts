@@ -4,7 +4,7 @@ import { Sprite } from '../../Sprite';
 import { Texture } from '../../Texture';
 import { TexturePool } from '../../TexturePool';
 import { Utils } from '../../Utils';
-import { Hero } from '../../Hero';
+import { Hero } from '../../Hero/Hero';
 import { SoundEffectPool } from '../../SoundEffectPool';
 import { IProjectile } from '../../Projectiles/IProjectile';
 import { EnemyBase } from '../IEnemy';

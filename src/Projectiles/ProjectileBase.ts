@@ -1,7 +1,7 @@
 import { IProjectile } from './IProjectile';
 import { BoundingBox } from '../BoundingBox';
 import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
-import { Hero } from '../Hero';
+import { Hero } from '../Hero/Hero';
 import { Shader } from '../Shader';
 import { Texture } from '../Texture';
 import { Sprite } from '../Sprite';

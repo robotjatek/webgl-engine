@@ -1,16 +1,12 @@
-import { vec3 } from 'gl-matrix';
+import { vec2, vec3 } from 'gl-matrix';
 import { Texture } from "./Texture";
 import { BoundingBox } from './BoundingBox';
 
 export class Tile {
     private collidable: boolean = true;
 
-    // TODO: position vector instead of primitives
-    public constructor(private readonly positionX: number,
-                       private readonly positionY: number,
+    public constructor(private readonly position: vec2,
                        private readonly texture: Texture | null) {
-        this.positionX = positionX;
-        this.positionY = positionY;
         this.texture = texture;
     }
 
@@ -18,12 +14,8 @@ export class Tile {
         return this.texture;
     }
 
-    get PositionX(): number {
-        return this.positionX;
-    }
-
-    get PositionY(): number {
-        return this.positionY;
+    public get Position(): vec2 {
+        return this.position;
     }
 
     public get Collidable(): boolean {
@@ -34,12 +26,12 @@ export class Tile {
         this.collidable = value;
     }
 
-    public IsPointInside(point: vec3, offsetX: number, offsetY: number): boolean {
+    public IsPointInside(point: vec3, offset: vec2): boolean {
         // A tile is always 1x1
-        const minX = this.positionX + offsetX;
-        const maxX = this.positionX + offsetX + 1;
-        const minY = this.positionY + offsetY;
-        const maxY = this.positionY + offsetY +1;
+        const minX = this.position[0] + offset[0];
+        const maxX = this.position[0] + offset[0] + 1;
+        const minY = this.position[1] + offset[1];
+        const maxY = this.position[1] + offset[1] + 1;
 
         return point[0] >= minX && point[0] <= maxX &&
             point[1] >= minY && point[1] <= maxY;
@@ -51,10 +43,10 @@ export class Tile {
         }
 
         // A tile is always 1x1
-        const minX = this.positionX + offsetX;
-        const maxX = this.positionX + offsetX + 1;
-        const minY = this.positionY + offsetY;
-        const maxY = this.positionY + offsetY + 1;
+        const minX = this.position[0] + offsetX;
+        const maxX = this.position[0] + offsetX + 1;
+        const minY = this.position[1] + offsetY;
+        const maxY = this.position[1] + offsetY + 1;
 
         const bbMinX = boundingBox.position[0];
         const bbMaxX = boundingBox.position[0] + boundingBox.size[0];

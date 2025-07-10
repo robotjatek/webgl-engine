@@ -27,7 +27,7 @@ export class Layer implements ICollider, IDisposable {
         this.initialLayerOffsetX = layerOffsetX;
         this.initialLayerOffsetY = layerOffsetY;
         this.tiles.forEach(t => {
-            const tile = new Tile(t.PositionX, t.PositionY, t.Texture);
+            const tile = new Tile(t.Position, t.Texture);
             tile.Collidable = t.Collidable;
             this.initialTileData.push(tile);
         });
@@ -93,27 +93,27 @@ export class Layer implements ICollider, IDisposable {
     }
 
     public get MaxX(): number {
-        return Math.max(...this.tiles.map(t => t.PositionX + 1), Environment.HorizontalTiles);
+        return Math.max(...this.tiles.map(t => t.Position[0] + 1), Environment.HorizontalTiles);
     }
 
     public get MinX(): number {
-        return Math.min(...this.tiles.map(t => t.PositionX));
+        return Math.min(...this.tiles.map(t => t.Position[0]));
     }
 
     public get MinY(): number {
-        return Math.min(...this.tiles.map(t => t.PositionY));
+        return Math.min(...this.tiles.map(t => t.Position[1]));
     }
 
     public get MaxY(): number {
-        return Math.max(...this.tiles.map(t => t.PositionY + 1));
+        return Math.max(...this.tiles.map(t => t.Position[1] + 1));
     }
 
     public SetCollision(x: number, y: number, collidable: boolean): void {
-        const tile = this.tiles.find(t => t.PositionX === x && t.PositionY === y);
+        const tile = this.tiles.find(t => t.Position[0] === x && t.Position[1] === y);
         if (tile) {
             tile.Collidable = collidable;
         } else {
-            const invisibleTile = new Tile(x, y, null);
+            const invisibleTile = new Tile(vec2.fromValues(x, y), null);
             invisibleTile.Collidable = collidable;
             this.tiles.push(invisibleTile);
         }
@@ -166,7 +166,7 @@ export class Layer implements ICollider, IDisposable {
 
         tileMap.forEach((tiles, texture) => {
             const sprites = tiles.map((t) => {
-                const vertices = Utils.CreateSpriteVertices(t.PositionX, t.PositionY);
+                const vertices = Utils.CreateSpriteVertices(t.Position);
                 return new Sprite(vertices, Utils.DefaultSpriteTextureCoordinates);
             });
             batches.push(new SpriteBatch(shader, sprites, texture));

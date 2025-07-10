@@ -134,7 +134,7 @@ export class Level implements IProjectileHitListener, IDisposable {
             const loadedTiles = await Promise.all(layer.tiles.map(async tile => {
                 const texture = await texturePool.GetTexture(tile.texture);
                 texturePaths.add(tile.texture);
-                return new Tile(tile.xPos, tile.yPos, texture);
+                return new Tile(vec2.fromValues(tile.xPos, tile.yPos), texture);
             }));
 
             return await Layer.Create(loadedTiles, layer.parallaxOffsetFactorX, layer.parallaxOffsetFactorY, layer.layerOffsetX, layer.layerOffsetY);

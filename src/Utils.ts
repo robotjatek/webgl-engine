@@ -40,15 +40,15 @@ export class Utils {
         1, 0
     ];
 
-    public static CreateSpriteVertices(positionX: number, positionY: number): number[] {
+    public static CreateSpriteVertices(position: vec2): number[] {
         return [
-            positionX, positionY, 0.0,
-            positionX + 1.0, positionY, 0.0,
-            positionX, positionY + 1.0, 0.0,
+            position[0], position[1], 0.0,
+            position[0] + 1.0, position[1], 0.0,
+            position[0], position[1] + 1.0, 0.0,
 
-            positionX, positionY + 1.0, 0.0,
-            positionX + 1.0, positionY, 0.0,
-            positionX + 1.0, positionY + 1.0, 0.0
+            position[0], position[1] + 1.0, 0.0,
+            position[0] + 1.0, position[1], 0.0,
+            position[0] + 1.0, position[1] + 1.0, 0.0
         ];
     }
 

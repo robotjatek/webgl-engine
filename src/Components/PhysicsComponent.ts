@@ -2,7 +2,6 @@ import { vec3 } from 'gl-matrix';
 import { BoundingBox } from '../BoundingBox';
 import { ICollider } from '../ICollider';
 
-// TODO: too fast movement can cause collision issues, needs to be fixed
 export class PhysicsComponent {
 
     private gravityEnabled = true;
@@ -22,42 +21,49 @@ export class PhysicsComponent {
                        private canGoOutOfBounds: boolean = false) {
     }
 
-    public Update(delta: number) : void {
+    public Update(delta: number): void {
+        vec3.copy(this.lastPosition, this.position);
+
         this.xCollide = false;
         this.yCollide = false;
 
         if (!this.flying && this.gravityEnabled) {
             this.ApplyGravityToVelocity(delta);
         }
+
         this.ApplyDamping();
         this.ApplyExternalForceToVelocity();
 
-        const tmpVelocity = vec3.clone(this.velocity);
+        const boundingBox = this.boundingBox();
 
-        const nextX = this.CalculateNextPosition(vec3.fromValues(tmpVelocity[0], 0, 0), delta);
-        if (this.CheckCollisionWithCollider(nextX, this.boundingBox(), this.bbOffset)) {
+        const nextX = this.CalculateNextPosition(vec3.fromValues(this.velocity[0], 0, 0), delta);
+        const bbPosX = vec3.add(vec3.create(), nextX, this.bbOffset);
+        const bbX = new BoundingBox(bbPosX, boundingBox.size);
+
+        if (this.collider.IsCollidingWith(bbX, !this.canGoOutOfBounds)) {
             this.velocity[0] = 0;
-            tmpVelocity[0] = 0;
             this.xCollide = true;
+        } else {
+            this.position[0] = nextX[0];
         }
 
-        const nextY = this.CalculateNextPosition(vec3.fromValues(0, tmpVelocity[1], 0), delta);
-        if (this.CheckCollisionWithCollider(nextY, this.boundingBox(), this.bbOffset)) {
-            // Only set onGround if we're moving downward or stopped
+        const nextY = this.CalculateNextPosition(vec3.fromValues(0, this.velocity[1], 0), delta);
+        const bbPosY = vec3.add(vec3.create(), vec3.fromValues(this.position[0], nextY[1], this.position[2]), this.bbOffset);
+        const bbY = new BoundingBox(bbPosY, boundingBox.size);
+
+        if (this.collider.IsCollidingWith(bbY, !this.canGoOutOfBounds)) {
             const movingDownward = this.velocity[1] > 0;
             const stopped = Math.abs(this.velocity[1]) < 0.00001;
 
             this.velocity[1] = 0;
-            tmpVelocity[1] = 0;
-            this.onGround = movingDownward || stopped;
             this.yCollide = true;
+            this.onGround = movingDownward || stopped;
         } else {
+            this.position[1] = nextY[1];
             this.onGround = false;
         }
 
-        vec3.copy(this.lastPosition, this.position);
-        vec3.copy(this.position, this.CalculateNextPosition(tmpVelocity, delta));
-        this.externalForce = vec3.create();
+        vec3.set(this.externalForce, 0, 0, 0);
     }
 
     public get OnGround(): boolean {

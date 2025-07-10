@@ -30,6 +30,7 @@ import { DamageComponent, IDamageable } from './Components/DamageComponent';
 export type SharedHeroStateVariables = {
     timeSinceLastDash: number,
     dashAvailable: boolean,
+    dashUsed: boolean,
     timeSinceLastStomp: number,
     bbOffset: vec3,
     bbSize: vec2,
@@ -48,6 +49,7 @@ export class Hero implements IDamageable, IDisposable {
     private sharedStateVariables: SharedHeroStateVariables = {
         timeSinceLastDash: 500,
         dashAvailable: true,
+        dashUsed: false,
         timeSinceLastStomp: 500,
         bbOffset: this.bbOffset,
         bbSize: this.bbSize,
@@ -60,27 +62,27 @@ export class Hero implements IDamageable, IDisposable {
 
     public IDLE_STATE(): IState {
         return new IdleState(this, this.SpawnProjectile, this.physicsComponent,
-            this.sharedStateVariables, this.animation);
+            this.damageComponent, this.sharedStateVariables, this.animation);
     }
 
     public WALK_STATE(): IState {
         return new WalkState(this, this.SpawnProjectile, this.animation,
-            this.physicsComponent, this.walkSound, this.sharedStateVariables);
+            this.physicsComponent, this.damageComponent, this.walkSound, this.sharedStateVariables);
     }
 
     public JUMP_STATE(): IState {
         return new JumpState(this, this.SpawnProjectile, this.jumpSound,
-            this.landSound, this.physicsComponent, this.sharedStateVariables);
+            this.landSound, this.physicsComponent, this.damageComponent, this.sharedStateVariables);
     }
 
     public DASH_STATE(): IState {
         return new DashState(this, this.SpawnProjectile, this.physicsComponent,
-            this.stompSound, this.sharedStateVariables);
+            this.damageComponent, this.stompSound, this.sharedStateVariables);
     }
 
     public STOMP_STATE(): IState {
         return new StompState(this, this.SpawnProjectile, this.physicsComponent,
-            this.stompSound, this.sharedStateVariables, this.landSound);
+            this.damageComponent, this.stompSound, this.sharedStateVariables, this.landSound);
     }
 
     public DEAD_STATE(): IState {
@@ -88,7 +90,8 @@ export class Hero implements IDamageable, IDisposable {
     }
 
     public AFTER_STOMP_STATE(): IState {
-        return new AfterStompState(this, this.SpawnProjectile, this.physicsComponent, this.sharedStateVariables);
+        return new AfterStompState(this, this.SpawnProjectile, this.physicsComponent, this.damageComponent,
+            this.sharedStateVariables);
     }
 
     private health: number = 100;
@@ -292,7 +295,6 @@ export class Hero implements IDamageable, IDisposable {
     public async Update(delta: number): Promise<void> {
         await this.internalState.Update(delta);
         this.animation.Animate(delta, this.currentFrameSet);
-        await this.damageComponent.Update(delta);
         await this.physicsComponent.Update(delta);
     }
 

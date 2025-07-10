@@ -9,11 +9,11 @@ import { Utils } from 'src/Utils';
 import { SoundEffectPool } from 'src/SoundEffectPool';
 import { SoundEffect } from 'src/SoundEffect';
 import { Animation } from '../Components/Animation';
-import { StompState } from '../Hero/States/DeadState';
 import { FlashOverlayComponent } from '../Components/FlashOverlayComponent';
 import { DamageComponent } from '../Components/DamageComponent';
 import { PhysicsComponent } from '../Components/PhysicsComponent';
 import { NullCollider } from '../ICollider';
+import { StompState } from '../Hero/States/StompState';
 
 /**
  * Stationary enemy that cannot be stomped on (like spikes), but it can be damaged with a sword attack

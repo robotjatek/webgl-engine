@@ -12,9 +12,9 @@ import { Hero } from '../Hero';
 import { SoundEffect } from 'src/SoundEffect';
 import { Animation } from '../Components/Animation';
 import { PhysicsComponent } from '../Components/PhysicsComponent';
-import { StompState } from '../Hero/States/DeadState';
 import { FlashOverlayComponent } from '../Components/FlashOverlayComponent';
 import { DamageComponent } from '../Components/DamageComponent';
+import { StompState } from '../Hero/States/StompState';
 
 /**
  * Slime enemy is a passive enemy, meaning it does not actively attack the player, but it hurts when contacted directly

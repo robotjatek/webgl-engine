@@ -6,7 +6,8 @@ import { TexturePool } from 'src/TexturePool';
 import { Sprite } from 'src/Sprite';
 import { Utils } from 'src/Utils';
 import { Shader } from 'src/Shader';
-import { StompState } from '../Hero/States/DeadState';
+
+import { StompState } from '../Hero/States/StompState';
 
 /**
  * Stationary enemy. Cannot be damaged. Can damage the hero

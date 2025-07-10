@@ -20,9 +20,9 @@ import { Layer } from '../../Layer';
 import { Point } from '../../Point';
 import { Animation } from '../../Components/Animation';
 import { PhysicsComponent } from '../../Components/PhysicsComponent';
-import { StompState } from '../../Hero/States/DeadState';
 import { FlashOverlayComponent } from '../../Components/FlashOverlayComponent';
 import { DamageComponent } from '../../Components/DamageComponent';
+import { StompState } from '../../Hero/States/StompState';
 
 export class DragonEnemy extends EnemyBase {
 

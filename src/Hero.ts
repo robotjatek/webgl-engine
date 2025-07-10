@@ -17,27 +17,20 @@ import { Environment } from './Environment';
 import { Animation } from './Components/Animation';
 import { PhysicsComponent } from './Components/PhysicsComponent';
 import { IState } from './IState';
-import {
-    AfterStompState, DashState, DeadState, IdleState,
-    JumpState, StompState, WalkState } from './Hero/States/DeadState';
+import { DeadState } from './Hero/States/DeadState';
 import { PlayerControlSource } from './Components/Input/PlayerControlSource';
 import { IControlSource } from './Components/Input/IControlSource';
 import { InputSource } from './Components/Input/InputSource';
 import { ScriptControlSource } from './Components/Input/ScriptControlSource';
 import { FlashOverlayComponent } from './Components/FlashOverlayComponent';
 import { DamageComponent, IDamageable } from './Components/DamageComponent';
-
-export type SharedHeroStateVariables = {
-    timeSinceLastDash: number,
-    dashAvailable: boolean,
-    dashUsed: boolean,
-    timeSinceLastStomp: number,
-    bbOffset: vec3,
-    bbSize: vec2,
-    rotation: number,
-    timeSinceLastMeleeAttack: number,
-    timeInOverHeal: number
-}
+import { IdleState } from './Hero/States/IdleState';
+import { DashState } from './Hero/States/DashState';
+import { StompState } from './Hero/States/StompState';
+import { AfterStompState } from './Hero/States/AfterStompState';
+import { JumpState } from './Hero/States/JumpState';
+import { WalkState } from './Hero/States/WalkState';
+import { SharedHeroStateVariables } from './Hero/States/SharedHeroStateVariables';
 
 export class Hero implements IDamageable, IDisposable {
 
@@ -258,7 +251,6 @@ export class Hero implements IDamageable, IDisposable {
             this.physicsComponent, this.invincibleFrames);
 
         this.internalState = this.IDLE_STATE();
-        this.internalState.Enter();
     }
 
     public static async Create(
@@ -277,9 +269,12 @@ export class Hero implements IDamageable, IDisposable {
         const dieSound = await SoundEffectPool.GetInstance().GetAudio('audio/hero_die.wav', false);
         const texture = await TexturePool.GetInstance().GetTexture('textures/hero1.png');
 
-        return new Hero(position, visualScale, collider, onDeath, spawnProjectile,
+        const hero = new Hero(position, visualScale, collider, onDeath, spawnProjectile,
             shader, bbShader, jumpSound, landSound, walkSound, stompSound, damageSound, dieSound, texture,
             keyHandler, gamepadHandler);
+        await hero.Initialize();
+
+        return hero;
     }
 
     public Draw(proj: mat4, view: mat4): void {
@@ -290,6 +285,10 @@ export class Hero implements IDamageable, IDisposable {
         if (Environment.RenderBoundingBoxes) {
             this.bbRenderer.Draw(proj, view, this.BoundingBox.position, this.sharedStateVariables.rotation);
         }
+    }
+
+    private async Initialize(): Promise<void> {
+        await this.internalState.Enter();
     }
 
     public async Update(delta: number): Promise<void> {

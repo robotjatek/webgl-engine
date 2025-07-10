@@ -3,6 +3,7 @@
   "music": "audio/lava2.mp3",
   "layers": [
     {
+      "name": "Background",
       "tiles": [
         {
           "xPos": 29,
@@ -71,6 +72,7 @@
       "layerOffsetY": 0
     },
     {
+      "name": "Arena (Main Layer)",
       "tiles": [
         {
           "xPos": 29,
@@ -1804,9 +1806,30 @@
       "layerOffsetY": 0
     },
     {
+      "name": "Lava pool",
       "tiles": [
         {
           "xPos": 30,
+          "yPos": 9,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 31,
+          "yPos": 9,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 9,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
+          "yPos": 9,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 30,
           "yPos": 10,
           "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         },
@@ -1817,6 +1840,11 @@
         },
         {
           "xPos": 32,
+          "yPos": 10,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
           "yPos": 10,
           "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         },
@@ -1836,6 +1864,11 @@
           "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         },
         {
+          "xPos": 33,
+          "yPos": 11,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
           "xPos": 30,
           "yPos": 12,
           "texture": "textures/Platform_ByJanaChumi/PNG/34.png"
@@ -1847,6 +1880,11 @@
         },
         {
           "xPos": 32,
+          "yPos": 12,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
           "yPos": 12,
           "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         },
@@ -1862,6 +1900,11 @@
         },
         {
           "xPos": 32,
+          "yPos": 13,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
           "yPos": 13,
           "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         },
@@ -1877,6 +1920,11 @@
         },
         {
           "xPos": 32,
+          "yPos": 14,
+          "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
+        },
+        {
+          "xPos": 33,
           "yPos": 14,
           "texture": "textures/Platform_ByJanaChumi/PNG/21.png"
         },
@@ -2852,82 +2900,98 @@
     {
       "type": "boss_trigger",
       "xPos": 3,
-      "yPos": 0
+      "yPos": 0,
+      "name": "boss_trigger"
     },
     {
       "type": "boss_trigger",
       "xPos": 3,
-      "yPos": 1
+      "yPos": 1,
+      "name": "boss_trigger"
     },
     {
       "type": "boss_trigger",
       "xPos": 3,
-      "yPos": 2
+      "yPos": 2,
+      "name": "boss_trigger"
     },
     {
       "type": "boss_trigger",
       "xPos": 3,
-      "yPos": 3
+      "yPos": 3,
+      "name": "boss_trigger"
     },
     {
       "type": "boss_trigger",
       "xPos": 3,
-      "yPos": 4
+      "yPos": 4,
+      "name": "boss_trigger"
     },
     {
       "type": "boss_trigger",
       "xPos": 3,
-      "yPos": 5
+      "yPos": 5,
+      "name": "boss_trigger"
     },
     {
       "type": "boss_trigger",
       "xPos": 3,
-      "yPos": 6
+      "yPos": 6,
+      "name": "boss_trigger"
     },
     {
       "type": "boss_trigger",
       "xPos": 3,
-      "yPos": 7
+      "yPos": 7,
+      "name": "boss_trigger"
     },
     {
       "type": "boss_trigger",
       "xPos": 3,
-      "yPos": 8
+      "yPos": 8,
+      "name": "boss_trigger"
     },
     {
       "type": "boss_trigger",
       "xPos": 3,
-      "yPos": 9
+      "yPos": 9,
+      "name": "boss_trigger"
     },
     {
       "type": "boss_trigger",
       "xPos": 3,
-      "yPos": 10
+      "yPos": 10,
+      "name": "boss_trigger"
     },
     {
       "type": "boss_trigger",
       "xPos": 3,
-      "yPos": 11
+      "yPos": 11,
+      "name": "boss_trigger"
     },
     {
       "type": "boss_trigger",
       "xPos": 3,
-      "yPos": 12
+      "yPos": 12,
+      "name": "boss_trigger"
     },
     {
       "type": "boss_trigger",
       "xPos": 3,
-      "yPos": 13
+      "yPos": 13,
+      "name": "boss_trigger"
     },
     {
       "type": "boss_trigger",
       "xPos": 3,
-      "yPos": 14
+      "yPos": 14,
+      "name": "boss_trigger"
     },
     {
       "type": "end",
       "xPos": 34,
-      "yPos": 14
+      "yPos": 14,
+      "name": "end"
     }
   ],
   "start": {
@@ -2946,5 +3010,6 @@
         "health": "10"
       }
     }
-  ]
+  ],
+  "initialEventKey": null
 }

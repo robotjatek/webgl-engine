@@ -83,7 +83,7 @@ export class EscapeEvent implements ILevelEvent {
             }
 
             if (this.eventLayer.IsCollidingWith(this.hero.BoundingBox, true)) {
-                await this.hero.DamageWithInvincibilityConsidered(vec3.fromValues(0, -0.02, 0));
+                await this.hero.DamageWithInvincibilityConsidered(vec3.fromValues(0, -0.008, 0), 20);
             }
 
             if (this.eventCameraYPos > this.cameraStopPos) {

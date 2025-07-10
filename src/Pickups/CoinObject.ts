@@ -2,7 +2,6 @@ import { mat4, vec2, vec3 } from 'gl-matrix';
 import { BoundingBox } from '../BoundingBox';
 import { Shader } from '../Shader';
 import { Sprite } from '../Sprite';
-import { SpriteBatch } from '../SpriteBatch';
 import { Utils } from '../Utils';
 import { TexturePool } from '../TexturePool';
 import { Texture } from '../Texture';
@@ -11,12 +10,27 @@ import { IPickup } from './IPickup';
 import { SoundEffect } from '../SoundEffect';
 import { SoundEffectPool } from '../SoundEffectPool';
 import { IProjectile } from 'src/Projectiles/IProjectile';
+import { SpriteRenderer } from '../SpriteRenderer';
+import { Animation } from '../Components/Animation';
+
 
 export class CoinObject implements IPickup {
-    private readonly batch: SpriteBatch;
+    private readonly renderer: SpriteRenderer;
     private readonly sprite: Sprite;
-    private frameNumber = 0;
-    private currentFrameTime = 0;
+    private animation: Animation;
+
+    private currentFrameSet: vec2[] = [
+        vec2.fromValues(0 / 10, 0),
+        vec2.fromValues(1 / 10, 0),
+        vec2.fromValues(2 / 10, 0),
+        vec2.fromValues(3 / 10, 0),
+        vec2.fromValues(4 / 10, 0),
+        vec2.fromValues(5 / 10, 0),
+        vec2.fromValues(6 / 10, 0),
+        vec2.fromValues(7 / 10, 0),
+        vec2.fromValues(8 / 10, 0),
+        vec2.fromValues(9 / 10, 0)
+    ];
 
     private constructor(
         private position: vec3,
@@ -28,7 +42,8 @@ export class CoinObject implements IPickup {
 
         // this is hardcoded for coin.png
         this.sprite = new Sprite(Utils.DefaultSpriteVertices, Utils.CreateTextureCoordinates(0, 0, 1.0 / 10, 1.0));
-        this.batch = new SpriteBatch(shader, [this.sprite], this.texture);
+        this.renderer = new SpriteRenderer(shader, texture, this.sprite, vec2.fromValues(1, 1));
+        this.animation = new Animation(1 / 60 * 1000 * 3, this.renderer);
     }
 
     public static async Create(position: vec3, onPickup: (pickup: IPickup) => void): Promise<CoinObject> {
@@ -46,13 +61,13 @@ export class CoinObject implements IPickup {
         return true;
     }
 
-    public CollideWithAttack(attack: IProjectile): void {
+    public async CollideWithAttack(attack: IProjectile): Promise<void> {
         // No-op
     }
 
     public async Visit(hero: Hero): Promise<void> {
         await this.pickupSound.Play();
-        hero.CollideWithCoin(this);
+        hero.IncrementCollectedCoins();
         this.onPickup(this);
     }
 
@@ -60,30 +75,16 @@ export class CoinObject implements IPickup {
         return boundingBox.IsCollidingWith(this.BoundingBox);
     }
 
-    public async Update(elapsedTime: number): Promise<void> {
-        this.Animate(elapsedTime);
+    public async Update(delta: number): Promise<void> {
+        this.animation.Animate(delta, this.currentFrameSet);
     }
 
     public Draw(proj: mat4, view: mat4): void {
-        this.batch.Draw(proj, view);
-        mat4.translate(this.batch.ModelMatrix, mat4.create(), this.position);
-    }
-
-    private Animate(delta: number): void {
-        this.currentFrameTime += delta;
-        if (this.currentFrameTime > 64) {
-            if (this.frameNumber === 9) {
-                this.batch.TextureOffset = vec2.fromValues(0, 0);
-                this.frameNumber = 0;
-            }
-            this.frameNumber++;
-            vec2.add(this.batch.TextureOffset, this.batch.TextureOffset, vec2.fromValues(1.0 / 10, 0)); // TODO: this is hardcoded for coin.png
-            this.currentFrameTime = 0;
-        }
+        this.renderer.Draw(proj, view, this.position, 0);
     }
 
     public Dispose(): void {
-        this.batch.Dispose();
+        this.renderer.Dispose();
         this.shader.Delete();
     }
 }

@@ -28,7 +28,7 @@ export class LevelEventTrigger implements IGameobject {
         return false;
     }
 
-    public CollideWithAttack(attack: IProjectile): void {
+    public async CollideWithAttack(attack: IProjectile): Promise<void> {
         // invisible & invincible
     }
 

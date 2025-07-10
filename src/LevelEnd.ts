@@ -1,7 +1,6 @@
 import { Sprite } from './Sprite';
 import { mat4, vec2, vec3 } from 'gl-matrix';
 import { BoundingBox } from './BoundingBox';
-import { SpriteBatch } from './SpriteBatch';
 import { TexturePool } from './TexturePool';
 import { Shader } from './Shader';
 import { Utils } from './Utils';
@@ -13,6 +12,7 @@ import { IDisposable } from './IDisposable';
 import { IGameobject } from './IGameobject';
 import { IProjectile } from './Projectiles/IProjectile';
 import { Level } from './Level';
+import { SpriteRenderer } from './SpriteRenderer';
 
 export interface IEndConditionsMetEventListener {
     OnEndConditionsMet(): void;
@@ -22,17 +22,17 @@ export interface IEndConditionsMetEventListener {
 export class LevelEnd implements IGameobject, IEndConditionsMetEventListener, IDisposable {
 
     private readonly sprite: Sprite;
-    private readonly batch: SpriteBatch;
+    private readonly renderer: SpriteRenderer;
     private enabled: boolean = false;
     private static readonly transparentValue: number = 0.5;
-    private readonly size: vec3 = vec3.fromValues(2, 1, 0);
+    private readonly size: vec2 = vec2.fromValues(2, 1);
     private interacted: boolean = false;
 
     private constructor(private position: vec3, private shader: Shader, private endReachedEffect: SoundEffect, texture: Texture,
         private interactCallback: () => Promise<void>, private level: Level
     ) {
         this.sprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
-        this.batch = new SpriteBatch(this.shader, [this.sprite], texture);
+        this.renderer = new SpriteRenderer(shader, texture, this.sprite, this.size)
         this.shader.SetFloatUniform('alpha', LevelEnd.transparentValue);
     }
 
@@ -54,7 +54,7 @@ export class LevelEnd implements IGameobject, IEndConditionsMetEventListener, ID
         this.interacted = interacted;
     }
 
-    public CollideWithAttack(attack: IProjectile): void {
+    public async CollideWithAttack(attack: IProjectile): Promise<void> {
         // NO-OP
     }
 
@@ -70,11 +70,8 @@ export class LevelEnd implements IGameobject, IEndConditionsMetEventListener, ID
         return new LevelEnd(position, shader, endReachedEffect, texture, interactCallback, level);
     }
 
-    // TODO: All these drawable objects need a common interface or a base class with all of the drawing/Update functionality
     public Draw(projection: mat4, view: mat4): void {
-        this.batch.Draw(projection, view);
-        mat4.translate(this.batch.ModelMatrix, mat4.create(), this.position);
-        mat4.scale(this.batch.ModelMatrix, this.batch.ModelMatrix, this.size)
+        this.renderer.Draw(projection, view, this.position, 0);
     }
 
     public async Update(delta: number): Promise<void> {
@@ -98,7 +95,7 @@ export class LevelEnd implements IGameobject, IEndConditionsMetEventListener, ID
     }
 
     public Dispose(): void {
-        this.batch.Dispose();
+        this.renderer.Dispose();
         this.shader.Delete();
     }
 

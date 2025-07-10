@@ -10,7 +10,7 @@ import { FreeCameraEvent } from '../FreeCameraEvent';
 import { Camera } from 'src/Camera';
 import { Environment } from 'src/Environment';
 import { Point } from '../../Point';
-import { IState } from '../../Enemies/IState';
+import { IState } from '../../IState';
 import { SpawnState } from './States/SpawnState';
 import { SharedBossEventVariables } from './SharedBossEventVariables';
 import { FightState } from './States/FightState';

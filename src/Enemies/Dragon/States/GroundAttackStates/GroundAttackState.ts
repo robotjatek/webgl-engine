@@ -1,5 +1,5 @@
 import { DragonStateBase } from '../DragonStateBase';
-import { IState } from '../../../IState';
+import { IState } from '../../../../IState';
 import { SharedDragonStateVariables } from '../SharedDragonStateVariables';
 import { Hero } from '../../../../Hero';
 import { DragonEnemy } from '../../DragonEnemy';
@@ -26,7 +26,7 @@ export class GroundAttackState extends DragonStateBase implements IState {
     }
 
     private internalState: IState = this.SWEEPING_STATE();
-    private dir = vec3.fromValues(-0.01, 0, 0);
+    private dir = vec3.fromValues(-0.00010, 0, 0);
 
     public constructor(hero: Hero,
                        dragon: DragonEnemy,
@@ -40,6 +40,7 @@ export class GroundAttackState extends DragonStateBase implements IState {
         // Move left and right. Change direction when colliding with a wall
         if (this.dragon.WillCollide(this.dir, delta)) {
             this.dir = vec3.fromValues(this.dir[0] * -1, 0, 0);
+            this.dragon.ResetVelocity();
         }
         this.dragon.Move(this.dir, delta);
         this.MatchHeroHeight(delta);

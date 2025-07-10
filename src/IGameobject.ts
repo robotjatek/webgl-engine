@@ -13,5 +13,5 @@ export interface IGameobject extends ICollider, IDisposable {
    * Is the object considered an end condition. All end conditions must be despawned before leaving the level.
    */
   get EndCondition(): boolean; // TODO: projectiles are gameobjects but far from end conditions. I may need to rewise the inheritance tree...
-  CollideWithAttack(attack: IProjectile): void;
+  CollideWithAttack(attack: IProjectile): Promise<void>;
 }

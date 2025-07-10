@@ -1,6 +1,6 @@
 import { Hero } from 'src/Hero';
 import { DragonStateBase } from './DragonStateBase';
-import { IState } from '../../IState';
+import { IState } from '../../../IState';
 import { DragonEnemy } from '../DragonEnemy';
 import { vec3 } from 'gl-matrix';
 import { Layer } from '../../../Layer';
@@ -23,15 +23,9 @@ export class EnterArenaState extends DragonStateBase implements IState {
             return;
         }
 
-        // Reach the altitude of the waypoint - move on the axises separately
-        const distanceFromAltitude = this.enterWaypoint[1] - this.dragon.CenterPosition[1];
-        if (distanceFromAltitude > 0) {
-            this.dragon.Move(vec3.fromValues(0, 0.005, 0), delta);
-        }
-
         // Move to the predefined coordinates
         if (this.dragon.CenterPosition[0] > this.enterWaypoint[0]) {
-            const dir = vec3.fromValues(-0.01, 0, 0);
+            const dir = vec3.fromValues(-0.00015, 0, 0);
             this.dragon.Move(dir, delta);
         } else {
             // close tiles

@@ -60,10 +60,8 @@ enum State {
     PAUSED = 'paused'
 }
 
-// TODO: draw component for old man
-// TODO: draw component for projectile
-// TODO: Movement ECS for projectiles
-// TODO: Movement ECS for old man
+// TODO: camera smoothing - the camera should not follow the hero, but a position that moves with the hero but at a slower rate
+//  like MatchHeroPosition in dragon
 
 // TODO: shake camera when attack hit
 
@@ -71,7 +69,6 @@ enum State {
 // TODO: flip sprite
 // TODO: recheck every vector passing. Sometimes vectors need to be cloned
 // TODO: update ts version
-// TODO: render bounding boxes in debug mode
 // TODO: texture map padding
 export class Game implements IStartEventListener,
     IResumeEventListener,

@@ -9,13 +9,13 @@ import { SoundEffectPool } from '../SoundEffectPool';
 import { IProjectile } from './IProjectile';
 import { SoundEffect } from 'src/SoundEffect';
 import { ProjectileBase } from './ProjectileBase';
+import { Animation } from '../Components/Animation';
 
-export class Fireball extends ProjectileBase{
+export class Fireball extends ProjectileBase {
     private spawnSoundPlayed = false;
 
     // Animation related
-    private currentFrameTime: number = 0;
-    private currentAnimationFrameIndex: number = 0;
+    private animation: Animation;
     private leftFacingAnimationFrames = [
         vec2.fromValues(0 / 8, 0 / 8),
         vec2.fromValues(1 / 8, 0 / 8),
@@ -39,8 +39,9 @@ export class Fireball extends ProjectileBase{
     private currentFrameSet = this.leftFacingAnimationFrames;
 
     private constructor(
-        centerPosition: vec3,
-        private moveDirection: vec3,
+        position: vec3,
+        facingDirection: vec3,
+        private moveSpeed: vec3,
         collider: ICollider,
         shader: Shader,
         bbShader: Shader,
@@ -49,22 +50,24 @@ export class Fireball extends ProjectileBase{
         private despawnSound: SoundEffect,
         texture: Texture
     ) {
-        // TODO: although i dont use bbOffset here I kept all duplicated code nearly the same, to make refactors easier
-        const bbOffset = vec3.fromValues(0, 0, 0);
         const bbSize = vec2.fromValues(2.0, 1.0);
         const visualScale = vec2.fromValues(3, 3);
+        const bbOffset = facingDirection[0] > 0 ?
+            vec3.fromValues(0, 1, 0) :
+            vec3.fromValues(1, 1, 0);
+
         const sprite = new Sprite(
             Utils.DefaultSpriteVertices,
             Utils.CreateTextureCoordinates(0, 0, 1 / 8, 1 / 8));
 
-        super(shader, texture, sprite, centerPosition, visualScale, bbOffset, bbSize, hitSound,
+        super(shader, texture, sprite, position, visualScale, bbOffset, bbSize, hitSound,
             false, collider, bbShader);
+        this.animation = new Animation(1 / 30 * 1000, this.renderer);
 
         shader.SetVec4Uniform('clr', vec4.fromValues(0, 1, 0, 0.4));
-        //bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
     }
 
-    public static async Create(centerPosition: vec3, moveDirection: vec3, collider: ICollider): Promise<Fireball> {
+    public static async Create(position: vec3, facingDir: vec3, moveSpeed: vec3, collider: ICollider): Promise<Fireball> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
         const hitSound = await SoundEffectPool.GetInstance().GetAudio('audio/hero_stomp.wav');
@@ -72,7 +75,7 @@ export class Fireball extends ProjectileBase{
         const spawnSound = await SoundEffectPool.GetInstance().GetAudio('audio/fireball_spawn.mp3');
         const texture = await TexturePool.GetInstance().GetTexture('textures/fireball.png');
 
-        return new Fireball(centerPosition, moveDirection, collider, shader, bbShader, hitSound, spawnSound, despawnSound, texture);
+        return new Fireball(position, facingDir, moveSpeed, collider, shader, bbShader, hitSound, spawnSound, despawnSound, texture);
     }
 
     public override get PushbackForce(): vec3 {
@@ -87,18 +90,18 @@ export class Fireball extends ProjectileBase{
     }
 
     public async Update(delta: number): Promise<void> {
-        this.currentFrameSet = this.moveDirection[0] > 0 ?
+        await super.Update(delta);
+        this.currentFrameSet = this.moveSpeed[0] > 0 ?
             this.rightFacingAnimationFrames :
             this.leftFacingAnimationFrames;
-        this.Animate(delta);
+        this.animation.Animate(delta, this.currentFrameSet);
 
         if (!this.spawnSoundPlayed) {
             await this.spawnSound.Play(1, 0.5);
             this.spawnSoundPlayed = true;
         }
 
-        await this.Move(this.moveDirection, delta);
-
+        await this.Move(this.moveSpeed, delta);
         if (this.AlreadyHit) {
             this.OnHitListeners.forEach(l => l.RemoveGameObject(this));
         }
@@ -108,21 +111,6 @@ export class Fireball extends ProjectileBase{
         if (!this.AlreadyHit) {
             await this.despawnSound.Play();
             await this.OnHit();
-        }
-    }
-
-    private Animate(delta: number): void {
-        this.currentFrameTime += delta;
-
-        // This is ~30 fps animation
-        if (this.currentFrameTime >= 16 * 2) {
-            this.currentAnimationFrameIndex++;
-            if (this.currentAnimationFrameIndex >= this.currentFrameSet.length) {
-                this.currentAnimationFrameIndex = 0;
-            }
-
-            this.batch.TextureOffset = this.currentFrameSet[this.currentAnimationFrameIndex];
-            this.currentFrameTime = 0;
         }
     }
 

@@ -1,4 +1,4 @@
-import { IState } from '../../../IState';
+import { IState } from '../../../../IState';
 import { vec3 } from 'gl-matrix';
 import { DragonEnemy } from '../../DragonEnemy';
 import { IProjectile } from '../../../../Projectiles/IProjectile';
@@ -9,7 +9,7 @@ import { FlyAttackState } from './FlyAttackState';
 
 export class SweepingState implements IState {
 
-    private dir = vec3.fromValues(-0.01, 0, 0);
+    private dir = vec3.fromValues(-0.00010, 0, 0);
 
     public constructor(
         private context: FlyAttackState,
@@ -24,6 +24,7 @@ export class SweepingState implements IState {
         // left-right movement
         // change direction on collision
         if (this.dragon.WillCollide(this.dir, delta)) {
+            this.dragon.ResetVelocity();
             this.dir = vec3.fromValues(this.dir[0] * -1, 0, 0);
         }
         this.dragon.Move(this.dir, delta);

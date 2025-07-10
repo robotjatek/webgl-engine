@@ -5,7 +5,7 @@ import { BiteProjectile } from 'src/Projectiles/BiteProjectile';
 import { IProjectile } from 'src/Projectiles/IProjectile';
 import { SoundEffect } from 'src/SoundEffect';
 import { DragonEnemy } from '../DragonEnemy';
-import { IState } from '../../IState';
+import { IState } from '../../../IState';
 import { SharedDragonStateVariables } from './SharedDragonStateVariables';
 import { DragonStateBase } from './DragonStateBase';
 
@@ -33,9 +33,10 @@ export class IdleState extends DragonStateBase implements IState {
         if (this.shared.timeSinceLastAttack > 2000) {
             this.shared.timeSinceLastAttack = 0;
             // Bite
-            if (distance < 5) {
-                const projectileCenter = this.dragon.BiteProjectilePosition;
-                const bite = await BiteProjectile.Create(projectileCenter, this.dragon.FacingDirection);
+            if (distance < 3.0) {
+                this.dragon.ResetVelocity();
+                const projectilePosition = this.dragon.BiteProjectilePosition;
+                const bite = await BiteProjectile.Create(projectilePosition, this.dragon.FacingDirection);
                 await this.biteAttackSound.Play();
                 this.spawnProjectile(this.dragon, bite);
             }

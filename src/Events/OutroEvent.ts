@@ -14,16 +14,19 @@ import { Sequence } from '../Sequence/Sequence';
 import { SequenceBuilder } from '../Sequence/SequenceBuilder';
 import { ISequenceStep } from '../Sequence/ISequenceStep';
 
+import { InputSource } from '../Components/Input/InputSource';
+
 class MoveToWaypoint implements ISequenceStep {
 
-    public constructor(private hero: Hero, private waypoint: vec3) {
+
+    public constructor(private hero: Hero, private waypoint: vec3, private input: InputSource) {
     }
 
     public async Update(delta: number): Promise<boolean> {
-        this.hero.AcceptInput = false;
         const distanceFromWaypoint = vec3.distance(this.waypoint, this.hero.CenterPosition);
         if (distanceFromWaypoint > 0.5) {
-            this.hero.Move(vec3.fromValues(0.005, 0, 0), delta);
+            this.hero.Speed = 0.0001;
+            this.input.PressKey("right");
             return false;
         } else {
             return true;
@@ -57,7 +60,7 @@ class DragonRoar implements ISequenceStep {
     private heroReactedToRoar = false;
     private _fadeState = 0;
 
-    public constructor(private _dragonRoar: SoundEffect, private _game: IFadeOut, private _hero: Hero) {
+    public constructor(private _dragonRoar: SoundEffect, private _game: IFadeOut, private hero: Hero, private input: InputSource) {
     }
 
     public async Update(delta: number): Promise<boolean> {
@@ -70,7 +73,8 @@ class DragonRoar implements ISequenceStep {
         this._timeSinceRoarStarted += delta;
         if (this._timeSinceRoarStarted > 500 && !this.heroReactedToRoar) {
             this.heroReactedToRoar = true;
-            this._hero.Move(vec3.fromValues(-0.005, 0, 0), delta);
+            this.hero.Speed = 0.0005;
+            this.input.PressKey("left");
         }
 
         this._timeSinceFadeOutStarted += delta;
@@ -90,10 +94,12 @@ export class OutroEvent implements ILevelEvent {
 
     private sequence: Sequence;
     private conversationSequence: Sequence;
+    private input: InputSource | null;
 
     private constructor(private hero: Hero, private camera: Camera, private level: Level, private oldMan: OldMan,
                         private dragonRoar: SoundEffect, private game: (IQuitEventListener & IFadeOut),
                         private uiService: UIService, private textBox: Textbox) {
+        this.input = this.hero.TakeoverControl();
         this.sequence = this.CreateSequence();
         this.conversationSequence = this.ConversationSequence();
     }
@@ -169,36 +175,45 @@ export class OutroEvent implements ILevelEvent {
 
     private CreateSequence(): Sequence {
         return new SequenceBuilder()
-            .Add(new MoveToWaypoint(this.hero, vec3.fromValues(10, 15, 0)))
-            .Action(async (delta: number) => {
+            .Add(new MoveToWaypoint(this.hero, vec3.fromValues(10, 15, 0), this.input!))
+            .Action(async (_: number) => {
                 // hero looks back where he came from
-                this.hero.Move(vec3.fromValues(-0.035, 0, 0), delta);
+                this.hero.Speed = 0.00025;
+                this.input!.PressKey("left");
                 return true;
             })
             .Add(new SpawnOldMan(this.level, this.oldMan))
-            .Action(async (delta: number) => {
+            .Action(async (_: number) => {
                 // old man moves towards the hero
                 const oldManDistanceToHero = vec3.distance(this.oldMan.CenterPosition, this.hero.CenterPosition);
                 if (oldManDistanceToHero > 3) {
-                    this.oldMan.Move(vec3.fromValues(-0.005, 0, 0), delta);
+                    this.oldMan.Move(vec3.fromValues(-0.001, 0, 0));
                     return false;
                 }
                 return true;
             })
-            .Action(async (delta: number) => {
+            .Action(async (_: number) => {
                 // Hero looks at the old man
-                this.hero.Move(vec3.fromValues(0.0025, 0, 0), delta);
+                this.hero.Speed = 0.00005;
+                this.input!.PressKey("right");
                 return true;
             })
             .Action(async (delta: number) => {
                 // Conversation with a lot of text
                 return await this.conversationSequence.Update(delta);
             })
-            .Add(new DragonRoar(this.dragonRoar, this.game, this.hero))
+            .Add(new DragonRoar(this.dragonRoar, this.game, this.hero, this.input!))
             .Action(async (_: number) => {
                 // go to main menu
                 await this.game.Quit();
                 return true;
-            }).Build();
+            })
+            .Action(async (_: number) => {
+                this.hero.ReleaseControl();
+                this.hero.Speed = this.hero.DEFAULT_SPEED;
+                this.input = null;
+                return true
+            })
+            .Build();
     }
 }

@@ -5,7 +5,7 @@ import { IProjectile } from 'src/Projectiles/IProjectile';
 import { SoundEffect } from 'src/SoundEffect';
 import { DragonEnemy } from '../../DragonEnemy';
 import { DragonStateBase } from '../DragonStateBase';
-import { IState } from '../../../IState';
+import { IState } from '../../../../IState';
 import { SharedDragonStateVariables } from '../SharedDragonStateVariables';
 import { RushState } from './RushState';
 
@@ -22,10 +22,9 @@ export class AttackState extends DragonStateBase implements IState {
     public override async Update(delta: number): Promise<void> {
         // Spawn a bite projectile
         // This is handled differently from the normal attack, when the hero remains close
-        const projectileCenter = this.dragon.FacingDirection[0] > 0 ?
-            vec3.add(vec3.create(), this.dragon.CenterPosition, vec3.fromValues(-2.5, 1, 0)) :
-            vec3.add(vec3.create(), this.dragon.CenterPosition, vec3.fromValues(2.5, 1, 0));
-        const bite = await BiteProjectile.Create(projectileCenter, vec3.clone(this.dragon.FacingDirection));
+        this.dragon.ResetVelocity();
+        const projectilePosition = this.dragon.BiteProjectilePosition;
+        const bite = await BiteProjectile.Create(projectilePosition, vec3.clone(this.dragon.FacingDirection));
         await this.biteAttackSound.Play();
         this.spawnProjectile(this.dragon, bite);
 

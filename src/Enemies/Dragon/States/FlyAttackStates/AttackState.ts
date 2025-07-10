@@ -1,4 +1,4 @@
-import { IState } from '../../../../IState';
+import { IState } from '../../../IState';
 import { DragonEnemy } from '../../DragonEnemy';
 import { vec3 } from 'gl-matrix';
 import { FlyAttackState } from './FlyAttackState';
@@ -19,7 +19,7 @@ export class AttackState implements IState {
         const attackDirection = vec3.sub(vec3.create(), this.shared.savedHeroPosition, this.dragon.BiteProjectilePosition);
         attackDirection[2] = 0;
         vec3.normalize(attackDirection, attackDirection);
-        vec3.scale(attackDirection, attackDirection, 0.0003); // hard coded attack speed
+        vec3.scale(attackDirection, attackDirection, 0.025); // hard coded attack speed
 
         this.dragon.Move(attackDirection, delta);
 

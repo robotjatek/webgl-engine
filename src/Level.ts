@@ -202,9 +202,7 @@ export class Level implements IProjectileHitListener, IDisposable {
                 const enemiesCollidingWithProjectile = this.gameObjects.filter(
                     e => e.IsCollidingWith(attack.BoundingBox, false) && e instanceof EnemyBase);
                 // Pushback force does not necessarily mean the amount of pushback. A big enemy can ignore a sword attack for example
-                for (const e of enemiesCollidingWithProjectile) {
-                    await e.CollideWithAttack(attack);
-                }
+                enemiesCollidingWithProjectile.forEach(e => e.CollideWithAttack(attack));
                 if (enemiesCollidingWithProjectile.length) {
                     await attack.OnHit();
                 }
@@ -214,7 +212,7 @@ export class Level implements IProjectileHitListener, IDisposable {
             for (const gameObject of this.gameObjects) {
                 await gameObject.Update(delta);
                 if (gameObject.IsCollidingWith(this.hero.BoundingBox, false)) {
-                    await gameObject.Visit(this.hero);
+                    await this.hero.CollideWithGameObject(gameObject);
                 }
 
                 // Despawn out-of-bounds game objects. These will be projectiles most of the time.

@@ -1,4 +1,4 @@
-import { IState } from '../../../../IState';
+import { IState } from '../../../IState';
 import { Hero } from '../../../../Hero';
 import { DragonEnemy } from '../../DragonEnemy';
 import { ICollider } from '../../../../ICollider';
@@ -41,11 +41,10 @@ export class SweepingState implements IState {
 
             if (this.timeSignalingFireballAttack > 10 / 60 * 1000) {
                 // In ground attack the dragon spits the fireball on the x-axis only
-                const position = this.dragon.FireBallProjectileSpawnPosition;
+                const projectileCenter = this.dragon.FireBallProjectileSpawnPosition;
                 const fireball = await Fireball.Create(
-                    position,
-                    this.dragon.FacingDirection,
-                    vec3.scale(vec3.create(), this.dragon.FacingDirection, -0.00015),
+                    projectileCenter,
+                    vec3.scale(vec3.create(), this.dragon.FacingDirection, -0.015),
                     this.collider);
 
                 this.spawnProjectile(this.dragon, fireball);

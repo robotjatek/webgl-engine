@@ -3,7 +3,6 @@
   "music": "audio/lava2.mp3",
   "layers": [
     {
-      "name": "Background",
       "tiles": [
         {
           "xPos": 32,
@@ -12307,7 +12306,6 @@
       "layerOffsetY": 0
     },
     {
-      "name": "Main Layer",
       "tiles": [
         {
           "xPos": 7,
@@ -14241,7 +14239,6 @@
       "layerOffsetY": 0
     },
     {
-      "name": "Lava pool (event layer)",
       "tiles": [
         {
           "xPos": 0,
@@ -17223,46 +17220,39 @@
   "defaultLayer": 1,
   "gameObjects": [
     {
+      "type": "escape_trigger",
+      "xPos": 18,
+      "yPos": 82
+    },
+    {
+      "type": "escape_trigger",
+      "xPos": 18,
+      "yPos": 83
+    },
+    {
+      "type": "escape_trigger",
+      "xPos": 18,
+      "yPos": 84
+    },
+    {
+      "type": "escape_trigger",
+      "xPos": 18,
+      "yPos": 85
+    },
+    {
+      "type": "escape_trigger",
+      "xPos": 18,
+      "yPos": 86
+    },
+    {
+      "type": "escape_trigger",
+      "xPos": 18,
+      "yPos": 87
+    },
+    {
       "type": "end",
       "xPos": 28,
-      "yPos": 4,
-      "name": "end"
-    },
-    {
-      "type": "escape_trigger",
-      "xPos": 18,
-      "yPos": 82,
-      "name": "escape_trigger"
-    },
-    {
-      "type": "escape_trigger",
-      "xPos": 18,
-      "yPos": 83,
-      "name": "escape_trigger"
-    },
-    {
-      "type": "escape_trigger",
-      "xPos": 18,
-      "yPos": 84,
-      "name": "escape_trigger"
-    },
-    {
-      "type": "escape_trigger",
-      "xPos": 18,
-      "yPos": 85,
-      "name": "escape_trigger"
-    },
-    {
-      "type": "escape_trigger",
-      "xPos": 18,
-      "yPos": 86,
-      "name": "escape_trigger"
-    },
-    {
-      "type": "escape_trigger",
-      "xPos": 18,
-      "yPos": 87,
-      "name": "escape_trigger"
+      "yPos": 4
     }
   ],
   "start": {

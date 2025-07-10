@@ -4,9 +4,7 @@ import { Hero } from '../Hero';
 import { Camera } from '../Camera';
 import { ILevelEvent } from './ILevelEvent';
 
-/**
- * FreeCameraEvent allows the camera to follow the hero
- */
+
 export class FreeCameraEvent implements ILevelEvent {
     public static readonly EVENT_KEY = 'free_camera_event';
     constructor(private camera: Camera,

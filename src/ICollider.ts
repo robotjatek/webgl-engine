@@ -1,5 +1,4 @@
 import { BoundingBox } from './BoundingBox';
-import { vec2, vec3 } from 'gl-matrix';
 
 export interface ICollider {
   get BoundingBox(): BoundingBox;
@@ -10,15 +9,4 @@ export interface ICollider {
    * Eg. a hero should collide with the edges of a layer, but projectiles and enemies should pass through.
    */
   IsCollidingWith(boundingBox: BoundingBox, collideWithUndefined: boolean): boolean;
-}
-
-export class NullCollider implements ICollider {
-  get BoundingBox(): BoundingBox {
-    return new BoundingBox(vec3.create(), vec2.create());
-  }
-
-  IsCollidingWith(boundingBox: BoundingBox, collideWithUndefined: boolean): boolean {
-    return false;
-  }
-
 }

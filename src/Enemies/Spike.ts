@@ -7,10 +7,9 @@ import { Sprite } from 'src/Sprite';
 import { Utils } from 'src/Utils';
 import { Shader } from 'src/Shader';
 
-import { StompState } from '../Hero/States/StompState';
-
 /**
  * Stationary enemy. Cannot be damaged. Can damage the hero
+ * // TODO: maybe not enemy, but game object like Coin
  */
 export class Spike extends EnemyBase {
     private constructor(position: vec3,
@@ -36,11 +35,7 @@ export class Spike extends EnemyBase {
         // No update for spike at the moment
     }
 
-    public override async Damage(pushbackForce: vec3, damage: number): Promise<void> {
-        // Cannot damage a spike
-    }
-
-    public override async DamageWithInvincibilityConsidered(pushbackForce: vec3, damage: number): Promise<void> {
+    public override async Damage(pushbackForce: vec3): Promise<void> {
         // Cannot damage a spike
     }
 
@@ -49,13 +44,7 @@ export class Spike extends EnemyBase {
     }
 
     public async Visit(hero: Hero): Promise<void> {
-        if (hero.StateClass !== StompState.name) {
-            const pushbackForceRatio = vec3.fromValues(0, -0.008, 0);
-            await hero.DamageWithInvincibilityConsidered(pushbackForceRatio, 20);
-        } else {
-            await hero.Damage(vec3.fromValues(0, -0.008, 0), 20);
-            await hero.ChangeState(hero.AFTER_STOMP_STATE());
-        }
+        await hero.CollideWithSpike(this);
     }
 
     public Dispose(): void {

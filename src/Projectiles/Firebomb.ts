@@ -12,13 +12,13 @@ import { IProjectile } from './IProjectile';
 
 export class Firebomb extends ProjectileBase {
 
-    private moveDirection: vec3 = vec3.scale(vec3.create(), vec3.fromValues(0, 1, 0), 0.0001);
+    private moveDirection: vec3 = vec3.scale(vec3.create(), vec3.fromValues(0, 1, 0), 0.015);
     private spawnSoundPlayed = false;
 
     private constructor(
         shader: Shader,
         texture: Texture,
-        position: vec3,
+        centerPosition: vec3,
         bbShader: Shader,
         hitSound: SoundEffect,
         private spawnSound: SoundEffect,
@@ -30,13 +30,14 @@ export class Firebomb extends ProjectileBase {
             Utils.DefaultSpriteTextureCoordinates);
         const visualScale = vec2.fromValues(0.85, 0.85);
         const bbOffset = vec3.fromValues(0, 0, 0);
-        const bbSize = vec2.fromValues(0.85, 0.85);
+        const bbSize = vec2.fromValues(1.0, 1.0);
 
-        super(shader, texture, sprite, position, visualScale, bbOffset, bbSize, hitSound, false,
+        super(shader, texture, sprite, centerPosition, visualScale, bbOffset, bbSize, hitSound, false,
             collider, bbShader);
+      //  bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.5));
     }
 
-    public static async Create(position: vec3, collider: ICollider): Promise<Firebomb> {
+    public static async Create(centerPosition: vec3, collider: ICollider): Promise<Firebomb> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
         const hitSound = await SoundEffectPool.GetInstance().GetAudio('audio/hero_stomp.wav');
@@ -44,7 +45,7 @@ export class Firebomb extends ProjectileBase {
         const despawnSound = await SoundEffectPool.GetInstance().GetAudio('audio/enemy_damage.wav');
         const texture = await TexturePool.GetInstance().GetTexture('textures/firebomb.png');
 
-        return new Firebomb(shader, texture, position, bbShader, hitSound, spawnSound, despawnSound, collider);
+        return new Firebomb(shader, texture, centerPosition, bbShader, hitSound, spawnSound, despawnSound, collider);
     }
 
     public get PushbackForce(): vec3 {
@@ -52,8 +53,6 @@ export class Firebomb extends ProjectileBase {
     };
 
     public async Update(delta: number): Promise<void> {
-        await super.Update(delta);
-
         if (!this.spawnSoundPlayed) {
             await this.spawnSound.Play(1, 0.5);
             this.spawnSoundPlayed = true;

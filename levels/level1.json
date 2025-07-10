@@ -3,7 +3,6 @@
   "music": "audio/level.mp3",
   "layers": [
     {
-      "name": "Background hills",
       "tiles": [
         {
           "xPos": 35,
@@ -577,7 +576,6 @@
       "layerOffsetY": 0
     },
     {
-      "name": "Background",
       "tiles": [
         {
           "xPos": 0,
@@ -2506,7 +2504,6 @@
       "layerOffsetY": 0
     },
     {
-      "name": "Main layer",
       "tiles": [
         {
           "xPos": 28,
@@ -3215,7 +3212,6 @@
       "layerOffsetY": 0
     },
     {
-      "name": "Forground hills",
       "tiles": [
         {
           "xPos": 44,
@@ -3394,122 +3390,102 @@
     {
       "type": "coin",
       "xPos": 22,
-      "yPos": 9,
-      "name": "coin"
+      "yPos": 9
     },
     {
       "type": "coin",
       "xPos": 23,
-      "yPos": 9,
-      "name": "coin"
+      "yPos": 9
     },
     {
       "type": "coin",
       "xPos": 24,
-      "yPos": 9,
-      "name": "coin"
+      "yPos": 9
     },
     {
       "type": "coin",
       "xPos": 25,
-      "yPos": 9,
-      "name": "coin"
+      "yPos": 9
     },
     {
       "type": "coin",
       "xPos": 15,
-      "yPos": 12,
-      "name": "coin"
+      "yPos": 12
     },
     {
       "type": "coin",
       "xPos": 16,
-      "yPos": 12,
-      "name": "coin"
-    },
-    {
-      "type": "end",
-      "xPos": 61,
-      "yPos": 14,
-      "name": "end"
+      "yPos": 12
     },
     {
       "type": "coin",
       "xPos": 10,
-      "yPos": 15,
-      "name": "coin"
+      "yPos": 15
     },
     {
       "type": "coin",
       "xPos": 11,
-      "yPos": 15,
-      "name": "coin"
+      "yPos": 15
     },
     {
       "type": "coin",
       "xPos": 27,
-      "yPos": 15,
-      "name": "coin"
+      "yPos": 15
     },
     {
       "type": "coin",
       "xPos": 28,
-      "yPos": 15,
-      "name": "coin"
+      "yPos": 15
     },
     {
       "type": "coin",
       "xPos": 29,
-      "yPos": 15,
-      "name": "coin"
+      "yPos": 15
     },
     {
       "type": "health",
       "xPos": 31,
-      "yPos": 15,
-      "name": "health"
+      "yPos": 15
     },
     {
       "type": "slime",
       "xPos": 36,
-      "yPos": 15,
-      "name": "slime"
+      "yPos": 15
     },
     {
       "type": "slime",
       "xPos": 40,
-      "yPos": 15,
-      "name": "slime"
+      "yPos": 15
     },
     {
       "type": "cactus",
       "xPos": 52,
-      "yPos": 15,
-      "name": "cactus"
+      "yPos": 15
     },
     {
       "type": "spike",
       "xPos": 56,
-      "yPos": 16,
-      "name": "spike"
+      "yPos": 16
     },
     {
       "type": "spike",
       "xPos": 57,
-      "yPos": 16,
-      "name": "spike"
+      "yPos": 16
     },
     {
       "type": "spike",
       "xPos": 58,
-      "yPos": 16,
-      "name": "spike"
+      "yPos": 16
     },
     {
       "type": "spike",
       "xPos": 59,
-      "yPos": 16,
-      "name": "spike"
+      "yPos": 16
+    },
+    {
+      "type": "end",
+      "xPos": 61,
+      "yPos": 14
     }
   ],
   "start": {
@@ -3517,6 +3493,5 @@
     "yPos": 15
   },
   "nextLevel": "levels/boss_arena.json",
-  "events": [],
-  "initialEventKey": null
+  "events": []
 }

@@ -1,26 +1,26 @@
-import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
+import { mat4, vec2, vec3 } from 'gl-matrix';
 import { ICollider } from '../ICollider';
 import { IDisposable } from 'src/IDisposable';
 import { IGameobject } from 'src/IGameobject';
 import { BoundingBox } from '../BoundingBox';
 import { IProjectile } from '../Projectiles/IProjectile';
 import { Hero } from '../Hero';
+import { SpriteBatch } from '../SpriteBatch';
 import { Shader } from '../Shader';
 import { Sprite } from '../Sprite';
 import { Texture } from '../Texture';
 import { Utils } from '../Utils';
-import { Environment } from '../Environment';
-import { SpriteRenderer } from '../SpriteRenderer';
-import { IDamageable } from '../Components/DamageComponent';
 
-export interface IEnemy extends ICollider, IDisposable, IGameobject, IDamageable {
+export interface IEnemy extends ICollider, IDisposable, IGameobject {
+    Damage(pushbackForce: vec3): Promise<void>;
     get Position(): vec3;
+    get Health(): number;
 }
 
 export abstract class EnemyBase implements IEnemy {
-    protected renderer: SpriteRenderer;
-    protected bbRenderer: SpriteRenderer;
+    protected batch: SpriteBatch;
     private bbSprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
+    protected bbBatch: SpriteBatch = new SpriteBatch(this.bbShader, [this.bbSprite], null);
 
     protected constructor(protected shader: Shader,
                           protected sprite: Sprite,
@@ -31,18 +31,23 @@ export abstract class EnemyBase implements IEnemy {
                           protected position: vec3,
                           protected visualScale: vec2,
                           protected health: number) {
-        this.renderer = new SpriteRenderer(shader, texture, sprite, visualScale);
-        this.bbRenderer = new SpriteRenderer(bbShader, null, this.bbSprite, bbSize);
-        bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
+        this.batch = new SpriteBatch(shader, [sprite], texture);
     }
 
     public Draw(proj: mat4, view: mat4): void {
-        this.renderer.Draw(proj, view, this.position, 0);
+        this.batch.Draw(proj, view);
+        mat4.translate(this.batch.ModelMatrix, mat4.create(), this.position);
+        mat4.scale(this.batch.ModelMatrix,
+            this.batch.ModelMatrix,
+            vec3.fromValues(this.visualScale[0], this.visualScale[1], 1));
 
         // Bounding box drawing
-        if (Environment.RenderBoundingBoxes) {
-            this.bbRenderer.Draw(proj, view, this.BoundingBox.position, 0);
-        }
+        this.bbBatch.Draw(proj, view);
+        mat4.translate(this.bbBatch.ModelMatrix, mat4.create(), this.BoundingBox.position);
+        mat4.scale(
+            this.bbBatch.ModelMatrix,
+            this.bbBatch.ModelMatrix,
+            vec3.fromValues(this.bbSize[0], this.bbSize[1], 1));
     }
 
     public get BoundingBox(): BoundingBox {
@@ -50,15 +55,14 @@ export abstract class EnemyBase implements IEnemy {
     }
 
     public async CollideWithAttack(attack: IProjectile): Promise<void> {
-        await this.Damage(attack.PushbackForce, 1);
+        await this.Damage(attack.PushbackForce);
     }
 
-    public abstract Damage(pushbackForce: vec3, damage: number): Promise<void>;
-    public abstract DamageWithInvincibilityConsidered(pushbackForce: vec3, damage: number): Promise<void>;
+    public abstract Damage(pushbackForce: vec3): Promise<void>;
 
     public Dispose(): void {
-        this.renderer.Dispose();
-        this.bbRenderer.Dispose();
+        this.batch.Dispose();
+        this.bbBatch.Dispose();
     };
 
     public abstract get EndCondition(): boolean;
@@ -67,10 +71,6 @@ export abstract class EnemyBase implements IEnemy {
 
     public get Health(): number {
         return this.health;
-    }
-
-    public set Health(health: number) {
-        this.health = health;
     }
 
     public IsCollidingWith(boundingBox: BoundingBox): boolean {

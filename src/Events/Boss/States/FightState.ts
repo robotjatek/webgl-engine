@@ -1,4 +1,4 @@
-import { IState } from '../../../IState';
+import { IState } from '../../../Enemies/IState';
 import { IEnemy } from '../../../Enemies/IEnemy';
 import { UIService } from '../../../UIService';
 import { Textbox } from '../../../Textbox';

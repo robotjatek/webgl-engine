@@ -3,7 +3,7 @@ import { Hero } from 'src/Hero';
 import { SoundEffect } from 'src/SoundEffect';
 import { DragonEnemy } from '../../DragonEnemy';
 import { DragonStateBase } from '../DragonStateBase';
-import { IState } from '../../../../IState';
+import { IState } from '../../../IState';
 import { SharedDragonStateVariables } from '../SharedDragonStateVariables';
 import { RushState } from './RushState';
 
@@ -19,9 +19,9 @@ export class ChargeState extends DragonStateBase implements IState {
         this.shared.timeSinceLastCharge = 0;
         const dir = vec3.sub(vec3.create(), this.dragon.CenterPosition, this.hero.CenterPosition);
         if (dir[0] > 0) {
-            this.dragon.Move(vec3.fromValues(-0.0002, 0, 0), delta);
+            this.dragon.Move(vec3.fromValues(-0.035, 0, 0), delta);
         } else if (dir[0] < 0) {
-            this.dragon.Move(vec3.fromValues(0.0002, 0, 0), delta);
+            this.dragon.Move(vec3.fromValues(0.035, 0, 0), delta);
         }
 
         // Move out of charge state when distance on the Y axis is close enough

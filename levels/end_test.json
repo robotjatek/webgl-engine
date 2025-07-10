@@ -334,40 +334,24 @@
   "defaultLayer": 0,
   "gameObjects": [
     {
-      "type": "health",
-      "xPos": 14,
-      "yPos": 9,
-      "name": "health-5"
-    },
-    {
-      "type": "health",
-      "xPos": 15,
-      "yPos": 9,
-      "name": "health-6"
+      "type": "end",
+      "xPos": 10,
+      "yPos": 12
     },
     {
       "type": "end",
       "xPos": 10,
-      "yPos": 12,
-      "name": "end"
+      "yPos": 13
     },
     {
       "type": "end",
       "xPos": 10,
-      "yPos": 13,
-      "name": "end"
-    },
-    {
-      "type": "end",
-      "xPos": 10,
-      "yPos": 14,
-      "name": "end"
+      "yPos": 14
     },
     {
       "type": "coin",
       "xPos": 15,
-      "yPos": 15,
-      "name": "coin"
+      "yPos": 15
     }
   ],
   "start": {

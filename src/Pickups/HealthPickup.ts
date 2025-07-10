@@ -5,18 +5,18 @@ import { Texture } from '../Texture';
 import { TexturePool } from '../TexturePool';
 import { Sprite } from '../Sprite';
 import { Utils } from '../Utils';
+import { SpriteBatch } from '../SpriteBatch';
 import { Hero } from '../Hero';
 import { IPickup } from './IPickup';
 import { SoundEffectPool } from '../SoundEffectPool';
 import { SoundEffect } from 'src/SoundEffect';
 import { IProjectile } from 'src/Projectiles/IProjectile';
-import { SpriteRenderer } from '../SpriteRenderer';
 
 export class HealthPickup implements IPickup {
-    private visualScale = vec2.fromValues(2, 2);
+    private visualScale = vec3.fromValues(2, 2, 1);
     private sprite: Sprite = new Sprite(Utils.DefaultSpriteVertices, Utils.DefaultSpriteTextureCoordinates);
-    private readonly renderer: SpriteRenderer;
-    private readonly startPosition: vec3;
+    private batch: SpriteBatch = new SpriteBatch(this.shader, [this.sprite], this.texture);
+    private startPosition: vec3;
 
     private constructor(
         private position: vec3,
@@ -26,7 +26,6 @@ export class HealthPickup implements IPickup {
         private texture: Texture
     ) {
         this.startPosition = vec3.clone(position);
-        this.renderer = new SpriteRenderer(shader, texture, this.sprite, this.visualScale);
     }
 
     public static async Create(position: vec3, onPickup: (sender: HealthPickup) => void): Promise<HealthPickup> {
@@ -50,7 +49,11 @@ export class HealthPickup implements IPickup {
     }
 
     public Draw(proj: mat4, view: mat4): void {
-        this.renderer.Draw(proj, view, this.position, 0);
+        mat4.translate(this.batch.ModelMatrix, mat4.create(), this.position);
+        mat4.scale(this.batch.ModelMatrix,
+            this.batch.ModelMatrix,
+            this.visualScale);
+        this.batch.Draw(proj, view);
     }
 
     private currentTime = 0;
@@ -67,19 +70,18 @@ export class HealthPickup implements IPickup {
         return this.BoundingBox.IsCollidingWith(boundingBox);
     }
 
-    public async CollideWithAttack(attack: IProjectile): Promise<void> {
+    public CollideWithAttack(attack: IProjectile): void {
         // No-op
     }
 
     public async Visit(hero: Hero): Promise<void> {
         await this.pickupSound.Play();
-        hero.Health += this.Increase;
-        // De-spawning is handled by the Game object, so we need no notify it that it can now despawn the object
-        this.onPickup(this);
+        hero.CollideWithHealth(this);
+        this.onPickup(this); // Despawning is handled by the Game object, so we need no notify it that it can now despawn the object
     }
 
     public Dispose(): void {
-        this.renderer.Dispose();
+        this.batch.Dispose();
         this.shader.Delete();
     }
 }

@@ -8,14 +8,14 @@ import { SoundEffectPool } from '../SoundEffectPool';
 import { SoundEffect } from 'src/SoundEffect';
 import { Texture } from 'src/Texture';
 import { ProjectileBase } from './ProjectileBase';
-import { Animation } from '../Components/Animation';
-import { NullCollider } from '../ICollider';
 
 /**
  * A stationary projectile that attacks the player
  */
 export class BiteProjectile extends ProjectileBase {
-    private animation: Animation;
+    private animationFinished = false;
+    private currentFrameTime: number = 0;
+    private currentAnimationFrame: number = 0;
     
     // TODO: flip texture, to achieve left and right facing bite attack
     private currentFrameSet: vec2[] = [
@@ -26,40 +26,37 @@ export class BiteProjectile extends ProjectileBase {
     ];
 
     private constructor(
-        position: vec3,
+        centerPosition: vec3,
         private facingDirection: vec3,
         shader: Shader,
         bbShader: Shader,
         private biteDamageSound: SoundEffect,
         texture: Texture
     ) {
-        const sprite: Sprite = new Sprite(Utils.DefaultSpriteVertices,
-            Utils.CreateTextureCoordinates(
-                0 / 5,
-                0 / 2,
-                1 / 5,
-                1 / 2));
-
-        const bbSize = vec2.fromValues(2.0, 2.0);
+        const bbOffset = vec3.fromValues(0, 0, 0);
+        const bbSize = vec2.fromValues(1.6, 1.6);
         const spriteVisualScale = vec2.fromValues(5, 5);
-        const bbOffset = facingDirection[0] > 0 ?
-            vec3.fromValues(spriteVisualScale[0] - bbSize[0] - 1.25, 1.25, 0) : // left box
-            vec3.fromValues(1.25, 1.25, 0); // right box
-
+        const sprite: Sprite = new Sprite(Utils.DefaultSpriteVertices,
+                Utils.CreateTextureCoordinates(
+                    0 / 5,
+                    0 / 2,
+                    1 / 5,
+                    1 / 2));
         const animationMustComplete = true;
-        super(shader, texture, sprite, position, spriteVisualScale, bbOffset, bbSize, null, animationMustComplete,
-            new NullCollider(), bbShader);
-
-        this.animation = new Animation(64, this.renderer);
+        super(shader, texture, sprite, centerPosition, spriteVisualScale, bbOffset, bbSize, null, animationMustComplete,
+            null, bbShader);
+        this.batch.TextureOffset = this.currentFrameSet[0];
+        // this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0, 0, 0, 1));
+        // this.bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.4));
     }
 
-    public static async Create(position: vec3, facingDirection: vec3): Promise<BiteProjectile> {
+    public static async Create(centerPosition: vec3, facingDirection: vec3): Promise<BiteProjectile> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
         const biteDamageSound = await SoundEffectPool.GetInstance().GetAudio('audio/bite.wav');
         const texture = await TexturePool.GetInstance().GetTexture('textures/fang.png');
 
-        return new BiteProjectile(position, facingDirection, shader, bbShader, biteDamageSound, texture);
+        return new BiteProjectile(centerPosition, facingDirection, shader, bbShader, biteDamageSound, texture);
     }
 
     public async OnHit(): Promise<void> {
@@ -74,8 +71,8 @@ export class BiteProjectile extends ProjectileBase {
     }
 
     public async Update(delta: number): Promise<void> {
-        const animationFinished = this.animation.Animate(delta, this.currentFrameSet);
-        if (animationFinished) {
+        this.Animate(delta);
+        if (this.animationFinished) {
             this.OnHitListeners.forEach(l => l.RemoveGameObject(this));
         }
         // TODO: do not damage hero right after animation has started, but wait a little (spawn bb out of bounds, then move it to the correct position)
@@ -89,6 +86,19 @@ export class BiteProjectile extends ProjectileBase {
         super.Dispose();
         this.shader.Delete();
         this.bbShader.Delete();
+    }
+
+    private Animate(delta: number): void {
+        this.currentFrameTime += delta;
+        if (this.currentFrameTime > 64) { // TODO: time spent on frame
+            this.currentAnimationFrame++;
+            if (this.currentAnimationFrame >= this.currentFrameSet.length) {
+                this.animationFinished = true;
+            }
+
+            this.batch.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
+            this.currentFrameTime = 0;
+        }
     }
 
 }

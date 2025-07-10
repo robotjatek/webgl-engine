@@ -1,4 +1,4 @@
-import { IState } from '../../../../IState';
+import { IState } from '../../../IState';
 import { DragonEnemy } from '../../DragonEnemy';
 
 export class AttackState implements IState {

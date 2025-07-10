@@ -1,4 +1,4 @@
-import { IState } from '../../../IState';
+import { IState } from '../../../Enemies/IState';
 import { Hero } from '../../../Hero';
 import { Level } from '../../../Level';
 import { SharedBossEventVariables } from '../SharedBossEventVariables';
@@ -20,6 +20,7 @@ export class BossDeathState implements IState {
     public async Update(delta: number): Promise<void> {
         // OnBoss death state
         // move hero to the end marker
+        this.hero.AcceptInput = false;
         this.timeSinceBossDied += delta;
 
         const musicStep = this.shared.startMusicVolume / (3000 / delta);

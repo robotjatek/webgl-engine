@@ -1,4 +1,4 @@
-import { IState } from '../../../IState';
+import { IState } from '../../../Enemies/IState';
 import { IEnemy } from '../../../Enemies/IEnemy';
 import { Level } from '../../../Level';
 import { Hero } from '../../../Hero';

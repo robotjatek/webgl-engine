@@ -9,59 +9,53 @@ import { IProjectile } from './IProjectile';
 import { SoundEffect } from 'src/SoundEffect';
 import { Hero } from 'src/Hero';
 import { ProjectileBase } from './ProjectileBase';
-import { Animation } from '../Components/Animation';
-import { NullCollider } from '../ICollider';
 
 // MeleeAttack is considered as a stationary projectile
 export class MeleeAttack extends ProjectileBase {
     private attackSoundPlayed: boolean = false;
 
-    private animation: Animation;
-    private currentFrameSet: vec2[] = [
-        vec2.fromValues(1 / 5.0, 1 / 2.0),
-        vec2.fromValues(2 / 5.0, 1 / 2.0),
-        vec2.fromValues(3 / 5.0, 1 / 2.0)
-    ];
+    // TODO: animation also could be a component
+    private currentFrameTime: number = 0;
+    private currentAnimationFrame: number = 0;
 
-    private constructor(position: vec3, private facingDirection: vec3,
+    private animationFinished = false;
+
+    private constructor(centerPosition: vec3, private facingDirection: vec3,
                         shader: Shader, bbShader: Shader, private attackSound: SoundEffect, texture: Texture) {
         const spriteVisualScale: vec2 = vec2.fromValues(4, 3);
         const bbSize = vec2.fromValues(1.25, 2);
-        const bbOffset = facingDirection[0] > 0 ?
-            vec3.fromValues(1.25, 0.5, 0) :
-            vec3.fromValues(-(bbSize[0] - 2.75), 0.5, 0);
-
+        const bbOffset = vec3.fromValues(0, 0, 0);
         const sprite: Sprite = new Sprite(Utils.DefaultSpriteVertices,
             Utils.CreateTextureCoordinates(
-                0.0 / 5.0,
-                0.0 / 2.0,
                 1.0 / 5.0,
-                1.0 / 2.0));
+                1.0 / 2.0,
+                1 / 5.0,
+                1 / 2.0));
 
 
         const animationMustComplete = true;
-        super(shader, texture, sprite, position, spriteVisualScale, bbOffset, bbSize, null, animationMustComplete,
-            new NullCollider(), bbShader);
-        this.animation = new Animation(1 / 30 * 1000, this.renderer);
-        this.renderer.TextureOffset = this.currentFrameSet[0];
+        super(shader, texture, sprite, centerPosition, spriteVisualScale, bbOffset, bbSize, null, animationMustComplete,
+            null, bbShader)
+        //this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0, 0, 1, 0.5));
+        //bbShader.SetVec4Uniform('clr', vec4.fromValues(1, 0, 0, 0.5));
     }
 
-    public async CollideWithAttack(attack: IProjectile): Promise<void> {
+    public CollideWithAttack(attack: IProjectile): void {
         // No-op as hero attacks shouldn't interact with each other
     }
 
-    public static async Create(position: vec3, facingDirection: vec3): Promise<MeleeAttack> {
+    public static async Create(centerPosition: vec3, facingDirection: vec3): Promise<MeleeAttack> {
         // TODO: i really should rename the fragment shader from Hero.frag as everything seems to use it...
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
         const attackSound = await SoundEffectPool.GetInstance().GetAudio('audio/sword.mp3');
         const texture = await TexturePool.GetInstance().GetTexture('textures/Sword1.png');
 
-        return new MeleeAttack(position, facingDirection, shader, bbShader, attackSound, texture);
+        return new MeleeAttack(centerPosition, facingDirection, shader, bbShader, attackSound, texture);
     }
 
     public get PushbackForce(): vec3 {
-        return vec3.fromValues(this.facingDirection[0] * 0.0075, -0.005, 0);
+        return vec3.fromValues(this.facingDirection[0] / 50, -0.005, 0);
     }
 
     public override async OnHit(): Promise<void> {
@@ -80,11 +74,28 @@ export class MeleeAttack extends ProjectileBase {
             await this.attackSound.Play(pitch);
             this.attackSoundPlayed = true;
         }
+        this.Animate(delta);
 
-        const animationFinished = this.animation.Animate(delta, this.currentFrameSet);
-        if (animationFinished) {
-            this.alreadyHit = true;
+        if (this.animationFinished) {
+            super.alreadyHit = true;
             this.OnHitListeners.forEach(l => l.DespawnAttack(this));
+        }
+    }
+
+    // TODO: animation feels like an ECS too
+    // TODO: animation like in DragonEnemy
+    private Animate(delta: number): void {
+        this.currentFrameTime += delta;
+        if (this.currentFrameTime > 30) {
+            this.currentAnimationFrame++;
+            if (this.currentAnimationFrame > 4) {
+                this.animationFinished = true;
+                this.currentAnimationFrame = 1;
+            }
+
+            // TODO: hardcoded for sword.png. Make animation parametrizable
+            this.batch.TextureOffset = vec2.fromValues(this.currentAnimationFrame / 5.0, 0 / 2.0);
+            this.currentFrameTime = 0;
         }
     }
 

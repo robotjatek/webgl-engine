@@ -1,4 +1,5 @@
-import { vec2, vec3 } from 'gl-matrix';
+import { vec2, vec3, vec4 } from 'gl-matrix';
+import { BoundingBox } from '../../BoundingBox';
 import { Shader } from '../../Shader';
 import { Sprite } from '../../Sprite';
 import { Texture } from '../../Texture';
@@ -9,7 +10,7 @@ import { SoundEffectPool } from '../../SoundEffectPool';
 import { IProjectile } from '../../Projectiles/IProjectile';
 import { EnemyBase } from '../IEnemy';
 import { SoundEffect } from 'src/SoundEffect';
-import { IState } from '../../IState';
+import { IState } from '../IState';
 import { SharedDragonStateVariables } from './States/SharedDragonStateVariables';
 import { IdleState } from './States/IdleState';
 import { RushState } from './States/RushStates/RushState';
@@ -18,11 +19,6 @@ import { EnterArenaState } from './States/EnterArenaState';
 import { GroundAttackState } from './States/GroundAttackStates/GroundAttackState';
 import { Layer } from '../../Layer';
 import { Point } from '../../Point';
-import { Animation } from '../../Components/Animation';
-import { PhysicsComponent } from '../../Components/PhysicsComponent';
-import { FlashOverlayComponent } from '../../Components/FlashOverlayComponent';
-import { DamageComponent } from '../../Components/DamageComponent';
-import { StompState } from '../../Hero/States/StompState';
 
 export class DragonEnemy extends EnemyBase {
 
@@ -58,7 +54,8 @@ export class DragonEnemy extends EnemyBase {
     private state: IState = this.ENTER_ARENA_STATE();
 
     // Animation related
-    private animation: Animation;
+    private currentFrameTime: number = 0;
+    private currentAnimationFrame: number = 0;
     private leftFacingAnimationFrames = [
         vec2.fromValues(3 / 12, 3 / 8),
         vec2.fromValues(4 / 12, 3 / 8),
@@ -70,7 +67,7 @@ export class DragonEnemy extends EnemyBase {
         vec2.fromValues(5 / 12, 1 / 8)
     ];
     private currentFrameSet = this.leftFacingAnimationFrames;
-    private readonly physicsComponent: PhysicsComponent;
+
 
     // Behaviour related
     private shared: SharedDragonStateVariables = {
@@ -80,10 +77,14 @@ export class DragonEnemy extends EnemyBase {
     };
 
     private lastFacingDirection = vec3.fromValues(-1, 0, 0); // Facing right by default
-    private lastPosition: vec3 = vec3.create();
 
-    private readonly flashOverlayComponent: FlashOverlayComponent;
-    private readonly damageComponent: DamageComponent;
+    private damagedTime = 0;
+    private damaged = false;
+    private invincible = false;
+    private timeInInvincibility = 0;
+
+    private signaling = false;
+    private attackSignalTime = 0;
 
     private constructor(
         position: vec3,
@@ -111,10 +112,7 @@ export class DragonEnemy extends EnemyBase {
         const bbSize = vec2.fromValues(4.8, 3);
         const bbOffset = vec3.fromValues(0.1, 1.5, 0);
         super(shader, sprite, texture, bbShader, bbSize, bbOffset, position, visualScale, health);
-        this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer);
-        this.physicsComponent = new PhysicsComponent(position, this.lastPosition, () => this.BoundingBox, bbOffset, collider, true);
-        this.flashOverlayComponent = new FlashOverlayComponent(this.shader);
-        this.damageComponent = new DamageComponent(this, this.flashOverlayComponent, this.enemyDamageSound, this.physicsComponent, 15);
+        this.batch.TextureOffset = this.leftFacingAnimationFrames[0];
     }
 
     public static async Create(position: vec3,
@@ -142,11 +140,7 @@ export class DragonEnemy extends EnemyBase {
     }
 
     public async Visit(hero: Hero): Promise<void> {
-        if (this.hero.StateClass === StompState.name) {
-            this.physicsComponent.AddToExternalForce(vec3.fromValues(0, -0.05, 0));
-            await hero.ChangeState(hero.AFTER_STOMP_STATE());
-            await this.DamageWithInvincibilityConsidered(vec3.create(), 1); // Damage the enemy without pushing it to any direction
-        }
+        await hero.CollideWithDragon(this);
     }
 
     public get CenterPosition(): vec3 {
@@ -161,28 +155,40 @@ export class DragonEnemy extends EnemyBase {
     }
 
     public get BiteProjectilePosition(): vec3 {
+        // returns projectile center position
         return this.FacingDirection[0] > 0 ?
-            vec3.add(vec3.create(), this.position, vec3.fromValues((-0) - 1.6, 1, 0)) :
-            vec3.add(vec3.create(), this.position, vec3.fromValues((+0) + 1.6, 1, 0));
+            vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-2, 1, 0)) :
+            vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(2, 1, 0));
     }
 
     public get FireBallProjectileSpawnPosition(): vec3 {
+        // returns projectile center position
         return this.FacingDirection[0] > 0 ?
-            vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-3, -1, 0)) :
-            vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(3, -1, 0));
+            vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(-3, 1, 0)) :
+            vec3.add(vec3.create(), this.CenterPosition, vec3.fromValues(3, 1, 0));
     }
 
     public get EndCondition(): boolean {
         return true;
     }
 
-    public override async Damage(pushbackForce: vec3, damage: number): Promise<void> {
-        await this.DamageWithInvincibilityConsidered(pushbackForce, damage);
-    }
+    // TODO: az egész damage method duplikálva van a cactusban
+    public override async Damage(pushbackForce: vec3): Promise<void> {
+        // Dragon ignores pushback at the moment
 
-    public override async DamageWithInvincibilityConsidered(pushbackForce: vec3, damage: number): Promise<void> {
-        await this.damageComponent.DamageWithInvincibilityConsidered(pushbackForce, damage);
+        if (this.invincible) {
+            return;
+        }
+        this.invincible = true;
+        this.timeInInvincibility = 0;
 
+        await this.enemyDamageSound.Play();
+        this.health--;
+        this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(1, 0, 0, 0));
+        // TODO: dragon does not have velocity at the moment
+        //vec3.set(this.velocity, pushbackForce[0], pushbackForce[1], 0);
+
+        this.damaged = true;
         if (this.health <= 0) {
             if (this.onDeath) {
                 await this.enemyDeathSound.Play();
@@ -197,46 +203,107 @@ export class DragonEnemy extends EnemyBase {
     }
 
     public SignalAttack(): void {
-        this.flashOverlayComponent.Flash(this.flashOverlayComponent.ATTACK_SIGNAL_COLOR,
-            this.flashOverlayComponent.ATTACK_SIGNAL_DURATION);
+        this.signaling = true;
+        this.attackSignalTime = 0;
+        this.shader.SetVec4Uniform('colorOverlay', vec4.fromValues(0.65, 0.65, 0.65, 0));
     }
 
     public async Update(delta: number): Promise<void> {
+        this.timeInInvincibility += delta;
         this.shared.timeSinceLastAttack += delta;
         this.shared.timeSinceLastCharge += delta;
         this.shared.timeSinceLastFireBall += delta;
 
-        this.damageComponent.Update(delta);
+        if (this.timeInInvincibility > 700 && this.invincible) {
+            this.invincible = false;
+            this.timeInInvincibility = 0;
+        }
 
         // Face in the direction of the hero
         const dir = vec3.sub(vec3.create(), this.CenterPosition, this.hero.CenterPosition);
         if (dir[0] < 0) {
-            this.currentFrameSet = this.rightFacingAnimationFrames;
+            this.ChangeFrameSet(this.rightFacingAnimationFrames);
             vec3.set(this.lastFacingDirection, -1, 0, 0);
         } else if (dir[0] > 0) {
-            this.currentFrameSet = this.leftFacingAnimationFrames;
+            this.ChangeFrameSet(this.leftFacingAnimationFrames);
             vec3.set(this.lastFacingDirection, 1, 0, 0);
         }
-        this.animation.Animate(delta, this.currentFrameSet);
-        this.physicsComponent.Update(delta);
-        this.flashOverlayComponent.Update(delta);
+        this.Animate(delta);
+        this.RemoveDamageOverlayAfter(delta, 1. / 60 * 1000 * 15);
 
         await this.state.Update(delta);
+
+        // TODO: gravity to velocity -- flying enemy maybe does not need gravity?
+        // TODO: velocity to position
+    }
+
+    // TODO: duplicated all over the place
+    private RemoveDamageOverlayAfter(delta: number, showOverlayTime: number) {
+        if (this.damaged) {
+            this.damagedTime += delta;
+        }
+
+        if (this.signaling) {
+            this.attackSignalTime += delta;
+        }
+
+        if (this.damagedTime > showOverlayTime || this.attackSignalTime > 5 / 60 * 1000) {
+            this.damagedTime = 0;
+            this.damaged = false;
+            this.attackSignalTime = 0;
+            this.signaling = false;
+            this.shader.SetVec4Uniform('colorOverlay', vec4.create());
+        }
     }
 
     public Move(direction: vec3, delta: number): void {
-        this.physicsComponent.AddToExternalForce(vec3.scale(vec3.create(), direction, delta));
+        const nextPosition = vec3.scaleAndAdd(vec3.create(), this.position, direction, delta);
+        if (!this.CheckCollisionWithCollider(nextPosition)) {
+            this.position = nextPosition;
+        }
+    }
+
+    /**
+     * Calculate next position without considering collision
+     */
+    public CalculateNextPosition(direction: vec3, delta: number): vec3 {
+        return vec3.scaleAndAdd(vec3.create(), this.position, direction, delta);
+    }
+
+    // TODO: ugyanez a slimeban is benn van privátként -- szintén valami movement component kéne
+    public CheckCollisionWithCollider(nextPosition: vec3): boolean {
+        const nextBbPos = vec3.add(vec3.create(), nextPosition, this.bbOffset);
+        const nextBoundingBox = new BoundingBox(nextBbPos, this.bbSize);
+        return this.collider.IsCollidingWith(nextBoundingBox, true);
     }
 
     /**
      * Check if movement to the direction would cause a collision
      */
     public WillCollide(direction: vec3, delta: number): boolean {
-        return this.physicsComponent.WillCollide(delta);
+        return this.CheckCollisionWithCollider(this.CalculateNextPosition(direction, delta))
     }
 
-    public ResetVelocity(): void {
-        this.physicsComponent.ResetVelocity();
+    // TODO: duplikált kód pl a Slime enemyben is (IDE waringozik is miatta)
+    private Animate(delta: number): void {
+        this.currentFrameTime += delta;
+        if (this.currentFrameTime > 264) {
+            this.currentAnimationFrame++;
+            if (this.currentAnimationFrame > 2) {
+                this.currentAnimationFrame = 0;
+            }
+
+            this.batch.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
+            this.currentFrameTime = 0;
+        }
+    }
+
+    /**
+     * Helper function to make frame changes seamless by immediately changing the spite offset when a frame change happens
+     */
+    private ChangeFrameSet(frames: vec2[]) {
+        this.currentFrameSet = frames;
+        this.batch.TextureOffset = this.currentFrameSet[this.currentAnimationFrame];
     }
 
     public Dispose(): void {

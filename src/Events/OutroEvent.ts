@@ -7,7 +7,7 @@ import { Level } from '../Level';
 import { OldMan } from '../Actors/OldMan';
 import { SoundEffectPool } from '../SoundEffectPool';
 import { SoundEffect } from '../SoundEffect';
-import { IFadeOut, IQuitEventListener } from '../Game';
+import { IFadeOut, IQuitEventListener } from '../Game/Game';
 import { UIService } from '../UIService';
 import { Textbox } from '../Textbox';
 import { Sequence } from '../Sequence/Sequence';

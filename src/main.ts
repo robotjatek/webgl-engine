@@ -1,5 +1,5 @@
 import domready = require('domready');
-import { Game } from './Game';
+import { Game } from './Game/Game';
 import { ControllerHandler } from "./ControllerHandler";
 import { KeyHandler } from './KeyHandler';
 import { Keys } from './Keys';

@@ -20,7 +20,7 @@ import { Spike } from './Enemies/Spike';
 import { Cactus } from './Enemies/Cactus';
 import { CoinObject } from './Pickups/CoinObject';
 import { HealthPickup } from './Pickups/HealthPickup';
-import { IFadeOut, INextLevelEvent, IQuitEventListener, IRestartListener } from './Game';
+import { IFadeOut, INextLevelEvent, IQuitEventListener, IRestartListener } from './Game/Game';
 import { IDisposable } from './IDisposable';
 import { Camera } from './Camera';
 import { EscapeEvent } from './Events/EscapeEvent';

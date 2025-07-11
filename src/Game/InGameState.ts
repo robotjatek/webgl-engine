@@ -7,7 +7,7 @@ import { SharedGameStateVariables } from './SharedGameStateVariables';
 import { Keys } from '../Keys';
 import { XBoxControllerKeys } from '../XBoxControllerKeys';
 import { mat4, vec2 } from 'gl-matrix';
-import { Game } from '../Game';
+import { Game } from './Game';
 
 export class InGameState extends GameStateBase {
 

@@ -3,7 +3,7 @@ import { PauseScreen } from '../PauseScreen/PauseScreen';
 import { SharedGameStateVariables } from './SharedGameStateVariables';
 import { SoundEffect } from '../SoundEffect';
 import { mat4 } from 'gl-matrix';
-import { Game } from '../Game';
+import { Game } from './Game';
 
 export class PausedState extends GameStateBase {
 

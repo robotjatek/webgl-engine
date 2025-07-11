@@ -2,7 +2,7 @@ import { KeyHandler } from '../KeyHandler';
 import { ControllerHandler } from '../ControllerHandler';
 import { Keys } from '../Keys';
 import { SoundEffect } from '../SoundEffect';
-import { IQuitEventListener } from '../Game';
+import { IQuitEventListener } from '../Game/Game';
 import { PauseStateBase } from './PauseStateBase';
 import { PauseScreen } from './PauseScreen';
 import { SharedVariables } from 'src/PauseScreen/SharedVariables';

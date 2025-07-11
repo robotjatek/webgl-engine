@@ -3,7 +3,7 @@ import { MainScreen } from '../MainScreen';
 import { mat4 } from 'gl-matrix';
 import { SoundEffectPool } from '../SoundEffectPool';
 import { ResourceTracker } from '../ResourceTracker';
-import { Game } from '../Game';
+import { Game } from './Game';
 
 export class StartScreenState implements IGameState {
 

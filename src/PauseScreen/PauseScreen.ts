@@ -7,7 +7,7 @@ import { KeyHandler } from '../KeyHandler';
 import { ControllerHandler } from '../ControllerHandler';
 import { SoundEffectPool } from '../SoundEffectPool';
 import { SoundEffect } from '../SoundEffect';
-import { IQuitEventListener, IResumeEventListener } from '../Game';
+import { IQuitEventListener, IResumeEventListener } from '../Game/Game';
 import { IState } from './IState';
 import { MainSelectionState } from './MainSelectionState';
 import { QuitMenuState } from './QuitMenuState';

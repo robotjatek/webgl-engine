@@ -2,7 +2,7 @@ import { GameStateBase } from './GameStateBase';
 import { SharedGameStateVariables } from './SharedGameStateVariables';
 import { mat4 } from 'gl-matrix';
 import { Level } from '../Level';
-import { Game } from '../Game';
+import { Game } from './Game';
 
 export class NextLevelLoadState extends GameStateBase {
     public constructor(private game: Game, sharedGameStateVariables: SharedGameStateVariables, private levelName: string) {

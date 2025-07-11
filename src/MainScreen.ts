@@ -9,7 +9,7 @@ import { SoundEffectPool } from './SoundEffectPool';
 import { SoundEffect } from './SoundEffect';
 import { KeyHandler } from './KeyHandler';
 import { Keys } from './Keys';
-import { IStartEventListener } from './Game';
+import { IStartEventListener } from './Game/Game';
 import { Textbox } from './Textbox';
 import { IDisposable } from './IDisposable';
 

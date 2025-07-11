@@ -1,14 +1,11 @@
-import { mat4, vec2, vec3 } from 'gl-matrix';
+import { mat4, vec3 } from 'gl-matrix';
 import { Environment } from './Environment';
 import { KeyHandler } from './KeyHandler';
 import { Level } from './Level';
 import { gl, WebGLUtils } from './WebGLUtils';
-import { Keys } from './Keys';
 import { SoundEffectPool } from './SoundEffectPool';
 import { ControllerHandler } from './ControllerHandler';
-import { XBoxControllerKeys } from './XBoxControllerKeys';
 import { TexturePool } from './TexturePool';
-import { Textbox } from './Textbox';
 import { SoundEffect } from './SoundEffect';
 import { MainScreen } from './MainScreen';
 import { PauseScreen } from './PauseScreen/PauseScreen';
@@ -21,14 +18,19 @@ import { SpriteBatch } from './SpriteBatch';
 import { Shader } from './Shader';
 import { Sprite } from './Sprite';
 import { Utils } from './Utils';
-import { ResourceTracker } from './ResourceTracker';
+import { IGameState } from './Game/IGameState';
+import { SharedGameStateVariables } from './Game/SharedGameStateVariables';
+import { InGameState } from './Game/InGameState';
+import { PausedState } from './Game/PausedState';
+import { NextLevelLoadState } from './Game/NextLevelLoadState';
+import { StartScreenState } from './Game/StartScreenState';
 
 export interface IStartEventListener {
     Start(): Promise<void>;
 }
 
 export interface IResumeEventListener {
-    Resume(): void;
+    Resume(): Promise<void>;
 }
 
 export interface IQuitEventListener {
@@ -51,15 +53,6 @@ export interface IFadeOut {
     SetFadeOut(value: number): void
 }
 
-// TODO: time to implement a proper state machine at least for the game object
-// TODO: check for key presses and elapsed time since state change
-// TODO: sometimes key release check is also necessary for a state change
-enum State {
-    START_SCREEN = 'start_screen',
-    IN_GAME = 'in_game',
-    PAUSED = 'paused'
-}
-
 // TODO: camera smoothing - the camera should not follow the hero, but a position that moves with the hero but at a slower rate
 //  like MatchHeroPosition in dragon
 
@@ -70,6 +63,7 @@ enum State {
 // TODO: recheck every vector passing. Sometimes vectors need to be cloned
 // TODO: update ts version
 // TODO: texture map padding
+
 export class Game implements IStartEventListener,
     IResumeEventListener,
     IQuitEventListener,
@@ -91,12 +85,40 @@ export class Game implements IStartEventListener,
         1
     );
 
-    private state: State = State.START_SCREEN;
     private level: Level | null = null;
+
+    public get Level(): Level | null {
+        return this.level;
+    }
+
+    public set Level(value: Level | null) {
+        this.level = value;
+    }
+
     private musicVolumeStack: number[] = [];
 
-    private keyWasReleased = true;
-    private elapsedTimeSinceStateChange = 0;
+    public START_SCREEN_STATE(): IGameState {
+        return new StartScreenState(this, this.mainScreen);
+    }
+
+    public IN_GAME_STATE(): IGameState {
+        return new InGameState(this, this.uiService, this.keyHandler, this.gamepadHandler, this.sharedGameStateVariables);
+    }
+
+    public PAUSED_STATE(): IGameState {
+        return new PausedState(this, this.pauseScreen, this.sharedGameStateVariables, this.pauseSoundEffect, this.musicVolumeStack);
+    }
+
+    public NEXT_LEVEL_STATE(levelName: string): IGameState {
+        return new NextLevelLoadState(this, this.sharedGameStateVariables, levelName);
+    }
+
+    private internalState: IGameState;
+
+    private sharedGameStateVariables: SharedGameStateVariables = {
+        elapsedTimeSinceStateChange: 0,
+        keyWasReleased: true
+    }
 
     private readonly _renderTargetTexture: Texture;
     private _renderTarget: RenderTarget;
@@ -106,8 +128,6 @@ export class Game implements IStartEventListener,
     private constructor(private keyHandler: KeyHandler,
                         private gamepadHandler: ControllerHandler,
                         private uiService: UIService,
-                        private healthTextbox: Textbox,
-                        private scoreTextbox: Textbox,
                         private mainScreen: MainScreen,
                         private pauseScreen: PauseScreen,
                         private pauseSoundEffect: SoundEffect,
@@ -130,6 +150,8 @@ export class Game implements IStartEventListener,
         this._renderTarget = new RenderTarget(this._renderTargetTexture);
         this._finalImage = new SpriteBatch(this._backgroundShader, [this._fullScreenSprite], this._renderTargetTexture);
 
+        this.internalState = this.START_SCREEN_STATE();
+
         this.start = performance.now();
     }
 
@@ -143,18 +165,24 @@ export class Game implements IStartEventListener,
 
     private camera = new Camera(vec3.create());
 
+    public get Camera(): Camera {
+        return this.camera;
+    }
+
+    public get KeyHandler(): KeyHandler {
+        return this.keyHandler;
+    }
+
+    public get GamepadHandler(): ControllerHandler {
+        return this.gamepadHandler;
+    }
+
+    public get UiService(): UIService {
+        return this.uiService;
+    }
+
     public async OnNextLevelEvent(levelName: string): Promise<void> {
-        const oldLevel = this.level;
-        oldLevel?.StopMusic();
-        oldLevel?.Dispose();
-        this.level = null;
-
-        const nextLevel = await Level.Create(levelName, this.keyHandler, this.gamepadHandler, this.uiService, this.camera, this);
-        nextLevel.SubscribeToNextLevelEvent(this);
-        nextLevel.SubscribeToRestartEvent(this);
-        await nextLevel.InitLevel();
-
-        this.level = nextLevel;
+        await this.ChangeState(this.NEXT_LEVEL_STATE(levelName));
     }
 
     public OnRestartEvent(): void {
@@ -171,58 +199,29 @@ export class Game implements IStartEventListener,
         const bgShader: Shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/FragmentShader.frag');
 
         const uiService = new UIService(canvas.width, canvas.height);
-        const healthTextbox = await uiService.AddTextbox();
-        const scoreTextBox = await uiService.AddTextbox();
-
         const pauseSoundEffect = await SoundEffectPool.GetInstance().GetAudio('audio/pause.mp3');
         const mainScreen = await MainScreen.Create(keyHandler, controllerHandler, canvas.width, canvas.height);
         const pauseScreen = await PauseScreen.Create(canvas.width, canvas.height, keyHandler, controllerHandler);
-        return new Game(keyHandler, controllerHandler, uiService, healthTextbox,
-            scoreTextBox, mainScreen, pauseScreen, pauseSoundEffect, bgShader);
+        return new Game(keyHandler, controllerHandler, uiService, mainScreen, pauseScreen, pauseSoundEffect, bgShader);
     }
 
     public async Start(): Promise<void> {
-        const level = await Level.Create('levels/level1.json', this.keyHandler, this.gamepadHandler, this.uiService, this.camera, this);
-        level.SubscribeToNextLevelEvent(this);
-        level.SubscribeToRestartEvent(this);
-        this.level = level;
-
-        if (this.state === State.START_SCREEN) {
-            await this.level.InitLevel();
-            this.state = State.IN_GAME;
-            this.elapsedTimeSinceStateChange = 0;
-        }
-        ResourceTracker.GetInstance().StartTracking();
+        await this.ChangeState(this.NEXT_LEVEL_STATE('levels/level1.json'));
     }
 
     public async Quit(): Promise<void> {
-        this.level?.StopMusic();
-        this.level?.Dispose();
-        this.level = null;
-        this.state = State.START_SCREEN;
-        this.camera = new Camera(vec3.create());
-        SoundEffectPool.GetInstance().StopAll();
-        this.SetFadeOut(0);
-        ResourceTracker.GetInstance().StopTracking();
-        return Promise.resolve();
+        await this.ChangeState(this.START_SCREEN_STATE());
     }
 
-    public async Pause(): Promise<void> {
-        // TODO: state machine: Only can go to paused from ingame
-        if (this.state === State.IN_GAME) {
-            this.state = State.PAUSED;
-            await this.pauseSoundEffect.Play();
-            this.elapsedTimeSinceStateChange = 0;
-            this.musicVolumeStack.push(this.level!.GetMusicVolume());
-            this.level!.SetMusicVolume(this.musicVolumeStack.slice(-1)[0] * 0.15);
-        }
+    public async ChangeState(state: IGameState): Promise<void> {
+        this.sharedGameStateVariables.elapsedTimeSinceStateChange = 0;
+        await this.internalState.Exit();
+        this.internalState = state;
+        await this.internalState.Enter();
     }
 
-    public Resume(): void {
-        // TODO: statemachine move state
-        this.state = State.IN_GAME;
-        this.elapsedTimeSinceStateChange = 0;
-        this.level!.SetMusicVolume(this.musicVolumeStack.pop()!);
+    public async Resume(): Promise<void> {
+        await this.ChangeState(this.IN_GAME_STATE());
     }
 
     public SetFadeOut(value: number) {
@@ -243,62 +242,14 @@ export class Game implements IStartEventListener,
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         this._renderTarget?.Render(() => {
-            if (this.state === State.START_SCREEN) {
-                this.mainScreen?.Draw(this.projectionMatrix);
-            } else {
-                this.level?.Draw(this.projectionMatrix);
-                this.uiService.Draw(elapsedTime);
-
-                if (this.state === State.PAUSED) {
-                    // Draw the pause screen over the other rendered elements
-                    this.pauseScreen?.Draw(this.projectionMatrix);
-                }
-            }
+            this.internalState.Draw(elapsedTime, this.projectionMatrix);
         });
 
         this._finalImage.Draw(this.projectionMatrix, mat4.create());
     }
 
     private async Update(elapsedTime: number): Promise<void> {
-        this.elapsedTimeSinceStateChange += elapsedTime;
-
-        if (this.state === State.START_SCREEN) {
-            await this.mainScreen.Update(elapsedTime);
-        } else if (this.state === State.IN_GAME && this.elapsedTimeSinceStateChange > 150 && this.level) {
-            if (!this.keyHandler.IsPressed(Keys.ENTER) && !this.gamepadHandler.IsPressed(XBoxControllerKeys.START)
-                && !this.keyWasReleased && this.elapsedTimeSinceStateChange > 100) {
-                this.keyWasReleased = true;
-            }
-
-            if ((this.keyHandler.IsPressed(Keys.ENTER) || this.gamepadHandler.IsPressed(XBoxControllerKeys.START))
-                && this.keyWasReleased && this.elapsedTimeSinceStateChange > 100) {
-                await this.Pause();
-                this.keyWasReleased = false;
-            }
-
-            const healthTextColor = (() => {
-                if (this.level!.Hero.Health < 35) {
-                    return {hue: 0, saturation: 100 / 100, value: 100 / 100};
-                } else if (this.level!.Hero.Health > 100) {
-                    return {hue: 120 / 360, saturation: 100 / 100, value: 100 / 100};
-                } else {
-                    return {hue: 0, saturation: 0, value: 100 / 100};
-                }
-            })();
-
-            this.healthTextbox
-                .WithText(`Health: ${this.level!.Hero.Health}`, vec2.fromValues(10, 0), 0.5)
-                .WithHue(healthTextColor.hue)
-                .WithSaturation(healthTextColor.saturation)
-                .WithValue(healthTextColor.value);
-
-            this.scoreTextbox
-                .WithText(`Coins: ${this.level!.Hero.CollectedCoins}`, vec2.fromValues(10, this.healthTextbox.Height), 0.5);
-
-            await this.level.Update(elapsedTime);
-        } else if (this.state === State.PAUSED) {
-            await this.pauseScreen.Update(elapsedTime);
-        }
+        await this.internalState.Update(elapsedTime);
     }
 
 }

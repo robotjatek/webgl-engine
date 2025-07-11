@@ -56,7 +56,9 @@ export class MainSelectionState extends PauseStateBase {
             await this.selectSound.Play();
 
             if (this.selectedIndex === 0) { // resume
-                this.resumeListeners.forEach(l => l.Resume());
+                for (const r of this.resumeListeners) {
+                    await r.Resume();
+                }
             } else if (this.selectedIndex === 1) { // quit
                 this.context.ChangeState(this.context.QUIT_SELECTION_STATE());
             }

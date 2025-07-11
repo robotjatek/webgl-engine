@@ -44,6 +44,11 @@ export class Camera {
         this.position = position;
     }
 
+    public Reset(): void {
+        this.shake = false;
+        this.position = vec3.create();
+    }
+
     private Clamp(val: number, min: number, max: number): number {
         return Math.max(min, Math.min(max, val));
     }

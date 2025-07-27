@@ -232,9 +232,8 @@ export class Level implements IProjectileHitListener, IDisposable {
             await this.attack?.Update(delta);
             if (this.attack && !this.attack.AlreadyHit) {
                 const attack = this.attack;
-                // Do not collide with any other game objects, only with enemies
                 const enemiesCollidingWithProjectile = this.gameObjects.filter(
-                    e => e.IsCollidingWith(attack.BoundingBox, false) && e instanceof EnemyBase);
+                    e => e.IsCollidingWith(attack.BoundingBox, false));
                 // Pushback force does not necessarily mean the amount of pushback. A big enemy can ignore a sword attack for example
                 for (const e of enemiesCollidingWithProjectile) {
                     await e.CollideWithAttack(attack);

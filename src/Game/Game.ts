@@ -206,7 +206,7 @@ export class Game implements IStartEventListener,
     }
 
     public async Start(): Promise<void> {
-        await this.ChangeState(this.NEXT_LEVEL_STATE('levels/level1.json'));
+        await this.ChangeState(this.NEXT_LEVEL_STATE('levels/bridge.json'));
     }
 
     public async Quit(): Promise<void> {
@@ -214,14 +214,22 @@ export class Game implements IStartEventListener,
     }
 
     public async ChangeState(state: IGameState): Promise<void> {
-        this.sharedGameStateVariables.elapsedTimeSinceStateChange = 0;
-        await this.internalState.Exit();
-        this.internalState = state;
-        await this.internalState.Enter();
+        if (state.constructor.name !== this.internalState.constructor.name) {
+            this.sharedGameStateVariables.elapsedTimeSinceStateChange = 0;
+            await this.internalState.Exit();
+            this.internalState = state;
+            await this.internalState.Enter();
+        }
     }
 
     public async Resume(): Promise<void> {
         await this.ChangeState(this.IN_GAME_STATE());
+    }
+
+    public async Pause(): Promise<void> {
+        if (this.internalState.constructor.name !== this.START_SCREEN_STATE().constructor.name) {
+            await this.ChangeState(this.PAUSED_STATE());
+        }
     }
 
     public SetFadeOut(value: number) {

@@ -31,7 +31,8 @@ import { BossEvent } from './Events/Boss/BossEvent';
 import { UIService } from './UIService';
 import { Point } from './Point';
 import { OutroEvent } from './Events/OutroEvent';
-import { EnemyBase } from './Enemies/IEnemy';
+import { IMessage, Lever, LeverStates, LeverStatusChanged } from './Enemies/Lever';
+import { GateEvent } from './Events/GateEvent';
 
 type TileEntity = {
     xPos: number,
@@ -51,11 +52,7 @@ type GameObjectEntity = {
     type: string,
     xPos: number,
     yPos: number
-}
-
-type LevelEndEntity = {
-    xPos: number,
-    yPos: number
+    props: Record<string, any>
 }
 
 type StartEntity = {
@@ -73,7 +70,6 @@ type LevelEntity = {
     music: string,
     layers: LayerEntity[],
     gameObjects: GameObjectEntity[],
-    levelEnd: LevelEndEntity,
     start: StartEntity,
     nextLevel: string,
     defaultLayer: number,
@@ -87,7 +83,45 @@ export interface IProjectileHitListener {
     DespawnAttack(attack: IProjectile): void
 }
 
+export interface Eventbus {
+    Publish<T extends IMessage>(message: T): void
+    Register<T extends IMessage>(messageType: new (...args: any[]) => T, handler: (message: T) => void): void
+}
+
 export class Level implements IProjectileHitListener, IDisposable {
+
+    private eventbus: Eventbus = new class implements Eventbus {
+        private handlers = new Map<string, Array<any>>(); // TODO: any param
+
+        Publish<T extends IMessage>(message: T): void {
+            const handlers = this.handlers.get(message.constructor.name)!;
+            for (const handler of handlers) {
+                handler(message);
+            }
+        }
+
+        Register<T extends IMessage>(
+            messageType: new (...args: any[]) => T,
+            handler: (message: T) => void): void {
+            if (!this.handlers.has(messageType.name)) {
+                this.handlers.set(messageType.name, []);
+            }
+
+            this.handlers.get(messageType.name)!.push(handler);
+        }
+    }
+
+    // TODO: ez se valami szép
+    private LeverChanged(message: LeverStatusChanged): void {
+        if (message.status === LeverStates.RIGHT) {
+            console.log('Lever changed to RIGHT: ' + message.identifier);
+            this.ChangeEvent(GateEvent.EVENT_KEY+':' + message.identifier);
+        }
+    }
+
+    public get Eventbus(): Eventbus {
+        return this.eventbus;
+    }
 
     private events: Map<string, ILevelEvent> = new Map<string, ILevelEvent>();
     private activeEvent!: ILevelEvent;
@@ -119,7 +153,7 @@ export class Level implements IProjectileHitListener, IDisposable {
     ) {
         this.Background = new SpriteBatch(bgShader, [new Background()], bgTexture);
         this.loadedTexturePaths.add(bgTexture.Path!)
-
+        this.eventbus.Register(LeverStatusChanged, (msg) => this.LeverChanged(msg));
     }
 
     public static async Create(levelName: string, keyHandler: KeyHandler, gamepadHandler: ControllerHandler,
@@ -399,6 +433,10 @@ export class Level implements IProjectileHitListener, IDisposable {
                 this.SubscribeToEndConditionsMetEvent(end);
                 return end;
             }
+            case 'lever': {
+                const eventId = descriptor.props['eventId'] as string;
+                return await Lever.Create(vec3.fromValues(descriptor.xPos, descriptor.yPos - 0.5, 1), this, eventId);
+            }
             default:
                 throw new Error('Unknown object type');
         }
@@ -470,6 +508,10 @@ export class Level implements IProjectileHitListener, IDisposable {
                     this.camera, enterWaypoint);
             case OutroEvent.EVENT_KEY:
                 return await OutroEvent.Create(this.hero, this.camera, this, this.game, this.uiService);
+            case GateEvent.EVENT_KEY: {
+                const id = descriptor.props['id'] as string;
+                return await GateEvent.Create(id, this);
+            }
             default:
                 throw new Error('Unknown event type');
         }

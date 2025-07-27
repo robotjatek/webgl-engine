@@ -31,7 +31,7 @@ export class InGameState extends GameStateBase {
 
             if ((this.keyHandler.IsPressed(Keys.ENTER) || this.gamepadHandler.IsPressed(XBoxControllerKeys.START))
                 && this.sharedGameStateVariables.keyWasReleased && this.sharedGameStateVariables.elapsedTimeSinceStateChange > 100) {
-                await this.game.ChangeState(this.game.PAUSED_STATE());
+                await this.game.Pause();
                 this.sharedGameStateVariables.keyWasReleased = false;
                 return;
             }

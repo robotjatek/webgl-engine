@@ -22,6 +22,10 @@ export class Camera {
         this.shake = value;
     }
 
+    public get Position(): vec3 {
+        return this.position;
+    }
+
     /**
      * The camera centers its view on the given position with its viewport confined in the boundaries of the given layer
      * @param position The position to look at

@@ -2,9 +2,13 @@ import { ILevelEvent } from './ILevelEvent';
 import { Level } from '../Level';
 import { SoundEffectPool } from '../SoundEffectPool';
 import { Portcullis } from '../Actors/Portcullis';
-import { vec3 } from 'gl-matrix';
+import { vec2, vec3 } from 'gl-matrix';
 import { TexturePool } from '../TexturePool';
 import { IState } from '../IState';
+import { SlimeEnemy } from '../Enemies/SlimeEnemy';
+import { FreeCameraEvent } from './FreeCameraEvent';
+import { IGameobject } from '../IGameobject';
+import { Camera } from '../Camera';
 
 export class StartedState implements IState {
 
@@ -60,7 +64,7 @@ export class ClosingGateState implements IState {
 
     private readonly portcullisParts: Portcullis[] = [];
 
-    public constructor(private gateEvent: GateEvent, private level: Level) {
+    public constructor(private gateEvent: GateEvent) {
         this.portcullisParts = gateEvent.PortcullisParts;
     }
 
@@ -104,6 +108,22 @@ export class EnemySpawnState implements IState {
 
     public async Update(delta: number): Promise<void> {
         console.log('Spawning enemies...');
+
+        // TODO: enemy positions input
+        // TODO: move enemies towards the player
+        const x = 34;
+        const y = 9;
+
+        const enemies = [
+            await SlimeEnemy.Create(
+                vec3.fromValues(x, y - 1.8, 1),
+                vec2.fromValues(3, 3),
+                this.level.MainLayer,
+                c => this.gateEvent.RemoveEnemy(c))
+        ];
+
+        this.gateEvent.AddEnemies(enemies);
+        await this.gateEvent.ChangeState(this.gateEvent.ENEMY_FIGHT_STATE());
     }
 
     public async Enter(): Promise<void> {
@@ -113,13 +133,16 @@ export class EnemySpawnState implements IState {
     }
 }
 
-// TODO: track alive enemies
 export class EnemyFightState implements IState {
-    public constructor(private gateEvent: GateEvent, private level: Level) {
+    public constructor(private gateEvent: GateEvent) {
     }
 
     public async Update(delta: number): Promise<void> {
+        console.log('Fighting enemies...');
 
+        if (this.gateEvent.EnemyCount === 0) {
+            await this.gateEvent.ChangeState(this.gateEvent.ENEMIES_DEAD_STATE());
+        }
     }
 
     public async Enter(): Promise<void> {
@@ -129,34 +152,53 @@ export class EnemyFightState implements IState {
     }
 }
 
-// TODO: move to freecam
 export class EnemiesDeadState implements IState {
+    private static readonly CAMERA_SPEED = 0.01;
+    private lastPosition: vec3 = vec3.create();
+
     public constructor(private gateEvent: GateEvent, private level: Level) {
     }
 
     public async Update(delta: number): Promise<void> {
+        const camera = this.gateEvent.Camera;
+        const hero = this.level.Hero;
+        const direction = vec3.create();
+        vec3.subtract(direction, hero.Position, camera.Position);
+        vec3.normalize(direction, direction);
+        vec3.scale(direction, direction, EnemiesDeadState.CAMERA_SPEED * delta);
 
+        const newPosition = vec3.create();
+        vec3.add(newPosition, camera.Position, direction);
+        camera.LookAtPosition(newPosition, this.level.MainLayer);
+        console.log(camera.Position);
+
+        if (vec3.distance(camera.Position, this.lastPosition) < 0.01) {
+            this.level.ChangeEvent(FreeCameraEvent.EVENT_KEY);
+            this.lastPosition = vec3.create();
+            return;
+        }
+
+        vec3.copy(this.lastPosition, camera.Position);
     }
 
     public async Enter(): Promise<void> {
+        this.lastPosition = vec3.create();
+        console.log('Enemies dead, moving to hero position...');
     }
 
     public async Exit(): Promise<void> {
+        console.log('Reached hero position, moving to free camera...');
     }
 }
 
 // TODO: start portcullis coord prop
 // TODO: bottom prop
-
-// TODO: spawn enemies
-// TODO: track alive enemies
-// TODO: let player move to the next gate when all enemies are dead --> move to freecam event
-// TODO: remove event from level when done
 export class GateEvent implements ILevelEvent {
 
     public static EVENT_KEY = 'gate_event';
 
     private portcullisParts: Portcullis[] = [];
+    private enemies: IGameobject[] = [];
 
     public STARTED_STATE(): IState {
         return new StartedState(this, this.level);
@@ -167,7 +209,7 @@ export class GateEvent implements ILevelEvent {
     }
 
     public CLOSING_GATE_STATE(): IState {
-        return new ClosingGateState(this, this.level);
+        return new ClosingGateState(this);
     }
 
     public ENEMY_SPAWN_STATE(): IState {
@@ -175,7 +217,7 @@ export class GateEvent implements ILevelEvent {
     }
 
     public ENEMY_FIGHT_STATE(): IState {
-        return new EnemyFightState(this, this.level);
+        return new EnemyFightState(this);
     }
 
     public ENEMIES_DEAD_STATE(): IState {
@@ -186,12 +228,13 @@ export class GateEvent implements ILevelEvent {
     private state: IState;
 
     private constructor(private id: string,
+                        private camera: Camera,
                         private level: Level) {
         this.state = this.STARTED_STATE();
     }
 
-    public static async Create(id: string, level: Level): Promise<GateEvent> {
-        return new GateEvent(id, level);
+    public static async Create(id: string, camera: Camera, level: Level): Promise<GateEvent> {
+        return new GateEvent(id, camera, level);
     }
 
     public get EventKey(): string {
@@ -214,6 +257,28 @@ export class GateEvent implements ILevelEvent {
 
     public get CanStart(): boolean {
         return true;
+    }
+
+    public AddEnemies(enemies: IGameobject[]): void {
+        this.enemies = enemies;
+        enemies.forEach(o => this.level.AddGameObject(o));
+    }
+
+    public RemoveEnemy(enemy: IGameobject): void {
+        // We don't call dispose here, level.RemoveGameObject will do that
+        const index = this.enemies.indexOf(enemy);
+        if (index !== -1) {
+            this.enemies.splice(index, 1);
+            this.level.RemoveGameObject(enemy);
+        }
+    }
+
+    public get EnemyCount(): number {
+        return this.enemies.length;
+    }
+
+    public get Camera() : Camera {
+        return this.camera;
     }
 
     public Dispose(): void {

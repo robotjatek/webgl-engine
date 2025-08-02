@@ -509,7 +509,7 @@ export class Level implements IProjectileHitListener, IDisposable {
                 return await OutroEvent.Create(this.hero, this.camera, this, this.game, this.uiService);
             case GateEvent.EVENT_KEY: {
                 const id = descriptor.props['id'] as string;
-                return await GateEvent.Create(id, this);
+                return await GateEvent.Create(id, this.camera, this);
             }
             default:
                 throw new Error('Unknown event type');

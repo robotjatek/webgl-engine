@@ -62,7 +62,7 @@ export class Lever implements IGameobject {
     }
 
     public async CollideWithAttack(attack: IProjectile): Promise<void> {
-        await (await SoundEffectPool.GetInstance().GetAudio('audio/bridge/click.mp3', false)).Play();
+        await (await SoundEffectPool.GetInstance().GetAudio('audio/bridge/click.mp3', true)).Play();
         if (this.state === LeverStates.LEFT) {
             this.state = LeverStates.RIGHT;
             this.renderer.TextureOffset = vec2.fromValues(1 / 2, 0);

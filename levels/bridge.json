@@ -669,7 +669,17 @@
           "texture": "textures/brick3d.png(Brick 3D -- v1 full) _0001.png"
         },
         {
+          "xPos": 34,
+          "yPos": 4,
+          "texture": "textures/brick3d.png(Brick 3D -- v1 full) _0001.png"
+        },
+        {
           "xPos": 4,
+          "yPos": 5,
+          "texture": "textures/brick3d.png(Brick 3D -- v1 full) _0001.png"
+        },
+        {
+          "xPos": 34,
           "yPos": 5,
           "texture": "textures/brick3d.png(Brick 3D -- v1 full) _0001.png"
         },
@@ -679,12 +689,27 @@
           "texture": "textures/brick3d.png(Brick 3D -- v1 full) _0001.png"
         },
         {
+          "xPos": 34,
+          "yPos": 6,
+          "texture": "textures/brick3d.png(Brick 3D -- v1 full) _0001.png"
+        },
+        {
           "xPos": 4,
           "yPos": 7,
           "texture": "textures/brick3d.png(Brick 3D -- v1 full) _0001.png"
         },
         {
+          "xPos": 34,
+          "yPos": 7,
+          "texture": "textures/brick3d.png(Brick 3D -- v1 full) _0001.png"
+        },
+        {
           "xPos": 4,
+          "yPos": 8,
+          "texture": "textures/brick3d.png(Brick 3D -- v1 full) _0001.png"
+        },
+        {
+          "xPos": 34,
           "yPos": 8,
           "texture": "textures/brick3d.png(Brick 3D -- v1 full) _0001.png"
         },
@@ -1339,6 +1364,11 @@
       "tiles": [
         {
           "xPos": 3,
+          "yPos": 4,
+          "texture": "textures/portcullis.png"
+        },
+        {
+          "xPos": 33,
           "yPos": 4,
           "texture": "textures/portcullis.png"
         },
@@ -2165,6 +2195,11 @@
           "xPos": 15,
           "yPos": 10,
           "texture": "textures/lantern-bottom.png"
+        },
+        {
+          "xPos": 32,
+          "yPos": 10,
+          "texture": "textures/brick3d.png(Brick 3D -- v1 full) _0001.png"
         }
       ],
       "parallaxOffsetFactorX": 0,
@@ -2176,11 +2211,6 @@
       "name": "Gates",
       "tiles": [
         {
-          "xPos": 32,
-          "yPos": 3,
-          "texture": "textures/brick.png"
-        },
-        {
           "xPos": 63,
           "yPos": 3,
           "texture": "textures/brick.png"
@@ -2193,7 +2223,7 @@
         {
           "xPos": 32,
           "yPos": 4,
-          "texture": "textures/brick.png"
+          "texture": "textures/brick3d.png(Brick 3D -- v1 full) _0001.png"
         },
         {
           "xPos": 63,
@@ -2208,7 +2238,7 @@
         {
           "xPos": 32,
           "yPos": 5,
-          "texture": "textures/brick.png"
+          "texture": "textures/brick3d.png(Brick 3D -- v1 full) _0001.png"
         },
         {
           "xPos": 63,
@@ -2223,7 +2253,7 @@
         {
           "xPos": 32,
           "yPos": 6,
-          "texture": "textures/brick_windowed.png"
+          "texture": "textures/brick3d.png(Brick 3D -- v1 full) _0001.png"
         },
         {
           "xPos": 63,
@@ -2238,7 +2268,7 @@
         {
           "xPos": 32,
           "yPos": 7,
-          "texture": "textures/brick.png"
+          "texture": "textures/brick3d.png(Brick 3D -- v1 full) _0001.png"
         },
         {
           "xPos": 63,
@@ -2253,7 +2283,7 @@
         {
           "xPos": 32,
           "yPos": 8,
-          "texture": "textures/brick.png"
+          "texture": "textures/brick3d.png(Brick 3D -- v1 full) _0001.png"
         },
         {
           "xPos": 63,
@@ -2268,7 +2298,7 @@
         {
           "xPos": 32,
           "yPos": 9,
-          "texture": "textures/brick_windowed.png"
+          "texture": "textures/brick3d.png(Brick 3D -- v1 full) _0001.png"
         },
         {
           "xPos": 63,
@@ -2438,7 +2468,7 @@
         {
           "xPos": 32,
           "yPos": 10,
-          "texture": "textures/brick.png"
+          "texture": "textures/brick-brige-rail - 3d.png"
         },
         {
           "xPos": 33,
@@ -3261,6 +3291,15 @@
       "props": {
         "eventId": "gate1"
       }
+    },
+    {
+      "type": "lever",
+      "xPos": 35,
+      "yPos": 9,
+      "name": "lever-2",
+      "props": {
+        "eventId": "gate2"
+      }
     }
   ],
   "start": {
@@ -3273,6 +3312,12 @@
       "type": "gate_event",
       "props": {
         "id": "gate1"
+      }
+    },
+    {
+      "type": "gate_event",
+      "props": {
+        "id": "gate2"
       }
     }
   ],

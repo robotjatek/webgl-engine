@@ -5,7 +5,7 @@ import { Portcullis } from '../Actors/Portcullis';
 import { vec2, vec3 } from 'gl-matrix';
 import { TexturePool } from '../TexturePool';
 import { IState } from '../IState';
-import { SlimeEnemy } from '../Enemies/SlimeEnemy';
+import { SlimeAIMode, SlimeEnemy } from '../Enemies/Slime/SlimeEnemy';
 import { FreeCameraEvent } from './FreeCameraEvent';
 import { IGameobject } from '../IGameobject';
 import { Camera } from '../Camera';
@@ -110,7 +110,6 @@ export class EnemySpawnState implements IState {
         console.log('Spawning enemies...');
 
         // TODO: enemy positions input
-        // TODO: move enemies towards the player
         const x = 34;
         const y = 9;
 
@@ -119,6 +118,8 @@ export class EnemySpawnState implements IState {
                 vec3.fromValues(x, y - 1.8, 1),
                 vec2.fromValues(3, 3),
                 this.level.MainLayer,
+                this.level.Hero,
+                SlimeAIMode.AGGRESSIVE,
                 c => this.gateEvent.RemoveEnemy(c))
         ];
 

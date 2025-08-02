@@ -15,7 +15,7 @@ import { IGameobject } from './IGameobject';
 import { IProjectile } from './Projectiles/IProjectile';
 import { IEndConditionsMetEventListener, LevelEnd } from './LevelEnd';
 import { DragonEnemy } from './Enemies/Dragon/DragonEnemy';
-import { SlimeEnemy } from './Enemies/SlimeEnemy';
+import { SlimeEnemy } from './Enemies/Slime/SlimeEnemy';
 import { Spike } from './Enemies/Spike';
 import { Cactus } from './Enemies/Cactus';
 import { CoinObject } from './Pickups/CoinObject';
@@ -394,7 +394,7 @@ export class Level implements IProjectileHitListener, IDisposable {
             case 'slime':
                 return await SlimeEnemy.Create(
                     vec3.fromValues(descriptor.xPos, descriptor.yPos - 1.8, 1), vec2.fromValues(3, 3), this.MainLayer,
-                    (c) => this.RemoveGameObject(c));
+                     this.hero, SlimeEnemy.AIMode.PASSIVE, (c) => this.RemoveGameObject(c));
             case 'dragon':
                 // Dragon as a regular enemy
                 return await DragonEnemy.Create(

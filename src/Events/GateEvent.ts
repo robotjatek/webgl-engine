@@ -13,14 +13,16 @@ import { Camera } from '../Camera';
 export class StartedState implements IState {
 
     public constructor(private gateEvent: GateEvent,
-                       private level: Level) {
+                       private level: Level,
+                       private startX: number,
+                       private startY: number,
+                       private endY: number) {
     }
 
     public async Update(delta: number): Promise<void> {
-        this.level.MainLayer.SetCollision(3, 5, true);
-        this.level.MainLayer.SetCollision(3, 6, true);
-        this.level.MainLayer.SetCollision(3, 7, true);
-        this.level.MainLayer.SetCollision(3, 8, true);
+        for (let i = this.startY; i <= this.endY; i++) {
+            this.level.MainLayer.SetCollision(this.startX, i, true);
+        }
         await this.gateEvent.ChangeState(this.gateEvent.SPAWN_GATE_TILES_STATE());
     }
 
@@ -35,20 +37,26 @@ export class SpawnGateTilesState implements IState {
 
     private portcullisParts: Portcullis[] = [];
 
-    public constructor(private gateEvent: GateEvent, private level: Level) {
+    public constructor(private gateEvent: GateEvent,
+                       private level: Level,
+                       private startX: number,
+                       private startY: number,
+                       private endY: number) {
         this.portcullisParts = gateEvent.PortcullisParts;
     }
 
     public async Update(delta: number): Promise<void> {
         const texture = await TexturePool.GetInstance().GetTexture('textures/portcullis.png');
         const texture_bottom = await TexturePool.GetInstance().GetTexture('textures/p2.png');
-        this.portcullisParts.push(...[
-            await Portcullis.Create(vec3.fromValues(3, 4, 0), texture_bottom, this.level.MainLayer),
-            await Portcullis.Create(vec3.fromValues(3, 4, 0), texture, this.level.MainLayer),
-            await Portcullis.Create(vec3.fromValues(3, 4, 0), texture, this.level.MainLayer),
-            await Portcullis.Create(vec3.fromValues(3, 4, 0), texture, this.level.MainLayer),
-            await Portcullis.Create(vec3.fromValues(3, 4, 0), texture, this.level.MainLayer)
-        ]);
+        const numberToSpawn = this.endY - this.startY;
+
+        for (let i = 0; i < numberToSpawn; i++) {
+            const t = i === 0 ? texture_bottom : texture;
+            this.portcullisParts.push(
+                await Portcullis.Create(vec3.fromValues(this.startX, this.startY, 0), t, this.level.MainLayer)
+            )
+        }
+
         this.portcullisParts.forEach(o => this.level.AddGameObject(o));
         await this.gateEvent.ChangeState(this.gateEvent.CLOSING_GATE_STATE());
     }
@@ -64,24 +72,27 @@ export class ClosingGateState implements IState {
 
     private readonly portcullisParts: Portcullis[] = [];
 
-    public constructor(private gateEvent: GateEvent) {
+    public constructor(private gateEvent: GateEvent,
+                       private startY: number,
+                       private endY: number) {
         this.portcullisParts = gateEvent.PortcullisParts;
     }
 
     public async Update(delta: number): Promise<void> {
         const bottomPart = this.portcullisParts[0];
-        if (bottomPart.Position[1] < 9) { // TODO: bottom prop
+        if (bottomPart.Position[1] < this.endY) {
             bottomPart.Move(delta, vec3.fromValues(0, 0.002, 0));
         } else {
             bottomPart.ResetVelocity();
-            bottomPart.Position[1] = 9; // TODO: bottom prop
+            bottomPart.Position[1] = this.endY;
 
             await this.gateEvent.ChangeState(this.gateEvent.ENEMY_SPAWN_STATE());
         }
 
+        // First part it the bottom part which we move separately, so we start from 1
         for (let i = 1; i < this.portcullisParts.length; i++) {
             const part = this.portcullisParts[i];
-            const targetY = 4 + i; //bottom go all the way down to y=9, the others go to y=5,6,7,8 (start + i)
+            const targetY = Number(this.startY) + i;
 
             if (part.Position[1] < targetY) {
                 part.Move(delta, vec3.fromValues(0, 0.002, 0));
@@ -192,8 +203,6 @@ export class EnemiesDeadState implements IState {
     }
 }
 
-// TODO: start portcullis coord prop
-// TODO: bottom prop
 export class GateEvent implements ILevelEvent {
 
     public static EVENT_KEY = 'gate_event';
@@ -202,15 +211,15 @@ export class GateEvent implements ILevelEvent {
     private enemies: IGameobject[] = [];
 
     public STARTED_STATE(): IState {
-        return new StartedState(this, this.level);
+        return new StartedState(this, this.level, this.startX, this.startY, this.endY);
     }
 
     public SPAWN_GATE_TILES_STATE(): IState {
-        return new SpawnGateTilesState(this, this.level);
+        return new SpawnGateTilesState(this, this.level, this.startX, this.startY, this.endY);
     }
 
     public CLOSING_GATE_STATE(): IState {
-        return new ClosingGateState(this);
+        return new ClosingGateState(this, this.startY, this.endY);
     }
 
     public ENEMY_SPAWN_STATE(): IState {
@@ -225,17 +234,19 @@ export class GateEvent implements ILevelEvent {
         return new EnemiesDeadState(this, this.level);
     }
 
-
     private state: IState;
 
     private constructor(private id: string,
                         private camera: Camera,
-                        private level: Level) {
+                        private level: Level,
+                        private startX: number,
+                        private startY: number,
+                        private endY: number) {
         this.state = this.STARTED_STATE();
     }
 
-    public static async Create(id: string, camera: Camera, level: Level): Promise<GateEvent> {
-        return new GateEvent(id, camera, level);
+    public static async Create(id: string, camera: Camera, level: Level, startX: number, startY: number, endY: number): Promise<GateEvent> {
+        return new GateEvent(id, camera, level, startX, startY, endY);
     }
 
     public get EventKey(): string {

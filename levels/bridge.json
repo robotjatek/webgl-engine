@@ -3311,13 +3311,19 @@
     {
       "type": "gate_event",
       "props": {
-        "id": "gate1"
+        "id": "gate1",
+        "startX": "3",
+        "startY": "4",
+        "endY": "9"
       }
     },
     {
       "type": "gate_event",
       "props": {
-        "id": "gate2"
+        "id": "gate2",
+        "startX": "33",
+        "startY": "4",
+        "endY": "9"
       }
     }
   ],

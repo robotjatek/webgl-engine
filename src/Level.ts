@@ -31,8 +31,9 @@ import { BossEvent } from './Events/Boss/BossEvent';
 import { UIService } from './UIService';
 import { Point } from './Point';
 import { OutroEvent } from './Events/OutroEvent';
-import { IMessage, Lever, LeverStates, LeverStatusChanged } from './Enemies/Lever';
+import { Lever } from './Actors/Lever/Lever';
 import { GateEvent } from './Events/GateEvent';
+import { LeverStatusChanged } from './Actors/Lever/LeverStatusChanged';
 
 type TileEntity = {
     xPos: number,
@@ -83,6 +84,8 @@ export interface IProjectileHitListener {
     DespawnAttack(attack: IProjectile): void
 }
 
+export interface IMessage {}
+
 export interface Eventbus {
     Publish<T extends IMessage>(message: T): void
     Register<T extends IMessage>(messageType: new (...args: any[]) => T, handler: (message: T) => void): void
@@ -113,7 +116,7 @@ export class Level implements IProjectileHitListener, IDisposable {
 
     // TODO: ez se valami szép
     private LeverChanged(message: LeverStatusChanged): void {
-        if (message.status === LeverStates.RIGHT) {
+        if (message.status === Lever.STATES.RIGHT) {
             console.log('Lever changed to RIGHT: ' + message.identifier);
             this.ChangeEvent(GateEvent.EVENT_KEY+':' + message.identifier);
         }
@@ -485,31 +488,34 @@ export class Level implements IProjectileHitListener, IDisposable {
     private async CreateLevelEvent(descriptor: EventEntity): Promise<ILevelEvent> {
         switch (descriptor.type) {
             case EscapeEvent.EVENT_KEY:
-                const eventLayer = this.layers[descriptor.props['eventLayerId']! as number] as Layer;
-                const eventLayerStopPosition = descriptor.props['eventLayerStopPosition'] as number;
-                const eventLayerSpeed = descriptor.props['eventLayerSpeed'] as number;
-                const cameraStopPosition = descriptor.props['cameraStopPosition'] as number;
-                const cameraSpeed = descriptor.props['cameraSpeed'] as number;
+                const eventLayer = this.layers[Number(descriptor.props['eventLayerId'])] as Layer;
+                const eventLayerStopPosition = Number(descriptor.props['eventLayerStopPosition']);
+                const eventLayerSpeed = Number(descriptor.props['eventLayerSpeed']);
+                const cameraStopPosition = Number(descriptor.props['cameraStopPosition']);
+                const cameraSpeed = Number(descriptor.props['cameraSpeed']);
                 return await EscapeEvent.Create(this.camera, eventLayer, this.MainLayer, this.hero,
                     eventLayerStopPosition, eventLayerSpeed, cameraStopPosition, cameraSpeed);
             case BossEvent.EVENT_KEY:
                 const spawnPosition = {
-                    x: descriptor.props['spawnX'] as number,
-                    y: descriptor.props['spawnY'] as number
+                    x: Number(descriptor.props['spawnX']),
+                    y: Number(descriptor.props['spawnY'])
                 }
                 const bossPosition = vec3.fromValues(spawnPosition.x, spawnPosition.y, 0);
                 const enterWaypoint = {
-                    x: descriptor.props['enterWaypointX'],
-                    y: descriptor.props['enterWaypointY']
+                    x: Number(descriptor.props['enterWaypointX']),
+                    y: Number(descriptor.props['enterWaypointY'])
                 } as Point;
-                const bossHealth = descriptor.props['health'] as number;
+                const bossHealth = Number(descriptor.props['health']);
                 return await BossEvent.Create(this, this.hero, this.uiService, bossPosition, bossHealth,
                     this.camera, enterWaypoint);
             case OutroEvent.EVENT_KEY:
                 return await OutroEvent.Create(this.hero, this.camera, this, this.game, this.uiService);
             case GateEvent.EVENT_KEY: {
                 const id = descriptor.props['id'] as string;
-                return await GateEvent.Create(id, this.camera, this);
+                const startX = Number(descriptor.props['startX']);
+                const startY = Number(descriptor.props['startY']);
+                const endY = Number(descriptor.props['endY']);
+                return await GateEvent.Create(id, this.camera, this, startX, startY, endY);
             }
             default:
                 throw new Error('Unknown event type');
@@ -523,7 +529,7 @@ export class Level implements IProjectileHitListener, IDisposable {
 
     public Dispose(): void {
         // Events can spawn and de-spawn entities.
-        // Generally to avoid double Dispose events if an event spawned an entity the event should release it.
+        // Generally to avoid double Dispose, if an event spawned an entity, the event should release it.
         // To make sure that happens events should be disposed first and the generic game objects later
         this.events.forEach(e => e.Dispose());
         this.events.clear();

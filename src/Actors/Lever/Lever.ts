@@ -1,32 +1,25 @@
-import { IGameobject } from '../IGameobject';
-import { BoundingBox } from '../BoundingBox';
-import { IProjectile } from '../Projectiles/IProjectile';
+import { IGameobject } from '../../IGameobject';
+import { BoundingBox } from '../../BoundingBox';
+import { IProjectile } from '../../Projectiles/IProjectile';
 import { mat4, vec2, vec3 } from 'gl-matrix';
-import { Hero } from '../Hero/Hero';
-import { SpriteRenderer } from '../SpriteRenderer';
-import { Sprite } from '../Sprite';
-import { Shader } from '../Shader';
-import { Texture } from '../Texture';
-import { Utils } from '../Utils';
-import { SoundEffectPool } from '../SoundEffectPool';
-import { Environment } from '../Environment';
-import { Level } from '../Level';
+import { Hero } from '../../Hero/Hero';
+import { SpriteRenderer } from '../../SpriteRenderer';
+import { Sprite } from '../../Sprite';
+import { Shader } from '../../Shader';
+import { Texture } from '../../Texture';
+import { Utils } from '../../Utils';
+import { SoundEffectPool } from '../../SoundEffectPool';
+import { Environment } from '../../Environment';
+import { Level } from '../../Level';
+import { LeverStatusChanged } from './LeverStatusChanged';
 
 export enum LeverStates {
     LEFT, RIGHT
 }
 
-export interface IMessage {}
-
-export class LeverStatusChanged implements IMessage {
-    constructor(
-        public readonly identifier: string,
-        public readonly status: LeverStates
-    ) {}
-}
-
-// TODO: ne az enemy mappába
 export class Lever implements IGameobject {
+
+    public static readonly STATES = LeverStates;
 
     private readonly renderer: SpriteRenderer;
     private readonly sprite: Sprite;

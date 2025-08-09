@@ -3314,7 +3314,21 @@
         "id": "gate1",
         "startX": "3",
         "startY": "4",
-        "endY": "9"
+        "endY": "9",
+        "enemies": [
+          {
+            "type": "slime",
+            "xPos": "34",
+            "yPos": "9",
+            "ai": "aggressive"
+          },
+          {
+            "type": "slime",
+            "xPos": "25",
+            "yPos": "9",
+            "ai": "passive"
+          }
+        ]
       }
     },
     {
@@ -3323,7 +3337,8 @@
         "id": "gate2",
         "startX": "33",
         "startY": "4",
-        "endY": "9"
+        "endY": "9",
+        "enemies": []
       }
     }
   ],

@@ -79,11 +79,7 @@ export class SlimeEnemy extends EnemyBase {
         this.physicsComponent = new PhysicsComponent(this.position, vec3.create(), () => this.BoundingBox, this.bbOffset, this.collider, false);
         const damageFlashComponent = new FlashOverlayComponent(this.shader);
         this.damageComponent = new DamageComponent(this, damageFlashComponent, this.enemyDamageSound, this.physicsComponent, 0);
-        if (aiMode === SlimeAIMode.PASSIVE) {
-            this.ai = new WaypointAI(this, this.physicsComponent);
-        } else {
-            this.ai = new FollowHeroAI(this, this.physicsComponent, hero);
-        }
+        this.ai = this.CreateAI(aiMode, hero);
     }
 
     public static async Create(position: vec3,
@@ -101,6 +97,17 @@ export class SlimeEnemy extends EnemyBase {
 
         return new SlimeEnemy(position, shader, bbShader, visualScale, collider, onDeath,
             enemyDamageSound, enemyDeathSound, texture, hero, aiMode);
+    }
+
+    private CreateAI(aiMode: SlimeAIMode, hero: Hero): ISlimeAI {
+        switch (aiMode) {
+            case SlimeAIMode.PASSIVE:
+                return  new WaypointAI(this, this.physicsComponent);
+            case SlimeAIMode.AGGRESSIVE:
+                return new FollowHeroAI(this, this.physicsComponent, hero);
+            default:
+                throw new Error('Invalid AI mode');
+        }
     }
 
     public async Visit(hero: Hero): Promise<void> {

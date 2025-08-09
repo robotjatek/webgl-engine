@@ -94,7 +94,7 @@ export interface Eventbus {
 export class Level implements IProjectileHitListener, IDisposable {
 
     private eventbus: Eventbus = new class implements Eventbus {
-        private handlers = new Map<string, Array<any>>(); // TODO: any param
+        private handlers = new Map<string, Array<(msg: IMessage) => void>>();
 
         Publish<T extends IMessage>(message: T): void {
             const handlers = this.handlers.get(message.constructor.name)!;
@@ -110,7 +110,7 @@ export class Level implements IProjectileHitListener, IDisposable {
                 this.handlers.set(messageType.name, []);
             }
 
-            this.handlers.get(messageType.name)!.push(handler);
+            this.handlers.get(messageType.name)!.push(handler as (msg: IMessage) => void);
         }
     }
 
@@ -415,7 +415,7 @@ export class Level implements IProjectileHitListener, IDisposable {
                     },
                     null
                 );
-            case 'escape_trigger':
+            case 'escape_trigger': // TODO: incorporate triggers into one parametrized trigger
                 return new LevelEventTrigger(this, vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), EscapeEvent.EVENT_KEY);
             case 'boss_trigger':
                 return new LevelEventTrigger(this, vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), BossEvent.EVENT_KEY);
@@ -511,11 +511,9 @@ export class Level implements IProjectileHitListener, IDisposable {
             case OutroEvent.EVENT_KEY:
                 return await OutroEvent.Create(this.hero, this.camera, this, this.game, this.uiService);
             case GateEvent.EVENT_KEY: {
+                const props = descriptor.props;
                 const id = descriptor.props['id'] as string;
-                const startX = Number(descriptor.props['startX']);
-                const startY = Number(descriptor.props['startY']);
-                const endY = Number(descriptor.props['endY']);
-                return await GateEvent.Create(id, this.camera, this, startX, startY, endY);
+                return await GateEvent.Create(id, this.camera, this, props);
             }
             default:
                 throw new Error('Unknown event type');

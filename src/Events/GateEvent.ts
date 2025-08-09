@@ -14,14 +14,12 @@ export class StartedState implements IState {
 
     public constructor(private gateEvent: GateEvent,
                        private level: Level,
-                       private startX: number,
-                       private startY: number,
-                       private endY: number) {
+                       private props: Record<string, any>) {
     }
 
     public async Update(delta: number): Promise<void> {
-        for (let i = this.startY; i <= this.endY; i++) {
-            this.level.MainLayer.SetCollision(this.startX, i, true);
+        for (let i = this.props.startY; i <= this.props.endY; i++) {
+            this.level.MainLayer.SetCollision(this.props.startX, i, true);
         }
         await this.gateEvent.ChangeState(this.gateEvent.SPAWN_GATE_TILES_STATE());
     }
@@ -39,21 +37,19 @@ export class SpawnGateTilesState implements IState {
 
     public constructor(private gateEvent: GateEvent,
                        private level: Level,
-                       private startX: number,
-                       private startY: number,
-                       private endY: number) {
+                       private props: Record<string, any>) {
         this.portcullisParts = gateEvent.PortcullisParts;
     }
 
     public async Update(delta: number): Promise<void> {
         const texture = await TexturePool.GetInstance().GetTexture('textures/portcullis.png');
         const texture_bottom = await TexturePool.GetInstance().GetTexture('textures/p2.png');
-        const numberToSpawn = this.endY - this.startY;
+        const numberToSpawn = this.props.endY - this.props.startY;
 
         for (let i = 0; i < numberToSpawn; i++) {
             const t = i === 0 ? texture_bottom : texture;
             this.portcullisParts.push(
-                await Portcullis.Create(vec3.fromValues(this.startX, this.startY, 0), t, this.level.MainLayer)
+                await Portcullis.Create(vec3.fromValues(this.props.startX, this.props.startY, 0), t, this.level.MainLayer)
             )
         }
 
@@ -73,18 +69,17 @@ export class ClosingGateState implements IState {
     private readonly portcullisParts: Portcullis[] = [];
 
     public constructor(private gateEvent: GateEvent,
-                       private startY: number,
-                       private endY: number) {
+                       private props: Record<string, any>) {
         this.portcullisParts = gateEvent.PortcullisParts;
     }
 
     public async Update(delta: number): Promise<void> {
         const bottomPart = this.portcullisParts[0];
-        if (bottomPart.Position[1] < this.endY) {
+        if (bottomPart.Position[1] < this.props.endY) {
             bottomPart.Move(delta, vec3.fromValues(0, 0.002, 0));
         } else {
             bottomPart.ResetVelocity();
-            bottomPart.Position[1] = this.endY;
+            bottomPart.Position[1] = this.props.endY;
 
             await this.gateEvent.ChangeState(this.gateEvent.ENEMY_SPAWN_STATE());
         }
@@ -92,7 +87,7 @@ export class ClosingGateState implements IState {
         // First part it the bottom part which we move separately, so we start from 1
         for (let i = 1; i < this.portcullisParts.length; i++) {
             const part = this.portcullisParts[i];
-            const targetY = Number(this.startY) + i;
+            const targetY = Number(this.props.startY) + i;
 
             if (part.Position[1] < targetY) {
                 part.Move(delta, vec3.fromValues(0, 0.002, 0));
@@ -114,25 +109,28 @@ export class ClosingGateState implements IState {
 
 export class EnemySpawnState implements IState {
 
-    public constructor(private gateEvent: GateEvent, private level: Level) {
+    public constructor(private gateEvent: GateEvent, private level: Level, private props: Record<string, any>) {
     }
 
     public async Update(delta: number): Promise<void> {
         console.log('Spawning enemies...');
 
-        // TODO: enemy positions input
-        const x = 34;
-        const y = 9;
-
-        const enemies = [
-            await SlimeEnemy.Create(
-                vec3.fromValues(x, y - 1.8, 1),
-                vec2.fromValues(3, 3),
-                this.level.MainLayer,
-                this.level.Hero,
-                SlimeAIMode.AGGRESSIVE,
+        const enemyFactory = {
+            'slime': (x: number, y: number, ai: SlimeAIMode) => SlimeEnemy.Create(
+                vec3.fromValues(x, y - 1.8, 1), vec2.fromValues(3, 3),
+                this.level.MainLayer, this.level.Hero, ai,
                 c => this.gateEvent.RemoveEnemy(c))
-        ];
+        }
+
+        const enemiesProp = this.props['enemies'] as [];
+        const enemies: IGameobject[] = await Promise.all(enemiesProp.map(async ep => {
+            const x = Number(ep['xPos']);
+            const y = Number(ep['yPos']);
+            const aiKey = String(ep['ai']).toUpperCase() as keyof typeof SlimeAIMode;
+            const ai = SlimeEnemy.AIMode[aiKey];
+            const type = ep['type'] as keyof typeof enemyFactory;
+            return await enemyFactory[type](x, y, ai);
+        }));
 
         this.gateEvent.AddEnemies(enemies);
         await this.gateEvent.ChangeState(this.gateEvent.ENEMY_FIGHT_STATE());
@@ -172,6 +170,7 @@ export class EnemiesDeadState implements IState {
     }
 
     public async Update(delta: number): Promise<void> {
+        // Move the camera towards the hero position
         const camera = this.gateEvent.Camera;
         const hero = this.level.Hero;
         const direction = vec3.create();
@@ -182,7 +181,6 @@ export class EnemiesDeadState implements IState {
         const newPosition = vec3.create();
         vec3.add(newPosition, camera.Position, direction);
         camera.LookAtPosition(newPosition, this.level.MainLayer);
-        console.log(camera.Position);
 
         if (vec3.distance(camera.Position, this.lastPosition) < 0.01) {
             this.level.ChangeEvent(FreeCameraEvent.EVENT_KEY);
@@ -211,19 +209,19 @@ export class GateEvent implements ILevelEvent {
     private enemies: IGameobject[] = [];
 
     public STARTED_STATE(): IState {
-        return new StartedState(this, this.level, this.startX, this.startY, this.endY);
+        return new StartedState(this, this.level, this.props);
     }
 
     public SPAWN_GATE_TILES_STATE(): IState {
-        return new SpawnGateTilesState(this, this.level, this.startX, this.startY, this.endY);
+        return new SpawnGateTilesState(this, this.level, this.props);
     }
 
     public CLOSING_GATE_STATE(): IState {
-        return new ClosingGateState(this, this.startY, this.endY);
+        return new ClosingGateState(this, this.props);
     }
 
     public ENEMY_SPAWN_STATE(): IState {
-        return new EnemySpawnState(this, this.level);
+        return new EnemySpawnState(this, this.level, this.props);
     }
 
     public ENEMY_FIGHT_STATE(): IState {
@@ -239,14 +237,12 @@ export class GateEvent implements ILevelEvent {
     private constructor(private id: string,
                         private camera: Camera,
                         private level: Level,
-                        private startX: number,
-                        private startY: number,
-                        private endY: number) {
+                        private readonly props: Record<string, any>) {
         this.state = this.STARTED_STATE();
     }
 
-    public static async Create(id: string, camera: Camera, level: Level, startX: number, startY: number, endY: number): Promise<GateEvent> {
-        return new GateEvent(id, camera, level, startX, startY, endY);
+    public static async Create(id: string, camera: Camera, level: Level, props: Record<string, any>): Promise<GateEvent> {
+        return new GateEvent(id, camera, level, props);
     }
 
     public get EventKey(): string {

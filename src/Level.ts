@@ -114,7 +114,7 @@ export class Level implements IProjectileHitListener, IDisposable {
         }
     }
 
-    // TODO: ez se valami szép
+    // TODO: ez se valami szép -- eventtrigger lesz ez és a unified eventtriggerek is így működjenek majd
     private LeverChanged(message: LeverStatusChanged): void {
         if (message.status === Lever.STATES.RIGHT) {
             console.log('Lever changed to RIGHT: ' + message.identifier);

@@ -10,6 +10,11 @@ import { FreeCameraEvent } from './FreeCameraEvent';
 import { IGameobject } from '../IGameobject';
 import { Camera } from '../Camera';
 
+/**
+ * Starts the gate event by creating the portcullis tiles
+ * Also sets the collision for the gate tiles
+ * Moves to {@link SpawnGateTilesState}
+ */
 export class StartedState implements IState {
 
     public constructor(private gateEvent: GateEvent,
@@ -18,8 +23,8 @@ export class StartedState implements IState {
     }
 
     public async Update(delta: number): Promise<void> {
-        for (let i = this.props.startY; i <= this.props.endY; i++) {
-            this.level.MainLayer.SetCollision(this.props.startX, i, true);
+        for (let i = Number(this.props.startY); i <= Number(this.props.endY); i++) {
+            this.level.MainLayer.SetCollision(Number(this.props.startX), i, true);
         }
         await this.gateEvent.ChangeState(this.gateEvent.SPAWN_GATE_TILES_STATE());
     }
@@ -31,6 +36,10 @@ export class StartedState implements IState {
     }
 }
 
+/**
+ * Spawns the portcullis tiles
+ * Moves to {@link ClosingGateState}
+ */
 export class SpawnGateTilesState implements IState {
 
     private portcullisParts: Portcullis[] = [];
@@ -49,8 +58,8 @@ export class SpawnGateTilesState implements IState {
         for (let i = 0; i < numberToSpawn; i++) {
             const t = i === 0 ? texture_bottom : texture;
             this.portcullisParts.push(
-                await Portcullis.Create(vec3.fromValues(this.props.startX, this.props.startY, 0), t, this.level.MainLayer)
-            )
+                await Portcullis.Create(
+                    vec3.fromValues(Number(this.props.startX), Number(this.props.startY), 0), t, this.level.MainLayer));
         }
 
         this.portcullisParts.forEach(o => this.level.AddGameObject(o));
@@ -64,6 +73,10 @@ export class SpawnGateTilesState implements IState {
     }
 }
 
+/**
+ * Closes the gate by moving the portcullis parts down
+ * Moves to {@link EnemySpawnState} when the gate is closed
+ */
 export class ClosingGateState implements IState {
 
     private readonly portcullisParts: Portcullis[] = [];
@@ -75,11 +88,11 @@ export class ClosingGateState implements IState {
 
     public async Update(delta: number): Promise<void> {
         const bottomPart = this.portcullisParts[0];
-        if (bottomPart.Position[1] < this.props.endY) {
+        if (bottomPart.Position[1] < Number(this.props.endY)) {
             bottomPart.Move(delta, vec3.fromValues(0, 0.002, 0));
         } else {
             bottomPart.ResetVelocity();
-            bottomPart.Position[1] = this.props.endY;
+            bottomPart.Position[1] = Number(this.props.endY);
 
             await this.gateEvent.ChangeState(this.gateEvent.ENEMY_SPAWN_STATE());
         }
@@ -107,6 +120,10 @@ export class ClosingGateState implements IState {
     }
 }
 
+/**
+ * Spawns enemies in the arena
+ * Moves to {@link CenterCameraState} when enemies are spawned
+ */
 export class EnemySpawnState implements IState {
 
     public constructor(private gateEvent: GateEvent, private level: Level, private props: Record<string, any>) {
@@ -144,7 +161,11 @@ export class EnemySpawnState implements IState {
     }
 }
 
-export class CenterCamera implements IState {
+/**
+ * Centers the camera to the arena center position
+ * Moves to {@link EnemyFightState} when the camera is centered to the arena center
+ */
+export class CenterCameraState implements IState {
 
     private static readonly CAMERA_SPEED = 0.015;
     private readonly arenaCenter: vec3;
@@ -162,17 +183,16 @@ export class CenterCamera implements IState {
 
         // Move the camera towards the center position while keeping the y-axis intact
         const camera = this.gateEvent.Camera;
-
         const direction = vec3.create();
         vec3.subtract(direction, this.arenaCenter, camera.Position);
         vec3.normalize(direction, direction);
-        vec3.scale(direction, direction, CenterCamera.CAMERA_SPEED * delta);
+        vec3.scale(direction, direction, CenterCameraState.CAMERA_SPEED * delta);
 
         const newPosition = vec3.create();
         vec3.add(newPosition, camera.Position, direction);
         camera.LookAtPosition(newPosition, this.level.MainLayer);
 
-        if (vec3.distance(camera.Position, this.arenaCenter) < 0.05) {
+        if (vec3.distance(camera.Position, this.arenaCenter) < 0.1) {
             await this.gateEvent.ChangeState(this.gateEvent.ENEMY_FIGHT_STATE());
             return;
         }
@@ -184,12 +204,15 @@ export class CenterCamera implements IState {
     public async Exit(): Promise<void> {
     }
 
-
 }
 
+/**
+ * Counts the number of enemies remaining and moves to {@link EnemiesDeadState} when all enemies are dead
+ * Moves to {@link FreeCameraEvent} when all enemies are dead
+ */
 export class EnemyFightState implements IState {
 
-    public constructor(private gateEvent: GateEvent) {
+    public constructor(private gateEvent: GateEvent, private level: Level, private props: Record<string, any>) {
     }
 
     public async Update(delta: number): Promise<void> {
@@ -201,17 +224,24 @@ export class EnemyFightState implements IState {
     }
 
     public async Enter(): Promise<void> {
+        for (let i = Number(this.props.startY); i <= Number(this.props.endY); i++) {
+            this.level.MainLayer.SetCollision(Number(this.props.endX), i, true);
+        }
     }
 
     public async Exit(): Promise<void> {
     }
 }
 
+/**
+ * Moves the camera towards the hero position and opens the gate when the camera is centered to the hero position
+ * Moves to {@link FreeCameraEvent} when the camera is centered to the hero position
+ */
 export class EnemiesDeadState implements IState {
     private static readonly CAMERA_SPEED = 0.015;
     private lastPosition: vec3 = vec3.create();
 
-    public constructor(private gateEvent: GateEvent, private level: Level) {
+    public constructor(private gateEvent: GateEvent, private level: Level, private props: Record<string, any>) {
     }
 
     public async Update(delta: number): Promise<void> {
@@ -239,6 +269,10 @@ export class EnemiesDeadState implements IState {
     public async Enter(): Promise<void> {
         this.lastPosition = vec3.create();
         console.log('Enemies dead, moving to hero position...');
+        for (let i = Number(this.props.startY); i <= Number(this.props.endY); i++) {
+            console.log('Setting collision for y: ' + i);
+            this.level.MainLayer.SetCollision(Number(this.props.endX), i, false);
+        }
     }
 
     public async Exit(): Promise<void> {
@@ -270,15 +304,15 @@ export class GateEvent implements ILevelEvent {
     }
 
     public CENTER_CAMERA_STATE(): IState {
-        return new CenterCamera(this, this.level, this.props);
+        return new CenterCameraState(this, this.level, this.props);
     }
 
     public ENEMY_FIGHT_STATE(): IState {
-        return new EnemyFightState(this);
+        return new EnemyFightState(this, this.level, this.props);
     }
 
     public ENEMIES_DEAD_STATE(): IState {
-        return new EnemiesDeadState(this, this.level);
+        return new EnemiesDeadState(this, this.level, this.props);
     }
 
     private state: IState;

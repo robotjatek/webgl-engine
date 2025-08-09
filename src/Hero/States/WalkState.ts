@@ -46,7 +46,7 @@ export class WalkState extends HeroBaseState {
             }
         }
 
-        if (this.hero.InputSource.Jump()) {
+        if (this.hero.InputSource.Jump() && this.physicsComponent.OnGround) {
             await this.hero.ChangeState(this.hero.JUMP_STATE());
         }
 

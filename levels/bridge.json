@@ -3319,7 +3319,7 @@
         "enemies": [
           {
             "type": "slime",
-            "xPos": "34",
+            "xPos": "31",
             "yPos": "9",
             "ai": "aggressive"
           },

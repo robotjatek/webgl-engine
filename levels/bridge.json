@@ -3314,6 +3314,7 @@
         "id": "gate1",
         "startX": "3",
         "startY": "4",
+        "endX": "33",
         "endY": "9",
         "enemies": [
           {
@@ -3337,6 +3338,7 @@
         "id": "gate2",
         "startX": "33",
         "startY": "4",
+        "endX": "63",
         "endY": "9",
         "enemies": []
       }

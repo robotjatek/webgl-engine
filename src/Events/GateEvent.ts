@@ -133,7 +133,8 @@ export class EnemySpawnState implements IState {
         }));
 
         this.gateEvent.AddEnemies(enemies);
-        await this.gateEvent.ChangeState(this.gateEvent.ENEMY_FIGHT_STATE());
+
+        await this.gateEvent.ChangeState(this.gateEvent.CENTER_CAMERA_STATE());
     }
 
     public async Enter(): Promise<void> {
@@ -143,7 +144,51 @@ export class EnemySpawnState implements IState {
     }
 }
 
+export class CenterCamera implements IState {
+
+    private static readonly CAMERA_SPEED = 0.015;
+    private readonly arenaCenter: vec3;
+
+
+    public constructor(private gateEvent: GateEvent, private level: Level, private props: Record<string, any>) {
+        const startX = Number(this.props['startX']);
+        const endX = Number(this.props['endX']);
+        const centerX = (endX - startX) / 2 + startX;
+        this.arenaCenter = vec3.fromValues(centerX, gateEvent.Camera.Position[1], 1);
+    }
+
+    public async Update(delta: number): Promise<void> {
+        console.log('Centering camera to arena center: ' + this.arenaCenter[0]);
+
+        // Move the camera towards the center position while keeping the y-axis intact
+        const camera = this.gateEvent.Camera;
+
+        const direction = vec3.create();
+        vec3.subtract(direction, this.arenaCenter, camera.Position);
+        vec3.normalize(direction, direction);
+        vec3.scale(direction, direction, CenterCamera.CAMERA_SPEED * delta);
+
+        const newPosition = vec3.create();
+        vec3.add(newPosition, camera.Position, direction);
+        camera.LookAtPosition(newPosition, this.level.MainLayer);
+
+        if (vec3.distance(camera.Position, this.arenaCenter) < 0.05) {
+            await this.gateEvent.ChangeState(this.gateEvent.ENEMY_FIGHT_STATE());
+            return;
+        }
+    }
+
+    public async Enter(): Promise<void> {
+    }
+
+    public async Exit(): Promise<void> {
+    }
+
+
+}
+
 export class EnemyFightState implements IState {
+
     public constructor(private gateEvent: GateEvent) {
     }
 
@@ -163,7 +208,7 @@ export class EnemyFightState implements IState {
 }
 
 export class EnemiesDeadState implements IState {
-    private static readonly CAMERA_SPEED = 0.01;
+    private static readonly CAMERA_SPEED = 0.015;
     private lastPosition: vec3 = vec3.create();
 
     public constructor(private gateEvent: GateEvent, private level: Level) {
@@ -222,6 +267,10 @@ export class GateEvent implements ILevelEvent {
 
     public ENEMY_SPAWN_STATE(): IState {
         return new EnemySpawnState(this, this.level, this.props);
+    }
+
+    public CENTER_CAMERA_STATE(): IState {
+        return new CenterCamera(this, this.level, this.props);
     }
 
     public ENEMY_FIGHT_STATE(): IState {

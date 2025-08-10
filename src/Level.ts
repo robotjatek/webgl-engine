@@ -416,10 +416,10 @@ export class Level implements IProjectileHitListener, IDisposable {
                     null,
                     null
                 );
-            case 'escape_trigger': // TODO: incorporate triggers into one parametrized trigger
-                return new LevelEventTrigger(this, vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), EscapeEvent.EVENT_KEY);
-            case 'boss_trigger':
-                return new LevelEventTrigger(this, vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), BossEvent.EVENT_KEY);
+            case 'event_trigger': {
+                const eventName = descriptor.props['eventId'] as string;
+                return new LevelEventTrigger(this, vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), eventName);
+            }
             case 'end': {
                 const end = await LevelEnd.Create(
                     vec3.fromValues(descriptor.xPos - 1, descriptor.yPos, 0),

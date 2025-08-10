@@ -2898,100 +2898,146 @@
   "defaultLayer": 1,
   "gameObjects": [
     {
-      "type": "boss_trigger",
+      "type": "event_trigger",
       "xPos": 3,
       "yPos": 0,
-      "name": "boss_trigger"
+      "name": "Boss trigger-19",
+      "props": {
+        "eventId": "boss_event"
+      }
     },
     {
-      "type": "boss_trigger",
+      "type": "event_trigger",
       "xPos": 3,
       "yPos": 1,
-      "name": "boss_trigger"
+      "name": "Boss trigger-18",
+      "props": {
+        "eventId": "boss_event"
+      }
     },
     {
-      "type": "boss_trigger",
+      "type": "event_trigger",
       "xPos": 3,
       "yPos": 2,
-      "name": "boss_trigger"
+      "name": "Boss trigger-20",
+      "props": {
+        "eventId": "boss_event"
+      }
     },
     {
-      "type": "boss_trigger",
+      "type": "event_trigger",
       "xPos": 3,
       "yPos": 3,
-      "name": "boss_trigger"
+      "name": "Boss trigger-21",
+      "props": {
+        "eventId": "boss_event"
+      }
     },
     {
-      "type": "boss_trigger",
+      "type": "event_trigger",
       "xPos": 3,
       "yPos": 4,
-      "name": "boss_trigger"
+      "name": "Boss trigger-22",
+      "props": {
+        "eventId": "boss_event"
+      }
     },
     {
-      "type": "boss_trigger",
+      "type": "event_trigger",
       "xPos": 3,
       "yPos": 5,
-      "name": "boss_trigger"
+      "name": "Boss trigger-23",
+      "props": {
+        "eventId": "boss_event"
+      }
     },
     {
-      "type": "boss_trigger",
+      "type": "event_trigger",
       "xPos": 3,
       "yPos": 6,
-      "name": "boss_trigger"
+      "name": "Boss trigger-24",
+      "props": {
+        "eventId": "boss_event"
+      }
     },
     {
-      "type": "boss_trigger",
+      "type": "event_trigger",
       "xPos": 3,
       "yPos": 7,
-      "name": "boss_trigger"
+      "name": "Boss trigger-25",
+      "props": {
+        "eventId": "boss_event"
+      }
     },
     {
-      "type": "boss_trigger",
+      "type": "event_trigger",
       "xPos": 3,
       "yPos": 8,
-      "name": "boss_trigger"
+      "name": "Boss trigger-26",
+      "props": {
+        "eventId": "boss_event"
+      }
     },
     {
-      "type": "boss_trigger",
+      "type": "event_trigger",
       "xPos": 3,
       "yPos": 9,
-      "name": "boss_trigger"
+      "name": "Boss trigger-27",
+      "props": {
+        "eventId": "boss_event"
+      }
     },
     {
-      "type": "boss_trigger",
+      "type": "event_trigger",
       "xPos": 3,
       "yPos": 10,
-      "name": "boss_trigger"
+      "name": "Boss trigger-28",
+      "props": {
+        "eventId": "boss_event"
+      }
     },
     {
-      "type": "boss_trigger",
+      "type": "event_trigger",
       "xPos": 3,
       "yPos": 11,
-      "name": "boss_trigger"
+      "name": "Boss trigger-29",
+      "props": {
+        "eventId": "boss_event"
+      }
     },
     {
-      "type": "boss_trigger",
+      "type": "event_trigger",
       "xPos": 3,
       "yPos": 12,
-      "name": "boss_trigger"
+      "name": "Boss trigger-30",
+      "props": {
+        "eventId": "boss_event"
+      }
     },
     {
-      "type": "boss_trigger",
+      "type": "event_trigger",
       "xPos": 3,
       "yPos": 13,
-      "name": "boss_trigger"
+      "name": "Boss trigger-31",
+      "props": {
+        "eventId": "boss_event"
+      }
     },
     {
-      "type": "boss_trigger",
+      "type": "event_trigger",
       "xPos": 3,
       "yPos": 14,
-      "name": "boss_trigger"
+      "name": "Boss trigger-32",
+      "props": {
+        "eventId": "boss_event"
+      }
     },
     {
       "type": "end",
       "xPos": 34,
       "yPos": 14,
-      "name": "end"
+      "name": "end",
+      "props": {}
     }
   ],
   "start": {

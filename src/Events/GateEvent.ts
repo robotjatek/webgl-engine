@@ -329,7 +329,7 @@ export class GateEvent implements ILevelEvent {
     }
 
     public get EventKey(): string {
-        return GateEvent.EVENT_KEY + ':' + this.id;
+        return this.id;
     }
 
     public get PortcullisParts(): Portcullis[] {

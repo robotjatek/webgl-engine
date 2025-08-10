@@ -31,9 +31,8 @@ import { BossEvent } from './Events/Boss/BossEvent';
 import { UIService } from './UIService';
 import { Point } from './Point';
 import { OutroEvent } from './Events/OutroEvent';
-import { Lever } from './Actors/Lever/Lever';
+import { Lever } from './Actors/Lever';
 import { GateEvent } from './Events/GateEvent';
-import { LeverStatusChanged } from './Actors/Lever/LeverStatusChanged';
 
 type TileEntity = {
     xPos: number,
@@ -84,47 +83,7 @@ export interface IProjectileHitListener {
     DespawnAttack(attack: IProjectile): void
 }
 
-export interface IMessage {}
-
-export interface Eventbus {
-    Publish<T extends IMessage>(message: T): void
-    Register<T extends IMessage>(messageType: new (...args: any[]) => T, handler: (message: T) => void): void
-}
-
 export class Level implements IProjectileHitListener, IDisposable {
-
-    private eventbus: Eventbus = new class implements Eventbus {
-        private handlers = new Map<string, Array<(msg: IMessage) => void>>();
-
-        Publish<T extends IMessage>(message: T): void {
-            const handlers = this.handlers.get(message.constructor.name)!;
-            for (const handler of handlers) {
-                handler(message);
-            }
-        }
-
-        Register<T extends IMessage>(
-            messageType: new (...args: any[]) => T,
-            handler: (message: T) => void): void {
-            if (!this.handlers.has(messageType.name)) {
-                this.handlers.set(messageType.name, []);
-            }
-
-            this.handlers.get(messageType.name)!.push(handler as (msg: IMessage) => void);
-        }
-    }
-
-    // TODO: ez se valami szép -- eventtrigger lesz ez és a unified eventtriggerek is így működjenek majd
-    private LeverChanged(message: LeverStatusChanged): void {
-        if (message.status === Lever.STATES.RIGHT) {
-            console.log('Lever changed to RIGHT: ' + message.identifier);
-            this.ChangeEvent(GateEvent.EVENT_KEY+':' + message.identifier);
-        }
-    }
-
-    public get Eventbus(): Eventbus {
-        return this.eventbus;
-    }
 
     private events: Map<string, ILevelEvent> = new Map<string, ILevelEvent>();
     private activeEvent!: ILevelEvent;
@@ -156,7 +115,6 @@ export class Level implements IProjectileHitListener, IDisposable {
     ) {
         this.Background = new SpriteBatch(bgShader, [new Background()], bgTexture);
         this.loadedTexturePaths.add(bgTexture.Path!)
-        this.eventbus.Register(LeverStatusChanged, (msg) => this.LeverChanged(msg));
     }
 
     public static async Create(levelName: string, keyHandler: KeyHandler, gamepadHandler: ControllerHandler,

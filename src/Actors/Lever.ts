@@ -1,25 +1,25 @@
-import { IGameobject } from '../../IGameobject';
-import { BoundingBox } from '../../BoundingBox';
-import { IProjectile } from '../../Projectiles/IProjectile';
+import { IGameobject } from '../IGameobject';
+import { BoundingBox } from '../BoundingBox';
+import { IProjectile } from '../Projectiles/IProjectile';
 import { mat4, vec2, vec3 } from 'gl-matrix';
-import { Hero } from '../../Hero/Hero';
-import { SpriteRenderer } from '../../SpriteRenderer';
-import { Sprite } from '../../Sprite';
-import { Shader } from '../../Shader';
-import { Texture } from '../../Texture';
-import { Utils } from '../../Utils';
-import { SoundEffectPool } from '../../SoundEffectPool';
-import { Environment } from '../../Environment';
-import { Level } from '../../Level';
-import { LeverStatusChanged } from './LeverStatusChanged';
+import { Hero } from '../Hero/Hero';
+import { SpriteRenderer } from '../SpriteRenderer';
+import { Sprite } from '../Sprite';
+import { Shader } from '../Shader';
+import { Texture } from '../Texture';
+import { Utils } from '../Utils';
+import { SoundEffectPool } from '../SoundEffectPool';
+import { Environment } from '../Environment';
+import { Level } from '../Level';
 
 export enum LeverStates {
     LEFT, RIGHT
 }
 
+/**
+ * Lever is an interactive level-event trigger
+ */
 export class Lever implements IGameobject {
-
-    public static readonly STATES = LeverStates;
 
     private readonly renderer: SpriteRenderer;
     private readonly sprite: Sprite;
@@ -63,8 +63,7 @@ export class Lever implements IGameobject {
             this.state = LeverStates.LEFT;
             this.renderer.TextureOffset = vec2.fromValues(0 / 2, 0);
         }
-
-        this.level.Eventbus.Publish(new LeverStatusChanged(this.eventId, this.state));
+        this.level.ChangeEvent(this.eventId);
     }
 
     public async Update(delta: number): Promise<void> {

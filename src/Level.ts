@@ -413,6 +413,7 @@ export class Level implements IProjectileHitListener, IDisposable {
                     (_, projectile: IProjectile) => {
                         this.SpawnProjectile(projectile);
                     },
+                    null,
                     null
                 );
             case 'escape_trigger': // TODO: incorporate triggers into one parametrized trigger
@@ -507,7 +508,7 @@ export class Level implements IProjectileHitListener, IDisposable {
                 } as Point;
                 const bossHealth = Number(descriptor.props['health']);
                 return await BossEvent.Create(this, this.hero, this.uiService, bossPosition, bossHealth,
-                    this.camera, enterWaypoint);
+                    this.camera, enterWaypoint, descriptor.props);
             case OutroEvent.EVENT_KEY:
                 return await OutroEvent.Create(this.hero, this.camera, this, this.game, this.uiService);
             case GateEvent.EVENT_KEY: {

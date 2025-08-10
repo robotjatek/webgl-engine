@@ -206,7 +206,7 @@ export class Game implements IStartEventListener,
     }
 
     public async Start(): Promise<void> {
-        await this.ChangeState(this.NEXT_LEVEL_STATE('levels/bridge.json'));
+        await this.ChangeState(this.NEXT_LEVEL_STATE('levels/boss_arena.json'));
     }
 
     public async Quit(): Promise<void> {

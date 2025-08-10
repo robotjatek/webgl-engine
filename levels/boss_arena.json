@@ -3007,7 +3007,25 @@
         "enterWaypointY": "32",
         "spawnX": "32",
         "spawnY": "10",
-        "health": "10"
+        "health": "10",
+        "blockedTiles": [
+          {
+            "xPos": "29",
+            "yPos": "11"
+          },
+          {
+            "xPos": "29",
+            "yPos": "12"
+          },
+          {
+            "xPos": "29",
+            "yPos": "13"
+          },
+          {
+            "xPos": "29",
+            "yPos": "14"
+          }
+        ]
       }
     }
   ],

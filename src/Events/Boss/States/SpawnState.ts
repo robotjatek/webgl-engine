@@ -29,7 +29,8 @@ export class SpawnState implements IState {
         private music: SoundEffect,
         private camera: Camera,
         private uiService: UIService,
-        private shakeSound: SoundEffect
+        private shakeSound: SoundEffect,
+        private props: Record<string, any>
     ) { }
 
     public async Update(delta: number): Promise<void> {
@@ -50,7 +51,8 @@ export class SpawnState implements IState {
             (sender, projectile) => {
                 this.level.SpawnProjectile(projectile);
             },
-            this.enterWaypoint);
+            this.enterWaypoint,
+            this.props);
 
         this.context.SpawnBoss(this.boss);
         await this.context.ChangeState(this.context.FIGHT_STATE())

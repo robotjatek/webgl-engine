@@ -27,8 +27,9 @@ export class JumpState extends HeroBaseState {
     protected override async UpdateState(delta: number): Promise<void> {
 
         if (this.isJumping && this.remainingJumpTime > 0) {
-            const force = vec3.fromValues(0, -0.013, 0);
             const jDelta = Math.min(this.remainingJumpTime, delta);
+            const forceMagnitude = -0.013 * (jDelta / (1000 / 60));
+            const force = vec3.fromValues(0, forceMagnitude, 0);
             this.physicsComponent.AddToExternalForce(force);
             this.remainingJumpTime -= jDelta;
 

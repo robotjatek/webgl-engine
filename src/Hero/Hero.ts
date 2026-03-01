@@ -37,7 +37,7 @@ export class Hero implements IDamageable, IDisposable {
     // TODO: make bb variables parametrizable
     private bbOffset = vec3.fromValues(1.2, 1.1, 0);
     private bbSize = vec2.fromValues(0.8, 1.8);
-    private readonly invincibleFrames = 15;
+    private readonly invincibleMs = 250;
 
     private sharedStateVariables: SharedHeroStateVariables = {
         timeSinceLastDash: 500,
@@ -248,7 +248,7 @@ export class Hero implements IDamageable, IDisposable {
 
         this.physicsComponent = new PhysicsComponent(position, this.lastPosition, () => this.BoundingBox, this.bbOffset, collider, false, false);
         this.damageComponent = new DamageComponent(this, flashOverlayComponent, this.damageSound,
-            this.physicsComponent, this.invincibleFrames);
+            this.physicsComponent, this.invincibleMs);
 
         this.internalState = this.IDLE_STATE();
     }

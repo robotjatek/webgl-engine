@@ -18,7 +18,6 @@ export class AfterStompState extends HeroBaseState {
     }
 
     protected override async UpdateState(delta: number): Promise<void> {
-
         this.physicsComponent.AddToExternalForce(vec3.fromValues(0, -0.10, 0));
         await this.hero.ChangeState(this.hero.IDLE_STATE());
     }

@@ -114,7 +114,7 @@ export class DragonEnemy extends EnemyBase {
         this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer);
         this.physicsComponent = new PhysicsComponent(position, this.lastPosition, () => this.BoundingBox, bbOffset, collider, true);
         this.flashOverlayComponent = new FlashOverlayComponent(this.shader);
-        this.damageComponent = new DamageComponent(this, this.flashOverlayComponent, this.enemyDamageSound, this.physicsComponent, 15);
+        this.damageComponent = new DamageComponent(this, this.flashOverlayComponent, this.enemyDamageSound, this.physicsComponent, 250);
     }
 
     public static async Create(position: vec3,

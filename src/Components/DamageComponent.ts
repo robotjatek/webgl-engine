@@ -22,10 +22,10 @@ export class DamageComponent {
                        private flashOverlay: FlashOverlayComponent,
                        private damageSound: SoundEffect,
                        private physicsComponent: PhysicsComponent,
-                       private invincibleFrames: number) {}
+                       private invincibleMs: number) {}
 
     public Update(delta: number): void {
-        this.DisableInvincibleStateAfter(delta, this.invincibleFrames);
+        this.DisableInvincibleStateAfter(this.invincibleMs);
         this.flashOverlay.Update(delta);
 
         if (this.invincible) {
@@ -62,15 +62,15 @@ export class DamageComponent {
 
     private Pushback(delta: number, force: vec3): void {
         const jDelta = Math.min(this.remainingJumpTime, delta);
-        this.physicsComponent.AddToExternalForce(force);
+        const scaledForce = vec3.scale(vec3.create(), force, jDelta / (1000 / 60));
+        this.physicsComponent.AddToExternalForce(scaledForce);
         this.remainingJumpTime -= jDelta;
     }
 
-    private DisableInvincibleStateAfter(delta: number, numberOfFrames: number): void {
-        if (this.invincibleTime > 1.0 / 60 * 1000 * numberOfFrames) {
+    private DisableInvincibleStateAfter(invincibleMs: number): void {
+        if (this.invincibleTime >= invincibleMs) {
             this.invincible = false;
             this.invincibleTime = 0;
         }
-        this.invincible ? this.invincibleTime += delta : this.invincibleTime = 0;
     }
 }

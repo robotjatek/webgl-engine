@@ -31,7 +31,7 @@ export class PhysicsComponent {
             this.ApplyGravityToVelocity(delta);
         }
 
-        this.ApplyDamping();
+        this.ApplyDamping(delta);
         this.ApplyExternalForceToVelocity();
 
         const boundingBox = this.boundingBox();
@@ -126,7 +126,7 @@ export class PhysicsComponent {
         return this.collider.IsCollidingWith(nextBoundingBox, !this.canGoOutOfBounds);
     }
 
-    private ApplyDamping() : void {
+    private ApplyDamping(delta: number): void {
         const groundDamping = 0.75;
         const airDamping = 0.9;
         const nonFlyingAirDamping = 0.75;
@@ -134,7 +134,8 @@ export class PhysicsComponent {
         const damping = this.flying ? airDamping :
             this.onGround ? groundDamping : nonFlyingAirDamping;
 
-        vec3.scale(this.velocity, this.velocity, damping);
+        const frameDamping = Math.pow(damping, delta / (1000 / 60));
+        vec3.scale(this.velocity, this.velocity, frameDamping);
 
         if (Math.abs(this.velocity[0]) < 0.00001) {
             this.velocity[0] = 0;

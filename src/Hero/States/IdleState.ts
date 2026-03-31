@@ -24,7 +24,7 @@ export class IdleState extends HeroBaseState {
         } else if (this.hero.InputSource.Right()) {
             this.movementBehaviour.MoveRight(delta);
             await this.hero.ChangeState(this.hero.WALK_STATE());
-        } else if (this.hero.InputSource.Jump()) {
+        } else if (this.hero.InputSource.Jump() && this.physicsComponent.OnGround) {
             await this.hero.ChangeState(this.hero.JUMP_STATE());
         } else if (this.hero.InputSource.Stomp() &&
             this.sharedStateVariables.timeSinceLastStomp > 500 &&

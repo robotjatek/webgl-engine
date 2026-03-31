@@ -35,13 +35,18 @@ export class WalkState extends HeroBaseState {
             await this.hero.ChangeState(this.hero.IDLE_STATE());
         }
 
+        if (this.physicsComponent.OnGround && this.sharedStateVariables.dashUsed) {
+            this.sharedStateVariables.dashAvailable = true;
+            this.sharedStateVariables.dashUsed = false;
+        }
+
         if (this.hero.InputSource.Dash()) {
             if (this.sharedStateVariables.timeSinceLastDash > 300 && this.sharedStateVariables.dashAvailable) {
                 await this.hero.ChangeState(this.hero.DASH_STATE());
             }
         }
 
-        if (this.hero.InputSource.Jump()) {
+        if (this.hero.InputSource.Jump() && this.physicsComponent.OnGround) {
             await this.hero.ChangeState(this.hero.JUMP_STATE());
         }
 

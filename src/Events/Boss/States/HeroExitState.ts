@@ -11,15 +11,19 @@ export class HeroExitState implements IState {
 
     private readonly input: InputSource;
 
-    public constructor(private level: Level, private hero: Hero) {
+    public constructor(private level: Level, private hero: Hero, private props: Record<string, any>) {
         this.input = this.hero.TakeoverControl();
     }
 
     public async Update(delta: number): Promise<void> {
-        this.level.MainLayer.SetCollision(29, 11, false);
-        this.level.MainLayer.SetCollision(29, 12, false);
-        this.level.MainLayer.SetCollision(29, 13, false);
-        this.level.MainLayer.SetCollision(29, 14, false);
+
+        const blockedTiles = this.props['blockedTiles'] as { xPos: number, yPos: number }[];
+        blockedTiles.forEach(x => {
+            const xPos = Number(x.xPos);
+            const yPos = Number(x.yPos);
+            this.level.MainLayer.SetCollision(xPos, yPos, false);
+        });
+
         this.hero.Speed = 0.0004;
         this.input.PressKey("right");
     }

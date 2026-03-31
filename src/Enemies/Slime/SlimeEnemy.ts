@@ -1,31 +1,30 @@
-import { ICollider } from '../ICollider';
+import { ICollider } from '../../ICollider';
 import { vec2, vec3 } from 'gl-matrix';
-import { Sprite } from '../Sprite';
-import { Utils } from '../Utils';
-import { Shader } from '../Shader';
-import { Texture } from '../Texture';
-import { TexturePool } from '../TexturePool';
-import { SoundEffectPool } from '../SoundEffectPool';
-import { Waypoint } from '../Waypoint';
-import { EnemyBase } from './IEnemy';
-import { Hero } from '../Hero/Hero';
+import { Sprite } from '../../Sprite';
+import { Utils } from '../../Utils';
+import { Shader } from '../../Shader';
+import { Texture } from '../../Texture';
+import { TexturePool } from '../../TexturePool';
+import { SoundEffectPool } from '../../SoundEffectPool';
+import { EnemyBase } from '../IEnemy';
+import { Hero } from '../../Hero/Hero';
 import { SoundEffect } from 'src/SoundEffect';
-import { Animation } from '../Components/Animation';
-import { PhysicsComponent } from '../Components/PhysicsComponent';
-import { FlashOverlayComponent } from '../Components/FlashOverlayComponent';
-import { DamageComponent } from '../Components/DamageComponent';
-import { StompState } from '../Hero/States/StompState';
+import { Animation } from '../../Components/Animation';
+import { PhysicsComponent } from '../../Components/PhysicsComponent';
+import { FlashOverlayComponent } from '../../Components/FlashOverlayComponent';
+import { DamageComponent } from '../../Components/DamageComponent';
+import { StompState } from '../../Hero/States/StompState';
+import { ISlimeAI } from './AI/ISlimeAI';
+import { WaypointAI } from './AI/WaypointAI';
+import { FollowHeroAI } from './AI/FollowHeroAI';
 
-/**
- * Slime enemy is a passive enemy, meaning it does not actively attack the player, but it hurts when contacted directly
- */
+export enum SlimeAIMode {
+    PASSIVE,
+    AGGRESSIVE
+}
+
 export class SlimeEnemy extends EnemyBase {
-
-    private targetWaypoint: Waypoint;
-    // A little variation in movement speed;
-    readonly minSpeed: number = 0.00004;
-    readonly maxSpeed: number = 0.00006;
-    private movementSpeed: number = Math.random() * (this.maxSpeed - this.minSpeed) + this.minSpeed;
+    public static readonly AIMode = SlimeAIMode;
     private readonly physicsComponent: PhysicsComponent;
     private readonly damageComponent: DamageComponent;
 
@@ -40,7 +39,15 @@ export class SlimeEnemy extends EnemyBase {
         vec2.fromValues(1 / 12, 1 / 8),
         vec2.fromValues(2 / 12, 1 / 8)
     ];
+
+    private framesets = {
+        "left_walk": this.leftFacingAnimationFrames,
+        "right_walk": this.rightFacingAnimationFrames
+    }
+
     private currentFrameSet = this.leftFacingAnimationFrames;
+
+    private ai: ISlimeAI;
 
     private constructor(
         position: vec3,
@@ -51,7 +58,9 @@ export class SlimeEnemy extends EnemyBase {
         private onDeath: (sender: SlimeEnemy) => void,
         private enemyDamageSound: SoundEffect,
         private enemyDeathSound: SoundEffect,
-        texture: Texture
+        texture: Texture,
+        hero: Hero,
+        aiMode: SlimeAIMode
     ) {
         const sprite: Sprite = new Sprite(
             Utils.DefaultSpriteVertices,
@@ -67,19 +76,17 @@ export class SlimeEnemy extends EnemyBase {
         super(shader, sprite, texture, bbShader, bbSize, bbOffset, position, visualScale, health);
         this.animation = new Animation(1 / 60 * 1000 * 15, this.renderer);
 
-        // For now, slimes walk between their start position and another position with some constant offset
-        const originalWaypoint = new Waypoint(vec3.clone(this.position), null);
-        const targetPosition = vec3.add(vec3.create(), vec3.clone(this.position), vec3.fromValues(-6, 0, 0));
-        this.targetWaypoint = new Waypoint(targetPosition, originalWaypoint);
-        originalWaypoint.next = this.targetWaypoint;
         this.physicsComponent = new PhysicsComponent(this.position, vec3.create(), () => this.BoundingBox, this.bbOffset, this.collider, false);
         const damageFlashComponent = new FlashOverlayComponent(this.shader);
         this.damageComponent = new DamageComponent(this, damageFlashComponent, this.enemyDamageSound, this.physicsComponent, 0);
+        this.ai = this.CreateAI(aiMode, hero);
     }
 
     public static async Create(position: vec3,
                                visualScale: vec2,
                                collider: ICollider,
+                               hero: Hero,
+                               aiMode: SlimeAIMode,
                                onDeath: (sender: SlimeEnemy) => void): Promise<SlimeEnemy> {
 
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
@@ -88,7 +95,19 @@ export class SlimeEnemy extends EnemyBase {
         const enemyDeathSound = await SoundEffectPool.GetInstance().GetAudio('audio/enemy_death.wav');
         const texture = await TexturePool.GetInstance().GetTexture('textures/monster1.png');
 
-        return new SlimeEnemy(position, shader, bbShader, visualScale, collider, onDeath, enemyDamageSound, enemyDeathSound, texture);
+        return new SlimeEnemy(position, shader, bbShader, visualScale, collider, onDeath,
+            enemyDamageSound, enemyDeathSound, texture, hero, aiMode);
+    }
+
+    private CreateAI(aiMode: SlimeAIMode, hero: Hero): ISlimeAI {
+        switch (aiMode) {
+            case SlimeAIMode.PASSIVE:
+                return  new WaypointAI(this, this.physicsComponent);
+            case SlimeAIMode.AGGRESSIVE:
+                return new FollowHeroAI(this, this.physicsComponent, hero);
+            default:
+                throw new Error('Invalid AI mode');
+        }
     }
 
     public async Visit(hero: Hero): Promise<void> {
@@ -121,31 +140,17 @@ export class SlimeEnemy extends EnemyBase {
 
     public async Update(delta: number): Promise<void> {
         this.damageComponent.Update(delta);
-
-        if (this.physicsComponent.OnGround) { // This way, the AI will not override velocity
-            this.MoveTowardsNextWaypoint(delta);
-        }
-
+        await this.ai.Update(delta);
         this.animation.Animate(delta, this.currentFrameSet);
         this.physicsComponent.Update(delta);
     }
 
-    private MoveTowardsNextWaypoint(delta: number): void {
-        const dir = vec3.sub(vec3.create(), this.position, this.targetWaypoint.position);
-        if (dir[0] < 0) {
-            this.currentFrameSet = this.rightFacingAnimationFrames;
-            this.Move(vec3.fromValues(this.movementSpeed, 0, 0), delta);
-        } else {
-            this.currentFrameSet = this.leftFacingAnimationFrames;
-            this.Move(vec3.fromValues(-this.movementSpeed, 0, 0), delta);
-        }
-        if (vec3.distance(this.position, this.targetWaypoint.position) < 0.025 && this.targetWaypoint.next) {
-            this.targetWaypoint = this.targetWaypoint.next;
-        }
-    }
-
     public Move(direction: vec3, delta: number): void {
         this.physicsComponent.AddToExternalForce(vec3.scale(vec3.create(), direction, delta));
+    }
+
+    public SetAnimationFrameset(name: "left_walk" | "right_walk"): void {
+        this.currentFrameSet = this.framesets[name];
     }
 
     public Dispose(): void {

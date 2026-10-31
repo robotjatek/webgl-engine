@@ -17,4 +17,10 @@ Run the following command from the terminal:
 - `tsc --build tsconfig.json`
 - run `http-server` command from the root folder
 
+[Try it out](https://robotjatek.github.io/webgl/)
+
+An Xbox controller is recommended for the best experience, but you can also use the keyboard.
+Use WASD to move, and the space bar to jump, E to attack, Shift to Dash, D while in the air to stomp.
+
 ![screenshot](webgl.png)
+[Gameplay video](https://www.youtube.com/watch?v=l4c7SN6qNPM)

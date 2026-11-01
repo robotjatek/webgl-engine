@@ -48,7 +48,7 @@ export class DragonEnemy extends EnemyBase {
     public ENTER_ARENA_STATE(): IState {
         const enterWaypoint = this.enterWaypoint ?
             vec3.fromValues(this.enterWaypoint.x, this.enterWaypoint.y, 0) : null;
-        return new EnterArenaState(this.hero, this, this.collider, enterWaypoint);
+        return new EnterArenaState(this.hero, this, this.collider, enterWaypoint, this.props!);
     }
 
     public GROUND_ATTACK_STATE(): IState {
@@ -101,7 +101,8 @@ export class DragonEnemy extends EnemyBase {
         private rushSound: SoundEffect,
         private backingStartSound: SoundEffect,
         texture: Texture,
-        private enterWaypoint: Point | null
+        private enterWaypoint: Point | null,
+        private props: Record<string, any> | null
     ) {
         const sprite: Sprite = new Sprite(
             Utils.DefaultSpriteVertices,
@@ -124,7 +125,8 @@ export class DragonEnemy extends EnemyBase {
                                hero: Hero,
                                onDeath: (enemy: DragonEnemy) => Promise<void>,
                                spawnProjectile: (sender: DragonEnemy, projectile: IProjectile) => void,
-                               enterWaypoint: Point | null
+                               enterWaypoint: Point | null,
+                               props: Record<string, any> | null
     ): Promise<DragonEnemy> {
         const shader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Hero.frag');
         const bbShader = await Shader.Create('shaders/VertexShader.vert', 'shaders/Colored.frag');
@@ -138,7 +140,7 @@ export class DragonEnemy extends EnemyBase {
         const texture = await TexturePool.GetInstance().GetTexture('textures/Monster2.png');
 
         return new DragonEnemy(position, health, shader, bbShader, visualScale, collider, hero, onDeath, spawnProjectile,
-            enemyDamageSound, enemyDeathSound, biteAttackSound, rushSound, backingStartSound, texture, enterWaypoint);
+            enemyDamageSound, enemyDeathSound, biteAttackSound, rushSound, backingStartSound, texture, enterWaypoint, props);
     }
 
     public async Visit(hero: Hero): Promise<void> {

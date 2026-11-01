@@ -36,7 +36,7 @@ domready(async () => {
 
   document.addEventListener('visibilitychange', async () => {
     if (document.hidden) {
-      await game.ChangeState(game.PAUSED_STATE());
+      await game.Pause();
     }
   });
 

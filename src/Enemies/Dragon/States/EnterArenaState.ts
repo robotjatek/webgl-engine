@@ -11,7 +11,8 @@ import { Layer } from '../../../Layer';
  */
 export class EnterArenaState extends DragonStateBase implements IState {
 
-    public constructor(hero: Hero, dragon: DragonEnemy, private layer: Layer, private enterWaypoint: vec3 | null) {
+    public constructor(hero: Hero, dragon: DragonEnemy, private layer: Layer, private enterWaypoint: vec3 | null,
+                       private readonly props: Record<string, any>) {
         super(hero, dragon);
     }
 
@@ -29,11 +30,13 @@ export class EnterArenaState extends DragonStateBase implements IState {
             this.dragon.Move(dir, delta);
         } else {
             // close tiles
-            // TODO: ezt a hardcodeot is meg kéne szüntetni
-            this.layer.SetCollision(29, 11, true);
-            this.layer.SetCollision(29, 12, true);
-            this.layer.SetCollision(29, 13, true);
-            this.layer.SetCollision(29, 14, true);
+            const blockedTiles = this.props['blockedTiles'] as { xPos: number, yPos: number }[];
+            blockedTiles.forEach(x => {
+                const xPos = Number(x.xPos);
+                const yPos = Number(x.yPos);
+                this.layer.SetCollision(xPos, yPos, true);
+            });
+
             await this.dragon.ChangeState(this.dragon.IDLE_STATE());
             return;
         }

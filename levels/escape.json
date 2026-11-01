@@ -17226,43 +17226,62 @@
       "type": "end",
       "xPos": 28,
       "yPos": 4,
-      "name": "end"
+      "name": "end",
+      "props": {}
     },
     {
-      "type": "escape_trigger",
+      "type": "event_trigger",
       "xPos": 18,
       "yPos": 82,
-      "name": "escape_trigger"
+      "name": "Escape trigger-9",
+      "props": {
+        "eventId": "escape_event"
+      }
     },
     {
-      "type": "escape_trigger",
+      "type": "event_trigger",
       "xPos": 18,
       "yPos": 83,
-      "name": "escape_trigger"
+      "name": "Escape trigger-10",
+      "props": {
+        "eventId": "escape_event"
+      }
     },
     {
-      "type": "escape_trigger",
+      "type": "event_trigger",
       "xPos": 18,
       "yPos": 84,
-      "name": "escape_trigger"
+      "name": "Escape trigger-11",
+      "props": {
+        "eventId": "escape_event"
+      }
     },
     {
-      "type": "escape_trigger",
+      "type": "event_trigger",
       "xPos": 18,
       "yPos": 85,
-      "name": "escape_trigger"
+      "name": "Escape trigger-12",
+      "props": {
+        "eventId": "escape_event"
+      }
     },
     {
-      "type": "escape_trigger",
+      "type": "event_trigger",
       "xPos": 18,
       "yPos": 86,
-      "name": "escape_trigger"
+      "name": "Escape trigger-13",
+      "props": {
+        "eventId": "escape_event"
+      }
     },
     {
-      "type": "escape_trigger",
+      "type": "event_trigger",
       "xPos": 18,
       "yPos": 87,
-      "name": "escape_trigger"
+      "name": "Escape trigger-14",
+      "props": {
+        "eventId": "escape_event"
+      }
     }
   ],
   "start": {

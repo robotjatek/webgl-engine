@@ -32,7 +32,8 @@ export class StompState extends HeroBaseState {
 
     public async Enter(): Promise<void> {
         // using Enter() so we only run this part of the code once
-        this.physicsComponent.AddToExternalForce(vec3.fromValues(0, 0.05, 0));
+        this.physicsComponent.ResetVelocity();
+        this.physicsComponent.AddToExternalForce(vec3.fromValues(0, 0.06, 0));
         this.sharedStateVariables.timeSinceLastStomp = 0;
         const pitch = 0.8 + Math.random() * (1.25 - 0.8);
         await this.stompSound.Play(pitch);

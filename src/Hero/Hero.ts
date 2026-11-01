@@ -294,7 +294,7 @@ export class Hero implements IDamageable, IDisposable {
     public async Update(delta: number): Promise<void> {
         await this.internalState.Update(delta);
         this.animation.Animate(delta, this.currentFrameSet);
-        await this.physicsComponent.Update(delta);
+        this.physicsComponent.Update(delta);
     }
 
     public FaceLeft(): void {

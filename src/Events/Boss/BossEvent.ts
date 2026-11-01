@@ -28,7 +28,7 @@ export class BossEvent implements ILevelEvent {
 
     public SPAWN_STATE(): IState {
         return new SpawnState(this, this.level, this.hero, this.shared, this.bossPosition, this.bossHealth,
-            this.enterWaypoint, this.roar, this.music, this.camera, this.uiService, this.shakeSound);
+            this.enterWaypoint, this.roar, this.music, this.camera, this.uiService, this.shakeSound, this.props);
     }
 
     public FIGHT_STATE(): IState {
@@ -44,7 +44,7 @@ export class BossEvent implements ILevelEvent {
     }
 
     public HERO_EXIT_STATE(): IState {
-        return new HeroExitState(this.level, this.hero);
+        return new HeroExitState(this.level, this.hero, this.props);
     }
 
     private internalState: IState = this.SPAWN_STATE();
@@ -68,7 +68,8 @@ export class BossEvent implements ILevelEvent {
                         private camera: Camera,
                         private shakeSound: SoundEffect,
                         private enterWaypoint: Point,
-                        private music: SoundEffect
+                        private music: SoundEffect,
+                        private props: Record<string, any>
     ) {
     }
 
@@ -78,13 +79,14 @@ export class BossEvent implements ILevelEvent {
                                bossPosition: vec3,
                                bossHealth: number,
                                camera: Camera,
-                               enterWaypoint: Point): Promise<BossEvent> {
+                               enterWaypoint: Point,
+                               props: Record<string, any>): Promise<BossEvent> {
         const roar = await SoundEffectPool.GetInstance().GetAudio('audio/monster_small_roar.wav', false);
         const shakeSound = await SoundEffectPool.GetInstance().GetAudio('audio/shake.wav', false);
         const bossHealthText = await uiService.AddTextbox();
         const music = await SoundEffectPool.GetInstance().GetAudio('audio/hunters_chance.mp3', false);
         return new BossEvent(
-            level, hero, uiService, bossHealthText, roar, bossPosition, bossHealth, camera, shakeSound, enterWaypoint, music);
+            level, hero, uiService, bossHealthText, roar, bossPosition, bossHealth, camera, shakeSound, enterWaypoint, music, props);
     }
 
     public async Update(delta: number): Promise<void> {

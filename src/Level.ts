@@ -15,7 +15,7 @@ import { IGameobject } from './IGameobject';
 import { IProjectile } from './Projectiles/IProjectile';
 import { IEndConditionsMetEventListener, LevelEnd } from './LevelEnd';
 import { DragonEnemy } from './Enemies/Dragon/DragonEnemy';
-import { SlimeEnemy } from './Enemies/SlimeEnemy';
+import { SlimeEnemy } from './Enemies/Slime/SlimeEnemy';
 import { Spike } from './Enemies/Spike';
 import { Cactus } from './Enemies/Cactus';
 import { CoinObject } from './Pickups/CoinObject';
@@ -31,7 +31,8 @@ import { BossEvent } from './Events/Boss/BossEvent';
 import { UIService } from './UIService';
 import { Point } from './Point';
 import { OutroEvent } from './Events/OutroEvent';
-import { EnemyBase } from './Enemies/IEnemy';
+import { Lever } from './Actors/Lever';
+import { GateEvent } from './Events/GateEvent';
 
 type TileEntity = {
     xPos: number,
@@ -51,11 +52,7 @@ type GameObjectEntity = {
     type: string,
     xPos: number,
     yPos: number
-}
-
-type LevelEndEntity = {
-    xPos: number,
-    yPos: number
+    props: Record<string, any>
 }
 
 type StartEntity = {
@@ -73,7 +70,6 @@ type LevelEntity = {
     music: string,
     layers: LayerEntity[],
     gameObjects: GameObjectEntity[],
-    levelEnd: LevelEndEntity,
     start: StartEntity,
     nextLevel: string,
     defaultLayer: number,
@@ -119,7 +115,6 @@ export class Level implements IProjectileHitListener, IDisposable {
     ) {
         this.Background = new SpriteBatch(bgShader, [new Background()], bgTexture);
         this.loadedTexturePaths.add(bgTexture.Path!)
-
     }
 
     public static async Create(levelName: string, keyHandler: KeyHandler, gamepadHandler: ControllerHandler,
@@ -198,9 +193,8 @@ export class Level implements IProjectileHitListener, IDisposable {
             await this.attack?.Update(delta);
             if (this.attack && !this.attack.AlreadyHit) {
                 const attack = this.attack;
-                // Do not collide with any other game objects, only with enemies
                 const enemiesCollidingWithProjectile = this.gameObjects.filter(
-                    e => e.IsCollidingWith(attack.BoundingBox, false) && e instanceof EnemyBase);
+                    e => e.IsCollidingWith(attack.BoundingBox, false));
                 // Pushback force does not necessarily mean the amount of pushback. A big enemy can ignore a sword attack for example
                 for (const e of enemiesCollidingWithProjectile) {
                     await e.CollideWithAttack(attack);
@@ -361,7 +355,7 @@ export class Level implements IProjectileHitListener, IDisposable {
             case 'slime':
                 return await SlimeEnemy.Create(
                     vec3.fromValues(descriptor.xPos, descriptor.yPos - 1.8, 1), vec2.fromValues(3, 3), this.MainLayer,
-                    (c) => this.RemoveGameObject(c));
+                     this.hero, SlimeEnemy.AIMode.PASSIVE, (c) => this.RemoveGameObject(c));
             case 'dragon':
                 // Dragon as a regular enemy
                 return await DragonEnemy.Create(
@@ -377,12 +371,13 @@ export class Level implements IProjectileHitListener, IDisposable {
                     (_, projectile: IProjectile) => {
                         this.SpawnProjectile(projectile);
                     },
+                    null,
                     null
                 );
-            case 'escape_trigger':
-                return new LevelEventTrigger(this, vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), EscapeEvent.EVENT_KEY);
-            case 'boss_trigger':
-                return new LevelEventTrigger(this, vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), BossEvent.EVENT_KEY);
+            case 'event_trigger': {
+                const eventName = descriptor.props['eventId'] as string;
+                return new LevelEventTrigger(this, vec3.fromValues(descriptor.xPos, descriptor.yPos, 1), eventName);
+            }
             case 'end': {
                 const end = await LevelEnd.Create(
                     vec3.fromValues(descriptor.xPos - 1, descriptor.yPos, 0),
@@ -398,6 +393,10 @@ export class Level implements IProjectileHitListener, IDisposable {
 
                 this.SubscribeToEndConditionsMetEvent(end);
                 return end;
+            }
+            case 'lever': {
+                const eventId = descriptor.props['eventId'] as string;
+                return await Lever.Create(vec3.fromValues(descriptor.xPos, descriptor.yPos - 0.5, 1), this, eventId);
             }
             default:
                 throw new Error('Unknown object type');
@@ -448,28 +447,33 @@ export class Level implements IProjectileHitListener, IDisposable {
     private async CreateLevelEvent(descriptor: EventEntity): Promise<ILevelEvent> {
         switch (descriptor.type) {
             case EscapeEvent.EVENT_KEY:
-                const eventLayer = this.layers[descriptor.props['eventLayerId']! as number] as Layer;
-                const eventLayerStopPosition = descriptor.props['eventLayerStopPosition'] as number;
-                const eventLayerSpeed = descriptor.props['eventLayerSpeed'] as number;
-                const cameraStopPosition = descriptor.props['cameraStopPosition'] as number;
-                const cameraSpeed = descriptor.props['cameraSpeed'] as number;
+                const eventLayer = this.layers[Number(descriptor.props['eventLayerId'])] as Layer;
+                const eventLayerStopPosition = Number(descriptor.props['eventLayerStopPosition']);
+                const eventLayerSpeed = Number(descriptor.props['eventLayerSpeed']);
+                const cameraStopPosition = Number(descriptor.props['cameraStopPosition']);
+                const cameraSpeed = Number(descriptor.props['cameraSpeed']);
                 return await EscapeEvent.Create(this.camera, eventLayer, this.MainLayer, this.hero,
                     eventLayerStopPosition, eventLayerSpeed, cameraStopPosition, cameraSpeed);
             case BossEvent.EVENT_KEY:
                 const spawnPosition = {
-                    x: descriptor.props['spawnX'] as number,
-                    y: descriptor.props['spawnY'] as number
+                    x: Number(descriptor.props['spawnX']),
+                    y: Number(descriptor.props['spawnY'])
                 }
                 const bossPosition = vec3.fromValues(spawnPosition.x, spawnPosition.y, 0);
                 const enterWaypoint = {
-                    x: descriptor.props['enterWaypointX'],
-                    y: descriptor.props['enterWaypointY']
+                    x: Number(descriptor.props['enterWaypointX']),
+                    y: Number(descriptor.props['enterWaypointY'])
                 } as Point;
-                const bossHealth = descriptor.props['health'] as number;
+                const bossHealth = Number(descriptor.props['health']);
                 return await BossEvent.Create(this, this.hero, this.uiService, bossPosition, bossHealth,
-                    this.camera, enterWaypoint);
+                    this.camera, enterWaypoint, descriptor.props);
             case OutroEvent.EVENT_KEY:
                 return await OutroEvent.Create(this.hero, this.camera, this, this.game, this.uiService);
+            case GateEvent.EVENT_KEY: {
+                const props = descriptor.props;
+                const id = descriptor.props['id'] as string;
+                return await GateEvent.Create(id, this.camera, this, props);
+            }
             default:
                 throw new Error('Unknown event type');
         }
@@ -482,7 +486,7 @@ export class Level implements IProjectileHitListener, IDisposable {
 
     public Dispose(): void {
         // Events can spawn and de-spawn entities.
-        // Generally to avoid double Dispose events if an event spawned an entity the event should release it.
+        // Generally to avoid double Dispose, if an event spawned an entity, the event should release it.
         // To make sure that happens events should be disposed first and the generic game objects later
         this.events.forEach(e => e.Dispose());
         this.events.clear();
